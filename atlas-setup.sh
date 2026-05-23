@@ -19,7 +19,7 @@ set -euo pipefail
 ATLAS_VERSION="1.0.0"
 ATLAS_INSTALL_DIR="$HOME/.claude/skills/atlas"
 ATLAS_PROJECTS_DIR="$ATLAS_INSTALL_DIR/projects"
-CORE_FILES=("motor.md" "SKILL.md" "onboarding.md")
+CORE_FILES=("motor.md" "SKILL.md" "onboarding.md" "atlas-monitor.py")
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 UPGRADE_MODE=false
