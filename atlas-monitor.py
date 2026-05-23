@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-ATLAS Monitor v1.0 · NutricomAI
+ATLAS Monitor v1.1
 Audita el estado de /atlas en un proyecto y reporta plan vs realidad.
 Uso: python3 atlas-monitor.py [project_name]
      python3 atlas-monitor.py nutricomai
@@ -136,21 +136,74 @@ else:
         else:
             info(f"  {comp:20s} → {path}")
 
-# 4. Log de ejecucion
+# 4. Log de ejecucion (en el repo, no en atlas dir)
 header("4. Log de ejecucion ATLAS (atlas-proxy-log.jsonl)")
-log_path = PROJECT_DIR / "atlas-proxy-log.jsonl"
-entries = load_jsonl(log_path)
-if not entries:
-    warn("Sin logs de ejecucion — /atlas no ha corrido aun en este proyecto, o log vacio")
-    info("El log se crea cuando el proxy-agent loguea via flow-rules.md PASO 10")
+repo_path = project_json.get("repo_path", "") if project_json else ""
+log_path = Path(repo_path) / ".claude/atlas-proxy-log.jsonl" if repo_path else None
+entries = load_jsonl(log_path) if log_path else []
+if not log_path:
+    warn("repo_path no definido — no se puede leer el log")
+elif not entries:
+    warn(f"Sin logs · {log_path}")
+    info("El log se crea en PASO 1 (router_costo) y PASO 9 (flujo_completado) del motor")
 else:
-    print(f"\n  {len(entries)} entradas en el log\n")
+    print(f"\n  {len(entries)} entradas · ultimas 5:\n")
     for e in entries[-5:]:
-        ts = e.get("ts", "?")
-        skill = e.get("skill", "?")
-        event = e.get("event", "?")
-        outcome = e.get("outcome", "")
-        print(f"  {ts}  {skill}  {event}  {outcome or ''}")
+        ts  = e.get("ts", "?")[:19]
+        ev  = e.get("evento", e.get("event", "?"))
+        comp = e.get("componente", e.get("skill", ""))
+        tier = e.get("tier_estimado", "")
+        mode = e.get("matu_mode", "")
+        rds  = e.get("matu_rounds_reales", "")
+        extra = " · ".join(filter(None, [tier, mode, f"R{rds}" if rds else ""]))
+        print(f"  {ts}  {ev:20s}  {comp:20s}  {extra}")
+
+# 4B. Checkpoint del ultimo flujo
+header("4B. Ultimo flujo (flow-checkpoint.json)")
+ckpt_path = Path(repo_path) / ".claude/flow-checkpoint.json" if repo_path else None
+ckpt = load_json(ckpt_path) if ckpt_path else None
+if not ckpt:
+    warn(f"Sin checkpoint · {ckpt_path or 'repo_path no definido'}")
+    info("El checkpoint se crea en PASO 0 y se actualiza en cada paso del motor")
+else:
+    paso    = ckpt.get("paso", "?")
+    status  = ckpt.get("status", "?")
+    comp    = ckpt.get("componente", "?")
+    tipo    = ckpt.get("router_tipo", "?")
+    mmode   = ckpt.get("matu_mode", "?")
+    score   = ckpt.get("matu_score_final", "?")
+    mpass   = ckpt.get("matu_pass", "?")
+    branch  = ckpt.get("branch_name", "?")
+    fid     = ckpt.get("fidelity_score", "N/A")
+    ts      = ckpt.get("ts", "?")[:19]
+    print()
+    if status == "PASS" and paso == 9:
+        ok(f"  Flujo completo · PASO {paso} {status}")
+    elif status == "PASS":
+        warn(f"  Flujo interrumpido · ultimo PASO {paso} {status} · retomar desde PASO {paso + 1}")
+    else:
+        fail(f"  PASO {paso} {status} · posible sesion cortada")
+    print(f"  Componente:  {comp}")
+    print(f"  Tipo:        {tipo}  |  Branch: {branch}")
+    print(f"  /matu:       {mmode}  |  score {score}  |  pass={mpass}  |  fidelidad {fid}")
+    print(f"  Timestamp:   {ts}")
+
+# 4C. Session lock
+header("4C. Session lock (session-lock.json)")
+lock_path = Path(repo_path) / ".claude/session-lock.json" if repo_path else None
+lock = load_json(lock_path) if lock_path else None
+if not lock:
+    info("Sin session-lock.json (normal si nunca se ejecuto el motor)")
+else:
+    locked  = lock.get("locked", False)
+    session = lock.get("session", "?")
+    task    = lock.get("task", "?")
+    ts_lock = lock.get("ts", "?")
+    if locked:
+        warn(f"  LOCK ACTIVO · sesion={session} · task={task} · desde {ts_lock[:19]}")
+        info("  Si la sesion murio, el lock se limpia automaticamente despues de 2h")
+    else:
+        ok("  Lock libre — no hay sesion ATLAS activa")
 
 # 5. BACKLOG del repo
 header("5. BACKLOG del repo (.claude/BACKLOG.md)")
