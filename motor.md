@@ -360,7 +360,7 @@ PROJECT_BRIEF=$(cat "$ATLAS_DIR/project-brief.md" 2>/dev/null || echo "")
 CURRENT_YEAR=$(date +%Y)
 PREV_YEAR=$((CURRENT_YEAR - 1))
 MODO_TOTAL="${MODO_TOTAL:-no}"
-CHECKPOINT_FILE="$PROJECT_REPO/.claude/flow-checkpoint.json"
+CHECKPOINT_FILE="$ATLAS_DIR/flow-checkpoint.json"
 BACKLOG_FILE="$PROJECT_REPO/.claude/BACKLOG.md"
 
 cd "$PROJECT_REPO"
@@ -434,8 +434,8 @@ Si `MASTER_FILE` vacío → STOP · reportar a Ale · no continuar.
 # COMPONENTE y MASTER_FILE ya seteados desde Lookup
 
 # SESSION LOCK
-LOCK_FILE="$PROJECT_REPO/.claude/session-lock.json"
-FLOW_LOCK="$PROJECT_REPO/.claude/.flow-lock"
+LOCK_FILE="$ATLAS_DIR/session-lock.json"
+FLOW_LOCK="$ATLAS_DIR/.flow-lock"
 
 # Limpiar .flow-lock stale (>2h) automáticamente
 if [ -f "$FLOW_LOCK" ]; then
@@ -517,7 +517,7 @@ TYPECHECK_OUTPUT=$($TYPECHECK_CMD 2>&1); TYPECHECK_EXIT=$?
 echo "$TYPECHECK_OUTPUT" | tail -3
 if [ "$TYPECHECK_EXIT" -ne 0 ]; then
   echo "FAIL · typecheck errors · arreglar antes de continuar"
-  python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f .claude/.flow-lock
+  python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f "$FLOW_LOCK"
   exit 1
 fi
 echo "TYPECHECK_EXIT=0"
@@ -534,7 +534,7 @@ if [ ! -f "$MASTER_FILE" ] && [ -n "$MASTER_FILE" ]; then
     echo "FALLBACK → usando master general: $MASTER_FILE"
   else
     echo "FAIL · master no encontrado ni fallback"
-    python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f .claude/.flow-lock
+    python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f "$FLOW_LOCK"
     exit 1
   fi
 fi
@@ -618,7 +618,7 @@ entry = {
   'agentes_estimados': int('$AGENTES_N') if '$AGENTES_N'.isdigit() else 0,
   'driver': '$COSTO_DRIVER'
 }
-with open('.claude/atlas-proxy-log.jsonl', 'a') as f:
+with open('$ATLAS_DIR/atlas-proxy-log.jsonl', 'a') as f:
     f.write(json.dumps(entry) + '\n')
 "
 
@@ -641,7 +641,7 @@ fi
 ```bash
 python3 -c "
 import json, datetime
-d = json.load(open('.claude/flow-checkpoint.json'))
+d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 1; d['status'] = 'PASS'
 d['router_tipo'] = '$ROUTER_TIPO'
 d['router_platform'] = '$ROUTER_PLATFORM'
@@ -649,7 +649,7 @@ d['matu_mode'] = '$MATU_MODE'
 d['creative_spin'] = $CREATIVE_SPIN_JSON
 d['branch_name'] = '$(git branch --show-current)'
 d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
-json.dump(d, open('.claude/flow-checkpoint.json','w'), indent=2)
+json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
 
@@ -865,10 +865,10 @@ Checkpoint post-PASO 2:
 ```bash
 python3 -c "
 import json, datetime
-d = json.load(open('.claude/flow-checkpoint.json'))
+d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 2; d['status'] = 'PASS'
 d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
-json.dump(d, open('.claude/flow-checkpoint.json','w'), indent=2)
+json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
 
@@ -939,7 +939,7 @@ export DIRECTION_A DIRECTION_B DIRECTION_C
 
 python3 << PYEOF
 import json, datetime, os
-d = json.load(open('.claude/flow-checkpoint.json'))
+d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 3; d['status'] = 'PASS'
 d['mockups_generados'] = ['$MOCKUP_BASE_PATH/$COMPONENTE/A.html',
                           '$MOCKUP_BASE_PATH/$COMPONENTE/B.html',
@@ -950,7 +950,7 @@ d['directions'] = {
     'C': os.environ.get('DIRECTION_C', '')
 }
 d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
-json.dump(d, open('.claude/flow-checkpoint.json','w'), indent=2)
+json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 PYEOF
 ```
 
@@ -1038,7 +1038,7 @@ Invocar `/context-save` post-elección.
 ```bash
 MOCKUP_SOURCE=$(python3 -c "
 import json, os
-d = json.load(open('.claude/flow-checkpoint.json'))
+d = json.load(open('$CHECKPOINT_FILE'))
 ganador = d.get('mockup_ganador', '')
 base = '$PROJECT_REPO/$MOCKUP_BASE_PATH/$COMPONENTE/'
 if ganador and os.path.exists(base + ganador + '.html'):
@@ -1123,7 +1123,7 @@ TYPECHECK_OUTPUT=$($TYPECHECK_CMD 2>&1); TYPECHECK_EXIT=$?
 echo "$TYPECHECK_OUTPUT" | tail -3
 if [ "$TYPECHECK_EXIT" -ne 0 ]; then
   echo "STOP · typecheck falla pre-checkpoint 5Z · arreglar antes de commitear"
-  python3 -c "import json; open('.claude/session-lock.json','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f .claude/.flow-lock
+  python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f "$FLOW_LOCK"
   exit 1
 fi
 
@@ -1133,10 +1133,10 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 
 python3 -c "
 import json, datetime
-d = json.load(open('.claude/flow-checkpoint.json'))
+d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 5; d['status'] = 'PASS'
 d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
-json.dump(d, open('.claude/flow-checkpoint.json','w'), indent=2)
+json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
 
@@ -1160,10 +1160,10 @@ Checkpoint post-6D:
 ```bash
 python3 -c "
 import json, datetime
-d = json.load(open('.claude/flow-checkpoint.json'))
+d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 6; d['status'] = 'PASS_6D'
 d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
-json.dump(d, open('.claude/flow-checkpoint.json','w'), indent=2)
+json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
 
@@ -1216,7 +1216,7 @@ Post-6F · override matu_mode si CRITICAL_TOUCHED:
 ENV_TOUCHED=$(echo "$CRITICAL_TOUCHED" | grep -E "\.env" || echo "")
 if [ -n "$ENV_TOUCHED" ]; then
   echo "STOP · .env en diff · posibles credenciales nuevas · requiere OK explícito"
-  python3 -c "import json; open('.claude/session-lock.json','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f .claude/.flow-lock
+  python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f "$FLOW_LOCK"
   exit 1
 fi
 
@@ -1230,10 +1230,10 @@ Checkpoint post-6F:
 ```bash
 python3 -c "
 import json
-d = json.load(open('.claude/flow-checkpoint.json'))
+d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 6; d['status'] = 'PASS'; d['matu_mode'] = '$MATU_MODE'
 d['diff_base'] = '$DIFF_BASE'
-json.dump(d, open('.claude/flow-checkpoint.json','w'), indent=2)
+json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
 
@@ -1280,10 +1280,10 @@ Si `FIDELITY_FAIL`:
 FIDELITY_SCORE="${FIDELITY_SCORE:-N/A}"
 python3 -c "
 import json, datetime
-d = json.load(open('.claude/flow-checkpoint.json'))
+d = json.load(open('$CHECKPOINT_FILE'))
 d['fidelity_score'] = '$FIDELITY_SCORE'
 d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
-json.dump(d, open('.claude/flow-checkpoint.json','w'), indent=2)
+json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
 
@@ -1309,13 +1309,13 @@ Round 2+: re-dispatchar SOLO agentes con T1. Máximo 5 rounds.
 
 Pre-dispatch R2+ · typecheck:
 ```bash
-MATU_ROUND=$(python3 -c "import json; print(json.load(open('.claude/flow-checkpoint.json')).get('matu_rounds_done',0))" 2>/dev/null || echo 0)
+MATU_ROUND=$(python3 -c "import json; print(json.load(open('$CHECKPOINT_FILE')).get('matu_rounds_done',0))" 2>/dev/null || echo 0)
 
 TYPECHECK_OUTPUT=$($TYPECHECK_CMD 2>&1); TYPECHECK_EXIT=$?
 echo "$TYPECHECK_OUTPUT" | tail -3
 if [ "$TYPECHECK_EXIT" -ne 0 ]; then
   echo "STOP · typecheck falla post-fixes · arreglar antes de re-dispatch R$(($MATU_ROUND + 1))"
-  python3 -c "import json; open('.claude/session-lock.json','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f .claude/.flow-lock
+  python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f "$FLOW_LOCK"
   exit 1
 fi
 ```
@@ -1329,26 +1329,26 @@ MATU_PASS_BOOL="True"
 
 if ! echo "$MATU_ROUND_N" | grep -qE '^[0-9]+$'; then
   echo "ERROR · MATU_ROUND_N debe ser entero · valor actual: '$MATU_ROUND_N'"
-  python3 -c "import json; open('.claude/session-lock.json','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f .claude/.flow-lock
+  python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f "$FLOW_LOCK"
   exit 1
 fi
 if [ "$MATU_PASS_BOOL" != "True" ] && [ "$MATU_PASS_BOOL" != "False" ]; then
   echo "ERROR · MATU_PASS_BOOL debe ser 'True' o 'False' · valor actual: '$MATU_PASS_BOOL'"
-  python3 -c "import json; open('.claude/session-lock.json','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f .claude/.flow-lock
+  python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f "$FLOW_LOCK"
   exit 1
 fi
 export MATU_FAILED_AGENTS_JSON
 
 python3 << PYEOF
 import json, os
-d = json.load(open('.claude/flow-checkpoint.json'))
+d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 7
 d['matu_rounds_done'] = $MATU_ROUND_N
 d['matu_failed_agents'] = json.loads(os.environ.get('MATU_FAILED_AGENTS_JSON', '[]'))
 d['matu_score_final'] = '$MATU_SCORE_FINAL'
 d['matu_pass'] = $MATU_PASS_BOOL
 d['status'] = 'PASS' if '$MATU_PASS_BOOL' == 'True' else 'IN_PROGRESS'
-json.dump(d, open('.claude/flow-checkpoint.json','w'), indent=2)
+json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 PYEOF
 ```
 
@@ -1362,10 +1362,10 @@ Checkpoint inicio:
 ```bash
 python3 -c "
 import json, datetime
-d = json.load(open('.claude/flow-checkpoint.json'))
+d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 8; d['status'] = 'IN_PROGRESS'
 d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
-json.dump(d, open('.claude/flow-checkpoint.json','w'), indent=2)
+json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
 
@@ -1380,10 +1380,10 @@ Checkpoint cierre PASO 8 (solo en PASS):
 ```bash
 python3 -c "
 import json, datetime
-d = json.load(open('.claude/flow-checkpoint.json'))
+d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 8; d['status'] = 'PASS'
 d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
-json.dump(d, open('.claude/flow-checkpoint.json','w'), indent=2)
+json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
 
@@ -1397,7 +1397,7 @@ TYPECHECK_OUTPUT=$($TYPECHECK_CMD 2>&1); TYPECHECK_EXIT=$?
 echo "$TYPECHECK_OUTPUT" | tail -3
 if [ "$TYPECHECK_EXIT" -ne 0 ]; then
   echo "STOP · typecheck falla pre-commit · no commitear con errores"
-  python3 -c "import json; open('.claude/session-lock.json','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f .claude/.flow-lock
+  python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f "$FLOW_LOCK"
   exit 1
 fi
 grep -rn "console\.log\|debugger" src/ 2>/dev/null && echo "LIMPIAR" || echo "OK"
@@ -1413,7 +1413,7 @@ git add docs/ .claude/BACKLOG.md 2>/dev/null || true
 git diff --cached --stat
 
 # Recovery cross-day
-ROUTER_PLATFORM=${ROUTER_PLATFORM:-$(python3 -c "import json; print(json.load(open('.claude/flow-checkpoint.json')).get('router_platform','$PLATFORM_DEFAULT'))" 2>/dev/null || echo "$PLATFORM_DEFAULT")}
+ROUTER_PLATFORM=${ROUTER_PLATFORM:-$(python3 -c "import json; print(json.load(open('$CHECKPOINT_FILE')).get('router_platform','$PLATFORM_DEFAULT'))" 2>/dev/null || echo "$PLATFORM_DEFAULT")}
 if [ "$ROUTER_PLATFORM" = "web" ]; then
   PLATFORM_PREFIX="feat(web)"
 elif [ "$ROUTER_PLATFORM" = "both" ]; then
@@ -1423,11 +1423,11 @@ else
 fi
 
 # Leer del checkpoint
-MATU_MODE_COMMIT=$(python3 -c "import json; print(json.load(open('.claude/flow-checkpoint.json')).get('matu_mode','canonical'))" 2>/dev/null || echo "$MATU_MODE")
-MATU_SCORE_COMMIT=$(python3 -c "import json; print(json.load(open('.claude/flow-checkpoint.json')).get('matu_score_final','?'))" 2>/dev/null || echo "?")
-MATU_ROUNDS_COMMIT=$(python3 -c "import json; print(json.load(open('.claude/flow-checkpoint.json')).get('matu_rounds_done',1))" 2>/dev/null || echo "1")
-MOCKUP_COMMIT=$(python3 -c "import json; print(json.load(open('.claude/flow-checkpoint.json')).get('mockup_ganador','none'))" 2>/dev/null || echo "none")
-FIDELITY_SCORE_COMMIT=$(python3 -c "import json; print(json.load(open('.claude/flow-checkpoint.json')).get('fidelity_score','N/A'))" 2>/dev/null || echo "N/A")
+MATU_MODE_COMMIT=$(python3 -c "import json; print(json.load(open('$CHECKPOINT_FILE')).get('matu_mode','canonical'))" 2>/dev/null || echo "$MATU_MODE")
+MATU_SCORE_COMMIT=$(python3 -c "import json; print(json.load(open('$CHECKPOINT_FILE')).get('matu_score_final','?'))" 2>/dev/null || echo "?")
+MATU_ROUNDS_COMMIT=$(python3 -c "import json; print(json.load(open('$CHECKPOINT_FILE')).get('matu_rounds_done',1))" 2>/dev/null || echo "1")
+MOCKUP_COMMIT=$(python3 -c "import json; print(json.load(open('$CHECKPOINT_FILE')).get('mockup_ganador','none'))" 2>/dev/null || echo "none")
+FIDELITY_SCORE_COMMIT=$(python3 -c "import json; print(json.load(open('$CHECKPOINT_FILE')).get('fidelity_score','N/A'))" 2>/dev/null || echo "N/A")
 
 git commit -m "$PLATFORM_PREFIX: $COMPONENTE · /matu $MATU_MODE_COMMIT ${MATU_SCORE_COMMIT}avg · ${MATU_ROUNDS_COMMIT} rounds
 
@@ -1439,10 +1439,10 @@ Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
 
 Liberar locks + loguear costo real:
 ```bash
-python3 -c "import json; open('.claude/session-lock.json','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))"
-rm -f .claude/.flow-lock
+python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))"
+rm -f "$FLOW_LOCK"
 
-MATU_ROUNDS=$(python3 -c "import json; d=json.load(open('.claude/flow-checkpoint.json')); print(d.get('matu_rounds_done',1))" 2>/dev/null || echo "1")
+MATU_ROUNDS=$(python3 -c "import json; d=json.load(open('$CHECKPOINT_FILE')); print(d.get('matu_rounds_done',1))" 2>/dev/null || echo "1")
 python3 -c "
 import json, datetime
 entry = {
@@ -1455,7 +1455,7 @@ entry = {
   'matu_rounds_reales': int('$MATU_ROUNDS') if '$MATU_ROUNDS'.isdigit() else 1,
   'commit': '$(git rev-parse --short HEAD 2>/dev/null || echo unknown)'
 }
-with open('.claude/atlas-proxy-log.jsonl', 'a') as f:
+with open('$ATLAS_DIR/atlas-proxy-log.jsonl', 'a') as f:
     f.write(json.dumps(entry) + '\n')
 "
 ```
@@ -1465,7 +1465,7 @@ Push + merge (automático si limpio · STOP si CRITICAL_TOUCHED):
 CURRENT_BRANCH=$(git branch --show-current)
 git fetch origin main 2>/dev/null || echo "WARN · git fetch falló"
 
-DIFF_BASE_P9=$(python3 -c "import json; print(json.load(open('.claude/flow-checkpoint.json')).get('diff_base',''))" 2>/dev/null || echo "")
+DIFF_BASE_P9=$(python3 -c "import json; print(json.load(open('$CHECKPOINT_FILE')).get('diff_base',''))" 2>/dev/null || echo "")
 DIFF_BASE_P9=${DIFF_BASE_P9:-$(git merge-base HEAD origin/main 2>/dev/null || echo "HEAD~1")}
 
 CRITICAL_FILES=$(git diff --name-only "$DIFF_BASE_P9" 2>/dev/null | grep -E "$CRITICAL_PATHS_REGEX")
@@ -1474,7 +1474,7 @@ if [ -n "$CRITICAL_FILES" ]; then
   DESTRUCTIVO=$(git diff "$DIFF_BASE_P9" 2>/dev/null | grep -E "^\+.*(DROP TABLE|DROP COLUMN|DELETE FROM|TRUNCATE)" | grep -v "^\+.*--" | wc -l | tr -d ' ')
   if [ "$DESTRUCTIVO" -gt 0 ]; then
     echo "STOP IRREVERSIBLE · operación destructiva detectada · requiere OK explícito"
-    python3 -c "import json; open('.claude/session-lock.json','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f .claude/.flow-lock
+    python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f "$FLOW_LOCK"
     exit 1
   fi
   # No destructivo → Security Council
@@ -1487,7 +1487,7 @@ if [ -n "$CRITICAL_FILES" ]; then
 fi
 
 # Recovery cross-day: usar branch del checkpoint si disponible
-CHECKPOINT_BRANCH=$(python3 -c "import json; print(json.load(open('.claude/flow-checkpoint.json')).get('branch_name',''))" 2>/dev/null || echo "")
+CHECKPOINT_BRANCH=$(python3 -c "import json; print(json.load(open('$CHECKPOINT_FILE')).get('branch_name',''))" 2>/dev/null || echo "")
 if [ -n "$CHECKPOINT_BRANCH" ] && git show-ref --quiet "refs/heads/$CHECKPOINT_BRANCH"; then
   CURRENT_BRANCH="$CHECKPOINT_BRANCH"
 fi
@@ -1609,7 +1609,7 @@ Los 3 deben dar VEREDICTO=PASS y DESTRUCTIVO=NO.
 ## RECOVERY (sesión cortada)
 
 ```bash
-cat "$PROJECT_REPO/.claude/flow-checkpoint.json"
+cat "$CHECKPOINT_FILE"
 ```
 
 | checkpoint paso | status | retomar desde |
@@ -1637,7 +1637,7 @@ PROJECT_REPO=$(python3 -c "import json; print(json.load(open('$ATLAS_DIR/project
 TYPECHECK_CMD=$(python3 -c "import json; print(json.load(open('$ATLAS_DIR/project.json'))['typecheck_cmd'])" 2>/dev/null || echo "npm run typecheck")
 CURRENT_YEAR=$(date +%Y)
 PREV_YEAR=$((CURRENT_YEAR - 1))
-CHECKPOINT_FILE="$PROJECT_REPO/.claude/flow-checkpoint.json"
+CHECKPOINT_FILE="$ATLAS_DIR/flow-checkpoint.json"
 BACKLOG_FILE="$PROJECT_REPO/.claude/BACKLOG.md"
 
 # Restaurar variables de sesión
