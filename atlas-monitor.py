@@ -267,4 +267,43 @@ if not entries:
     print(f"\n  {YELLOW}ATENCION: sin logs de ejecucion ATLAS{RESET}")
     print(f"  Verificar que el proxy-agent esta logueando en atlas-proxy-log.jsonl")
 
+# 8. Innovation Pipeline
+header("8. Innovation Pipeline (innovation-backlog.json)")
+innov_path = PROJECT_DIR / "innovation-backlog.json"
+innov = load_json(innov_path)
+if not innov:
+    info(f"Sin innovation-backlog · ejecutar /atlas innovate para generar ideas")
+else:
+    ideas = innov.get("ideas", [])
+    sector = innov.get("sector", "?")
+    generated = innov.get("generated_at", "?")[:10]
+    total_i = len(ideas)
+    propuestas   = [i for i in ideas if i.get("estado") == "propuesta"]
+    en_backlog   = [i for i in ideas if i.get("estado") == "en_backlog"]
+    implementadas = [i for i in ideas if i.get("estado") == "implementada"]
+    print(f"\n  Sector: {sector}  |  Generado: {generated}  |  Total ideas: {total_i}")
+    print(f"  Propuestas: {len(propuestas)}  |  En BACKLOG: {len(en_backlog)}  |  Implementadas: {len(implementadas)}")
+
+    # Breakdown por esfuerzo (propuestas)
+    s_ideas = [i for i in propuestas if i.get("esfuerzo") == "S"]
+    m_ideas = [i for i in propuestas if i.get("esfuerzo") == "M"]
+    l_ideas = [i for i in propuestas if i.get("esfuerzo") == "L"]
+    print(f"  Pendientes: S(< 4h)={len(s_ideas)}  M(1-3d)={len(m_ideas)}  L(sprint)={len(l_ideas)}")
+
+    # Top 5 por impacto
+    IMPACTO_ORDER = {"alto": 0, "medio": 1, "bajo": 2}
+    top = sorted(propuestas, key=lambda x: IMPACTO_ORDER.get(x.get("impacto","bajo"), 9))[:5]
+    if top:
+        print(f"\n  {GREEN}Top ideas pendientes:{RESET}")
+        for idea in top:
+            iid     = idea.get("id", "?")
+            titulo  = idea.get("titulo", "?")[:40]
+            tipo    = idea.get("tipo", "?")
+            esfuerzo= idea.get("esfuerzo", "?")
+            impacto = idea.get("impacto", "?")
+            fuente  = idea.get("fuente", "?")[:20]
+            print(f"    {iid}  [{tipo}] {titulo:<40} {esfuerzo} · {impacto} · {fuente}")
+    if implementadas:
+        ok(f"  {len(implementadas)} idea(s) ya implementadas")
+
 print(f"\n{BOLD}{'='*56}{RESET}\n")
