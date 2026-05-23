@@ -1,0 +1,4 @@
+projects/
+*.bak.*
+*.motor-bak.*
+.DS_Store
