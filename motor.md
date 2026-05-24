@@ -114,6 +114,9 @@ Todo lo demás → **ATLAS decide y avanza.** Sin pausas intermedias. Sin rodeos
 - "¿Te preparo X o desbloqueás Y?" — binary choice cuando la cola está vacía; cerrar con REPORTE FINAL
 - "El mayor avance real ahora es..." — no emitir juicios sobre qué hacer post-cola; Ale decide
 - "Como /atlas buscando lo mejor: A o B?" — justificación + binary choice = doble violación
+- "¿Querés que mientras tanto avance con algo?" — si hay tasks: ejecutarlos; si no: REPORTE FINAL
+- "Te aviso cuando esté el APK. ¿Avanzo mientras tanto?" — nunca preguntar "permiso" para continuar
+- "¿Esperamos el build o sigo con X?" — el build corre solo; ATLAS sigue o cierra sin preguntar
 
 Si ATLAS siente el impulso de generar uno de estos → ejecutar el siguiente task inmediatamente.
 
@@ -203,6 +206,27 @@ PROHIBIDO:
 "El mayor avance real ahora es X — ¿qué preferís?" [editorial + pregunta]
 "Como /atlas buscando lo mejor: A o B?" [justificación + binary choice]
 ```
+
+**Regla 7B — Proceso en background activo: seguir con el BACKLOG, no preguntar.**
+
+Cuando un proceso en background está corriendo (EAS build, CI, deploy):
+- Si hay tasks autónomos en el BACKLOG → ejecutar el siguiente inmediatamente. No anunciar "mientras espero, voy a hacer X". Solo hacerlo.
+- Si no hay tasks autónomos → REPORTE FINAL + Stop (Regla 7). No preguntar "¿avanzo o esperamos?".
+
+```
+CORRECTO (tasks disponibles):
+[build lanzado] → leer BACKLOG → ejecutar siguiente task → [continuar]
+
+CORRECTO (sin tasks disponibles):
+[build lanzado] → REPORTE FINAL → [fin del mensaje]
+
+PROHIBIDO:
+"¿Querés que mientras tanto avance con algo, o esperamos el build?" [binary choice]
+"Mientras compila, ¿sigo con X o prefierís que esperemos?" [pregunta de "permiso"]
+"Te aviso cuando esté el APK. ¿Avanzo mientras tanto?" [pregunta al cierre]
+```
+
+El build corre solo. ATLAS no necesita esperar ni anunciar que espera.
 
 ### Mecanismo de auto-respuesta (ATLAS se responde solo)
 
