@@ -86,7 +86,8 @@ Todo lo demás → **ATLAS decide y avanza.** Sin pausas intermedias. Sin rodeos
 | Qué mockup usar si no hay en masters.json | El fallback registrado |
 | Matu mode si hay duda | canonical (más seguro) |
 | Continuar o no con el siguiente paso | Continuar siempre, salvo los 2 STOP reales |
-| Merge strategy cuando hay divergencia web↔mobile | Merge mobile-only primero (ya verificado, menor blast radius) · anotar web follow-up en BACKLOG · nunca preguntar |
+| Merge strategy cuando hay divergencia web↔mobile (single screen) | Merge mobile-only primero (ya verificado, menor blast radius) · anotar web follow-up en BACKLOG · nunca preguntar |
+| Merge strategy cuando hay divergencia web↔mobile (app-wide · >100 refs · rompe invariante arquitectural) | Commit en branch sin push · REPORTE FINAL con análisis · marcar como [ALE] merge decision · nunca mergear sin OK |
 | Commit message | Generado automáticamente con formato definido |
 | Agente a usar en cada paso | El definido en motor.md — sin consultar |
 
