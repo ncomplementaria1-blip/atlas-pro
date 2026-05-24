@@ -1282,9 +1282,15 @@ SPEC_FILE="$PROJECT_REPO/.claude/implementation-spec-$COMPONENTE.md"
 Dispatchar 1 agente `Frontend Developer`. Prompt:
 
 ```
-Actuás como Ingeniero de Software Principal de Front-End y Diseñador UI/UX Técnico especializado en Paridad de Interfaz Dinámica para Aplicaciones Nativas/Móviles.
+[SISTEMA DE EXTRACCIÓN DE SPEC - EJECUCIÓN OBLIGATORIA]
+PROHIBICIÓN ABSOLUTA DE ALUCINACIÓN, SIMPLIFICACIÓN, APROXIMACIÓN O PLACEHOLDERS.
 
-OBJETIVO MANDATORIO: lograr PARIDAD TOTAL PIXEL-POR-PIXEL entre el mockup master y la implementación.
+Actuás como un Compilador Front-End Humano y Diseñador de Píxel Perfecto con nivel de atención hiper-enfocado. Tu único objetivo es extraer con fidelidad matemática y visual del 100% las especificaciones de la sección solicitada de la maqueta maestra. No tenés permiso para interpretar, aproximar, resumir o "normalizar" ningún valor. Si el diseño usa padding: 23px, la spec dice 23px.
+
+REGLAS DE EXTRACCIÓN INNEGOCIABLES:
+1. REGLA DE 1-PIXEL: Si no podés leer el valor exacto del HTML → anotarlo como [REQUIERE MEDICIÓN MANUAL] y continuar. Nunca inventar un valor "razonable".
+2. PROHIBICIÓN DE PLACEHOLDERS: Está estrictamente prohibido usar "[valor aproximado]", "[similar a]", o cualquier aproximación. Cada item debe ser el valor literal del HTML.
+3. AISLAMIENTO DE CONTEXTO: Extraer los estilos del componente tal como aparecen — sin asumir que valores heredados del parent se aplican. Listar explícitamente qué hereda y qué sobreescribe.
 
 MASTER DE REFERENCIA: [$MOCKUP_SOURCE] — leer completo con Read tool antes de continuar.
 COMPONENTE A AISLAR: [$COMPONENTE]
@@ -1307,22 +1313,22 @@ INSTRUCCIONES:
    - [ ] [elemento]: flex-direction · justify-content · align-items · gap · position · top/left/right/bottom
 
    COLORES Y BORDES (hex exactos — cero aproximación):
-   - [ ] Background: [#hex exacto]
-   - [ ] Surface/card: [#hex exacto]
-   - [ ] Texto principal: [#hex exacto]
-   - [ ] Texto secundario: [#hex exacto]
-   - [ ] Acento: [#hex exacto]
+   - [ ] Background: [#hex exacto del HTML]
+   - [ ] Surface/card: [#hex exacto del HTML]
+   - [ ] Texto principal: [#hex exacto del HTML]
+   - [ ] Texto secundario: [#hex exacto del HTML]
+   - [ ] Acento: [#hex exacto del HTML]
    - [ ] border-radius: [valor exacto]
    - [ ] box-shadow / elevation: [valor exacto]
 
    COPY (literal — cero parafraseo):
-   - [ ] [elemento]: "[texto exacto tal como aparece en el HTML]"
+   - [ ] [elemento]: "[texto exacto tal como aparece en el HTML — ni una coma de diferencia]"
 
    INTERACCIONES:
    - [ ] [elemento]: [trigger] → [resultado visual exacto]
 
    COMPONENTES LEGACY A DESTRUIR:
-   - [ ] [estilo/clase/estructura vieja] → reemplazar con [nuevo]
+   - [ ] [estilo/clase/estructura vieja] → DESTRUIR Y REEMPLAZAR con [nuevo]
 
 3. JERARQUÍA DE COMPONENTES:
    [árbol indentado tal como aparece en el HTML · sin inventar]
@@ -1330,9 +1336,9 @@ INSTRUCCIONES:
 REGLAS ABSOLUTAS:
 - Si no está en el HTML → no lo listés
 - Cero interpretación, cero creatividad, cero "similar a"
-- Cada item debe ser verificable independientemente
+- Cada item debe ser verificable independientemente contra el HTML fuente
 - Si la sección ya coincide al 100% → certificarlo explícitamente
-- Si hay diferencia de 1px → listar la discrepancia
+- Si hay diferencia de 1px → listar la discrepancia exacta
 ```
 
 ```bash
@@ -1521,9 +1527,15 @@ fi
 Si `$SPEC_FILE` existe → dispatchar 1 agente `Frontend Developer`. Prompt:
 
 ```
-Actuás como Ingeniero de Software Principal de Front-End especializado en Paridad de Interfaz Dinámica.
+[SISTEMA DE CONTROL DE CALIDAD COMPILATORIO - EJECUCIÓN OBLIGATORIA]
+PROHIBICIÓN ABSOLUTA DE ALUCINACIÓN, SIMPLIFICACIÓN O USO DE PLACEHOLDERS.
 
-PROBLEMA: se reportó implementación completa pero pueden existir discrepancias visuales con el master. Tu misión: verificación pixel-by-pixel y corrección total.
+Actuás como un Compilador Front-End Humano y Diseñador de Píxel Perfecto con nivel de atención hiper-enfocado. Tu único objetivo es verificar con fidelidad matemática y visual del 100% la implementación contra la maqueta maestra. No tenés permiso para optimizar, reinterpretar, resumir o "mejorar" el diseño. Si el diseño aprobado usa padding de 23px, la implementación DEBE usar 23px.
+
+REGLAS DE VERIFICACIÓN INNEGOCIABLES (SOBREGUARDAS):
+1. REGLA DE DETENCIÓN POR 1-PIXEL: Si encontrás una diferencia en tipografía, line-height, letter-spacing, padding, margin, border-radius, color (hex/rgba), flex-gap o z-index — tu obligación es DESTRUIR el código antiguo y REEMPLAZARLO por el clon exacto de la maqueta. "Reescribir" no alcanza. Destruir y reemplazar.
+2. PROHIBICIÓN DE COMENTARIOS LAZYS: Está estrictamente prohibido usar "// ... resto del código", "// código anterior", o cualquier placeholder. Debés escribir cada línea del componente de arriba a abajo. Si cortás el código, la entrega se considera inválida y fallida.
+3. AISLAMIENTO DE CONTEXTO NATIVO: Ignorar cualquier clase global heredada, StyleSheet externo, o tema que interfiera con el componente. Si un estilo heredado interfiere con la paridad → sobreescribir o eliminar por completo. Listar explícitamente qué heredás y qué sobreescribís.
 
 MASTER DE REFERENCIA: [$MOCKUP_SOURCE] — leer con Read tool.
 SPEC EXTRAÍDA: [contenido de $SPEC_FILE]
@@ -1531,38 +1543,61 @@ CÓDIGO IMPLEMENTADO: [archivos modificados desde git diff $DIFF_BASE — leer c
 
 PROTOCOLO DE AUDITORÍA EN 3 FASES:
 
-[FASE 1] TABLA DE MAPEO (entregar esto primero):
-| Sub-componente | Estado en Master | Estado en Código | Diagnóstico |
-|---|---|---|---|
-| [nombre] | [valor exacto del master] | [valor real en código] | MATCH / DISCREPANCIA: [detalle] |
+[FASE 1] MATRIZ DE AUDITORÍA MICROSCÓPICA (entregar esto primero):
+| Elemento UI | Propiedad CSS | Valor en Maqueta Master | Valor en Código | Estado |
+|:---|:---|:---|:---|:---|
+| [elemento] | [propiedad] | [valor exacto master] | [valor real en código] | MATCH / MISMATCH |
 
-Cubrir: Tipografía · Dimensiones · Flexbox/Grid · Colores · Copy · Bordes · Sombras · Interacciones
+Cubrir cada sub-elemento: Tipografía · Dimensiones · Flexbox/Grid · Colores (hex exactos) · Copy (string literal) · Bordes · Sombras · Interacciones
+REGLA DE STOP INMEDIATO: Al encontrar el PRIMER MISMATCH → detener la tabla, escribir "STOP — MISMATCH en [elemento]:[propiedad] — corrigiendo ahora" y emitir el código corregido completo para ese elemento. Solo entonces continuar con el siguiente item de la tabla. No acumular mismatches para corregir después.
+La tabla completa debe estar llena al terminar — pero la corrección ocurre item por item, no al final.
 
-[FASE 2] CÓDIGO CORREGIDO:
-- Entregar el/los archivos COMPLETOS con paridad pixel-by-pixel absoluta
-- PROHIBIDO: placeholders, truncación, "// resto igual", "// código anterior"
-- Si una sección ya coincide al 100% → certificarlo explícitamente en texto
-- Si hay diferencia de 1px → reescribir esa sección con la corrección exacta
+[FASE 2] CÓDIGO FUENTE DE PARIDAD ABSOLUTA (100% COMPLETO):
+- Entregar el/los archivos COMPLETOS con paridad pixel-by-pixel absoluta — de principio a fin
+- PROHIBIDO: placeholders, truncación, "// resto igual", "// código anterior", "// el resto permanece"
+- Si cortás el código → la entrega se considera FALLIDA automáticamente
+- Si una sección ya coincide al 100% → certificarlo explícitamente ("Líneas X-Y: MATCH certificado")
+- Si hay diferencia de 1px → DESTRUIR la sección y reemplazarla con el clon exacto del master
 
-[FASE 3] CHECKLIST DE VERIFICACIÓN:
-- [ ] Tipografía: family · weight · size · line-height · letter-spacing
-- [ ] Espaciados: margin · padding · gap (valores exactos)
-- [ ] Colores: todos los hex verificados contra master
-- [ ] Grid/Flex: dirección · justify · align · overflow
-- [ ] Copy: cada string literal verificado
-- [ ] Componentes legacy: ninguno remanente
+[FASE 3] JURAMENTO DE VERIFICACIÓN VISUAL:
+Completar los siguientes items con [x] (no [ ]) — cada uno requiere verificación real, no automática:
+- [x o FAIL] Tipografía: family · weight · size · line-height · letter-spacing — todos verificados contra master
+- [x o FAIL] Espaciados: margin · padding · gap — valores exactos verificados
+- [x o FAIL] Colores: todos los hex verificados carácter por carácter contra master
+- [x o FAIL] Grid/Flex: dirección · justify · align · overflow — verificados
+- [x o FAIL] Copy: cada string literal verificado carácter por carácter
+- [x o FAIL] Legacy: ningún estilo heredado interfiere con el componente
+- [x o FAIL] Herencia CSS: confirmado que no hay override no-intencional desde parent
 
-OUTPUT FINAL OBLIGATORIO:
-FIDELITY_SCORE: N/[total items]
-FIDELITY_STATUS: PASS | FAIL
-Items con discrepancia: [lista o "ninguno"]
+Para cada item del JURAMENTO, citar la evidencia explícita:
+- "[x] Tipografía — fontFamily: 'PlusJakartaSans-SemiBold' · línea 47 del código · master línea 312 del HTML"
+- No se acepta "[x]" sin cita de línea. Un "[x]" sin evidencia se considera FAIL automáticamente.
+
+Escribe luego esta declaración literal completada:
+"JURAMENTO: Leí el HTML de [$MOCKUP_SOURCE] sección [$COMPONENTE] con Read tool. Leí el código implementado con Read tool. Comparé propiedad por propiedad con evidencia de línea. Diferencias encontradas: [N]. Todas corregidas con código COMPLETO sin truncación. FIDELITY_STATUS: [PASS/FAIL]."
+
+OUTPUT FINAL:
+FIDELITY_SCORE: N/[total items del JURAMENTO]
+FIDELITY_STATUS: PASS (todos [x] con evidencia) | FAIL (algún FAIL o [x] sin evidencia)
+Items con discrepancia: [lista con líneas exactas, o "ninguno"]
 ```
 
-Si `FIDELITY_FAIL`:
-1. FAZM aplica los fixes de los items ✗ directamente al código (código completo · sin placeholders)
-2. Re-corre typecheck
-3. Re-corre 6G una vez (máximo 2 intentos)
-4. Si sigue FAIL tras 2 intentos → escalar con tabla de items irresolubles + causa raíz
+**IMPORTANTE: Este es el agente VERIFICADOR — no el implementador. Leé el código existente y verificá. No implementés desde cero.**
+
+**Protocolo de corrección post-verificación:**
+
+Si `FIDELITY_STATUS=FAIL`:
+
+1. **STOP absoluto en el primer MISMATCH.** No continuar verificando los siguientes items. Corregir el primero AHORA con código completo (sin placeholders) y luego continuar con la verificación del siguiente.
+
+2. Dispatch de un **segundo agente independiente** `Frontend Developer` para re-verificar (no el mismo agente que corrigió — bias de confirmación):
+```
+Sos el SEGUNDO VERIFICADOR — no el implementador. Leé [$MOCKUP_SOURCE] sección [$COMPONENTE] con Read tool. Leé el código actual con Read tool. Completá la MATRIZ DE AUDITORÍA MICROSCÓPICA independientemente del primer verificador. No leas el output del primer verificador antes de completar tu propia matriz. Reportá FIDELITY_STATUS con JURAMENTO + evidencia de líneas.
+```
+
+3. Si el segundo verificador también emite PASS → continuar a PASO 7.
+4. Si el segundo verificador emite FAIL → aplicar fixes + repetir el ciclo (máximo 3 iteraciones totales).
+5. Si sigue FAIL tras 3 iteraciones → STOP · escalar con tabla completa de items irresolubles + causa raíz + diff exacto.
 
 ```bash
 # FAZM (interno): FIDELITY_SCORE=N/total · si PASS → continuar a PASO 7 · si FAIL → aplicar fixes en silencio
