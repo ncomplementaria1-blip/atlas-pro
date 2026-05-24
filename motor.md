@@ -396,6 +396,7 @@ Declarar PASS sin haber auditado el inventario completo es el error más costoso
 - "Confirmo la pantalla completa antes de cerrar." — sin el inventario hecho primero
 - "/matu light PASS 9.2 (sobre el orbe base; v5 es refinamiento visual hacia el master)." — matu sobre elemento parcial, no pantalla
 - "In-scope audit: N/N MATCH" — el qualifier "in-scope" reduce el universo de auditoría: si solo auditaste los elementos que cambiaste, los demás siguen sin verificar. PASS solo es válido sobre el inventario COMPLETO de la pantalla, no sobre el subset del PR/fix actual.
+- "Master-render side-by-side bloqueado: el browser ya está corriendo (no lo mato)" — excusa técnica para saltar la verificación visual real. El visual gate NO se puede saltar por ninguna razón técnica. Alternativas obligatorias: nueva ventana incognito · render en-file del HTML master · screenshot emulador + screenshot abierto en viewer · cualquier método que permita comparación visual real. Si ninguna alternativa funciona → declarar explícitamente "VISUAL_GATE: PENDIENTE · requiere OK manual de Ale" y NO declarar PASS.
 
 **PASS válido** requiere los 3 criterios simultáneos:
 1. INVENTARIO INDEPENDIENTE lista N elementos (todos los visibles en el master)
