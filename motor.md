@@ -975,17 +975,8 @@ ARCH_FILE="$ATLAS_DIR/product-architecture.md"
 # FAZM: escribir output del agente en $ARCH_FILE
 ```
 
-Si `MODO_TOTAL=yes` → continuar directo a 1B-2 sin mostrar ni pausar. ATLAS elige la arquitectura generada.
-
-Si `MODO_TOTAL=no` → mostrar al usuario y esperar "ok" o correcciones antes de 1B-2:
-```
-ATLAS · Arquitectura lista — [N screens · M flujos]
-
-[contenido de product-architecture.md]
-
-¿Algo que cambiar? → decime qué. ¿Todo bien? → "ok" y genero el master completo.
-```
-Si el usuario pide cambios → aplicar y continuar. Si dice "ok" → ir a 1B-2.
+Continuar directo a 1B-2 sin mostrar ni pausar. ATLAS elige la arquitectura generada y avanza.
+# (MODO_TOTAL=no eliminado — violaba silencio hasta PASO 9 · feedback de arquitectura va por /matu post-implementación)
 
 ### 1B-2 · Full master HTML
 
@@ -1348,6 +1339,16 @@ REGLAS ABSOLUTAS:
 # FAZM: escribir output del agente en $SPEC_FILE
 SPEC_ITEMS=$(grep -c '^\- \[ \]' "$SPEC_FILE" 2>/dev/null || echo "0")
 echo "SPEC EXTRACTION COMPLETO · $SPEC_ITEMS items · $SPEC_FILE"
+
+# Checkpoint 5A — permite recovery si la sesión se corta post-spec pre-implementación
+python3 -c "
+import json, datetime
+d = json.load(open('$CHECKPOINT_FILE'))
+d['paso'] = '5A'; d['status'] = 'PASS'
+d['spec_file'] = '$SPEC_FILE'; d['spec_items'] = $SPEC_ITEMS
+d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
+json.dump(d, open('$CHECKPOINT_FILE', 'w'), indent=2)
+"
 ```
 
 FAZM (interno): spec en `$SPEC_FILE` · `$SPEC_ITEMS` items · continuar a PASO 5 con esta lista como input obligatorio al implementador.
