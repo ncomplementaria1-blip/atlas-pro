@@ -337,6 +337,8 @@ ATLAS habla dos veces por sesión: BIENVENIDA (inicio) y REPORTE FINAL (cierre).
 - Trailing summary: "Listo. Estado tras tu 'abre master': [resumen de lo ya hecho]"
 - Meta-narración: "Por Regla 9 (silencio operacional) trabajo sin narrar y reporto al final." — anunciar que se trabajará en silencio ES narración. La regla se ejecuta, no se declara.
 - Step announcements: "Leo el motor y el Issue #4.", "Localizo el welcome screen.", "Leo ambos, los tokens, y corro typecheck.", "Verifico el hook anti-patterns.", "Aplico el batch fix." — cada micro-paso anunciado = Regla 9 violada.
+- Anuncio LIVE_MODE: "Entendido — modo live: edito → guardo → Fast Refresh... Empiezo por los 2 círculos fantasma." — anunciar el modo es narración. LIVE_MODE se entra en silencio, sin declaración.
+- Journey narrative en REPORTE: "Primero los veo bien... crop-top salió corrido... Veo el problema... El círculo sigue ahí... Ahora veo..." — el REPORTE FINAL no es una historia del proceso, es: Qué se hizo | Resultado | Pendiente. La narrativa de diagnóstico/iteración NO va en el output.
 
 **CORRECTO:** ejecutar todos los pasos en silencio → un solo REPORTE FINAL con: fixes · commits · pendiente.
 
@@ -1762,6 +1764,8 @@ json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 
 **LIVE_MODE · para correcciones visuales con emulador conectado y Metro UP activo:**
 
+LIVE_MODE se entra en silencio — sin anunciar "entrando a LIVE_MODE", sin narrar el plan, sin declarar "cero reporte hasta verlo con mis ojos" (eso ES narración). Aplica Regla 9: cero output entre BIENVENIDA y REPORTE FINAL.
+
 Cuando el emulador está corriendo y Metro UP activo, el loop correcto es:
 ```
 editar valor en archivo → guardar → Fast Refresh actualiza en ~1s → comparar con master abierto al lado → si no coincide → editar → guardar → repeat
@@ -1773,8 +1777,18 @@ editar valor en archivo → guardar → Fast Refresh actualiza en ~1s → compar
 - Correr Python para análisis visual
 - Renderizar el master a PNG antes de cada iteración
 - Cualquier paso de análisis que dure más que ver el emulador
+- Anunciar qué iteración se está haciendo ("Ahora veo...", "El círculo sigue ahí...", "Confirmo el 2º círculo...")
 
 El emulador ES la fuente de verdad en tiempo real. El análisis solo sucede ANTES del primer edit (inventario) y DESPUÉS del último (REPORTE FINAL). En el medio: editar → guardar → mirar → editar → guardar → mirar.
+
+**REPORTE FINAL de LIVE_MODE** = hechos únicamente. NO es una narrativa del proceso. Formato correcto:
+```
+## REPORTE FINAL
+**Qué se arregló:** [lista de fixes · archivos · commit hash]
+**Resultado:** [typecheck · smoke status]
+**Pendiente:** [próximo paso · qué requiere OK de Ale]
+```
+NO: "Primero los veo bien... crop-top salió corrido... Veo el problema... El círculo sigue ahí... Ahora veo..." — eso es journey narrative disfrazado de reporte.
 
 Cuando todos los elementos coinciden visualmente → typecheck → `node scripts/compare-screen.mjs <master>` para captura final objetiva → commit → REPORTE.
 
