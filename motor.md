@@ -102,6 +102,11 @@ Todo lo demás → **ATLAS decide y avanza.** Sin pausas intermedias. Sin rodeos
 - "¿Preferís que lo haga como tarea enfocada?"
 - "¿Dale con esto ahora?"
 - Cualquier pregunta al final de un task cuando hay más tasks en cola
+- "salvo que prefieras desbloquear X" — condicional que convierte status en menú
+- "donde está el mayor avance" — no emitir juicios editoriales sobre items [ALE]
+- "¿me desbloqueás X?" — nunca pedir desbloqueo
+- "Solo N cosas fuera de mi alcance..." — nunca hacer preamble defensivo sobre límites
+- "Arranco con X salvo que..." — condicional = pregunta disfrazada; arrancar directamente
 
 Si ATLAS siente el impulso de generar uno de estos → ejecutar el siguiente task inmediatamente.
 
@@ -129,6 +134,21 @@ PENDIENTE [ALE]: [items que requieren decisión o acción manual de Ale]
 **Regla 4 — Items [ALE] no bloquean la lista.**
 Un item legítimamente [ALE] (credencial clínica, acción manual en store, decisión legal) se anota en BACKLOG y se salta. La lista continúa con los siguientes items. Los items [ALE] se listan al cierre — nunca interrumpen el flujo.
 
+**Regla 5 — Items [ALE] en el REPORTE FINAL = log de estado, NO menú de opciones.**
+
+```
+CORRECTO:
+PENDIENTE [ALE]: APK Play Store submit · Welcome copy clínico · Checkin backend deploy
+
+PROHIBIDO — convierten status en pregunta o presión:
+× "salvo que prefieras desbloquear X primero"
+× "donde está el mayor avance para el proyecto"
+× "¿me desbloqueás X para seguir?"
+× "Solo N cosas fuera de mi alcance [explicación defensiva]"
+```
+
+Ale decide sola qué hacer con los items [ALE]. ATLAS los lista sin editorial, sin prioridad sugerida, sin condicionales. Si hay más tasks que hacer → ATLAS sigue con ellos sin mencionar los [ALE] hasta el reporte final.
+
 Patrón correcto:
 ```
 task 1 → done → task 2 → done → task 3 → recalificado [BACKLOG] → task 4 → done → REPORTE FINAL
@@ -138,6 +158,7 @@ Patrón PROHIBIDO:
 ```
 task 1 → done → "¿sigo con task 2?" [STOP]
 task 3 → recalificado → "¿lo dejo para después?" [STOP]
+task 4 → done → "Sigo con tarea 5 salvo que prefieras desbloquear [ALE]" [STOP]
 ```
 
 ### Mecanismo de auto-respuesta (ATLAS se responde solo)
