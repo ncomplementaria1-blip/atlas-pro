@@ -1678,20 +1678,37 @@ if [ "$ROUTER_PLATFORM" = "mobile" ]; then
     ls "/tmp/paridad-$COMPONENTE.png" &>/dev/null && \
     PARIDAD_EVIDENCIA="/tmp/paridad-$COMPONENTE.png"
   if [ -z "$PARIDAD_EVIDENCIA" ]; then
-    echo "WARN · simulator no disponible · verificación visual manual requerida"
-    PARIDAD_EVIDENCIA="manual-required"
+    # VISUAL GATE FALLBACK: screenshot no disponible — intentar alternativas antes de bloquear
+    # 1. Intentar adb screenshot (Android emulador)
+    adb exec-out screencap -p > "/tmp/paridad-$COMPONENTE-adb.png" 2>/dev/null && \
+      [ -s "/tmp/paridad-$COMPONENTE-adb.png" ] && \
+      PARIDAD_EVIDENCIA="/tmp/paridad-$COMPONENTE-adb.png"
+    # 2. Si adb tampoco → BLOQUEANTE DURO: push prohibido
+    if [ -z "$PARIDAD_EVIDENCIA" ]; then
+      echo "VISUAL_GATE: BLOQUEADO · sin screenshot real del emulador/device · push PROHIBIDO"
+      echo "ACCIÓN REQUERIDA: capturar screenshot manualmente y comparar con master antes de pushear"
+      VISUAL_GATE_STATUS="BLOCKED"
+    else
+      VISUAL_GATE_STATUS="PASS_ADB"
+    fi
+  else
+    VISUAL_GATE_STATUS="PASS_SIMCTL"
   fi
 else
   TARGET_FILE=$(git diff --name-only "$DIFF_BASE" 2>/dev/null | grep -E "\.(tsx|ts|jsx|js|css)$" | head -1)
   PARIDAD_EVIDENCIA=$(grep -c "$COMPONENTE" "$PROJECT_REPO/$TARGET_FILE" 2>/dev/null || echo "0")
+  VISUAL_GATE_STATUS="WEB_GREP"
 fi
 echo "PARIDAD_EVIDENCIA=$PARIDAD_EVIDENCIA"
-if [ -z "$PARIDAD_EVIDENCIA" ] || [ "$PARIDAD_EVIDENCIA" = "0" ]; then
-  echo "WARN · paridad no verificada · continuar con precaución"
+echo "VISUAL_GATE_STATUS=$VISUAL_GATE_STATUS"
+if [ "$VISUAL_GATE_STATUS" = "BLOCKED" ]; then
+  echo "ERROR · VISUAL GATE BLOQUEADO · no pushear · reportar a Ale con VISUAL_GATE: PENDIENTE"
 fi
 ```
 
-PASS solo si: TYPECHECK_EXIT=0 · PARIDAD_EVIDENCIA es path o número · CRITICAL_TOUCHED listado.
+PASS solo si: TYPECHECK_EXIT=0 · VISUAL_GATE_STATUS != BLOCKED · PARIDAD_EVIDENCIA es path o número · CRITICAL_TOUCHED listado.
+
+**REGLA ABSOLUTA — VISUAL GATE:** si VISUAL_GATE_STATUS=BLOCKED → push PROHIBIDO sin importar /matu score ni grep match ni typecheck. "Compensar con spec verbatim + emulator render" NO es visual gate. El visual gate es: screenshot emulador comparado elemento por elemento contra el master HTML abierto. Sin evidencia visual real → VISUAL_GATE: PENDIENTE en el REPORTE FINAL y push bloqueado.
 
 Post-6F · override matu_mode si CRITICAL_TOUCHED:
 ```bash
