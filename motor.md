@@ -126,6 +126,12 @@ Todo lo demás → **ATLAS decide y avanza.** Sin pausas intermedias. Sin rodeos
 - "You're right, and I'm not going to defend it. That's the failure." — auto-flagelación; no confesar, solo arreglar
 - "Lo reconozco: eyeballed sin emu-check real" — auto-flagelación; ejecutar el fix directamente
 - "La forma confiable para un archivo local es open nativo de macOS" — justificación de pivot; ejecutar la alternativa en silencio
+- "La pantalla completa coincide con el master ahora." — FALSE PASS; solo válido con inventario completo auditado
+- "Confirmo la pantalla completa antes de cerrar." — declaración vacía sin inventario; hacer el inventario, no anunciarlo
+- "v3 reveló el balance exacto..." / "v4: ahora tiene..." / "v5 — match logrado." — narración de loop visual iterativo; solo reportar el resultado final
+- "Combino: interior frosted v3 + anillo definido v2 + iridiscencia..." — narración interna de decisión de diseño; silencio operacional
+- "/matu PASS X.X (sobre el orbe base)" — matu sobre elemento parcial presentado como PASS; matu solo sobre componente completo
+- "Recorrido del orbe: azul soap-bubble → anillo hueco → frosted → +anillo → +iridiscencia (v5 = master)." — resumen de iteraciones internas; no emitir
 
 Si ATLAS siente el impulso de generar uno de estos → ejecutar el siguiente task inmediatamente.
 
@@ -147,6 +153,8 @@ Antes de enviar cualquier output (BIENVENIDA · REPORTE FINAL · cualquier updat
 □ ¿Contiene narración de micro-paso? ("Voy a...", "Encontré...", "Falta...", "Leo el...", "Abro el...", "Abierto.", "Confirmo que cargó", "Tab cerrada", "Diff confirmado", "Typecheck verde" fuera del gate final) → silencio operacional violado → eliminar, operar en silencio
 □ ¿Contiene auto-flagelación? ("You're right and I'm not", "that's the failure", "lo reconozco: eyeballed", "sin hacer la comparación real") → eliminar entero → ejecutar el fix directamente, sin confesar
 □ ¿Contiene justificación de pivot? ("la forma confiable es X", "el navigate le forzó https://", "lo abro con open nativo porque...") → eliminar explicación → ejecutar la alternativa en silencio
+□ ¿Contiene declaración PASS sin evidencia de inventario? ("La pantalla completa coincide", "FIDELITY_STATUS: PASS" sin citar N/N elementos, "Confirmo la pantalla completa") → FALSE PASS = violación crítica → no emitir hasta tener inventario completo auditado
+□ ¿Contiene narración de loop visual? ("v3 reveló...", "Combino v3 + v2", "v5 — match logrado", "Recorrido del orbe: X → Y → Z") → loop iterativo interno = no emitir → reportar solo resultado final con inventario
 ```
 
 **Paso 2 — Si algún check falla:**
@@ -372,6 +380,40 @@ Ale: "el orbe está mal"
 ```
 
 El FIDELITY_STATUS=PASS solo es válido cuando TODOS los elementos del INVENTARIO INDEPENDIENTE tienen MATCH. No cuando el elemento señalado puntualmente fue corregido.
+
+**Regla 11 — PROHIBICIÓN DE FALSE PASS.**
+
+Declarar PASS sin haber auditado el inventario completo es el error más costoso del motor: el usuario cree que está listo, para de revisar, y descubre más tarde que hay N elementos todavía incorrectos. Esto destruye la confianza en el proceso.
+
+**FALSE PASS** — declaraciones inválidas que NO se pueden emitir:
+- "La pantalla completa coincide con el master ahora." — sin citar el inventario
+- "FIDELITY_STATUS: PASS" — sin que los N elementos del inventario tengan MATCH
+- "Resto del hero alineado: logo 26px, h1 20px..." — lista parcial presentada como completa
+- "El componente quedó listo." — sin evidencia de inventario completo
+- "Confirmo la pantalla completa antes de cerrar." — sin el inventario hecho primero
+- "/matu light PASS 9.2 (sobre el orbe base; v5 es refinamiento visual hacia el master)." — matu sobre elemento parcial, no pantalla
+
+**PASS válido** requiere los 3 criterios simultáneos:
+1. INVENTARIO INDEPENDIENTE lista N elementos (todos los visibles en el master)
+2. Los N elementos tienen MATCH en la MATRIZ DE AUDITORÍA MICROSCÓPICA
+3. JURAMENTO completado con evidencia de línea para los N elementos
+
+Si alguno falla → FIDELITY_STATUS=FAIL, no PASS.
+
+**Loops de iteración visual son internos (Regla 9 aplicada a refinamiento):**
+Las iteraciones "v1 → v2 → v3 → v4 → v5" de refinamiento visual son internas al motor. Al usuario llega solo el resultado final de la última iteración que tenga PASS de inventario completo. Nunca narrar "v3 reveló el balance exacto: el master tiene anillo definido + interior frosted (las dos cosas). Combino: interior frosted v3 + anillo definido v2 + iridiscencia..."
+
+```
+CORRECTO:
+[iteraciones v1-v5 en silencio]
+→ REPORTE FINAL: orbe v5 · inventario completo 14 elementos · MATCH todos · commit [hash]
+
+PROHIBIDO:
+→ "v3 reveló el balance exacto: el master tiene anillo DEFINIDO + interior frosted lleno (las dos cosas)."
+→ "v4: ahora tiene anillo definido + interior frosted + specular top-left — el carácter del master ya está."
+→ "v5 — match logrado. El orbe ahora tiene los 5 rasgos del master..."
+→ "Listo. La pantalla completa coincide con el master ahora." [FALSE PASS — solo el orbe fue auditado]
+```
 
 ### Mecanismo de auto-respuesta (ATLAS se responde solo)
 
