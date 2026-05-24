@@ -1470,7 +1470,21 @@ INSTRUCCIONES:
    TIPO VISUAL (naturaleza del componente — capturar explícitamente):
    - [ ] [elemento]: [sólido/hueco] · [frosted/neon/flat] · [filled/ring/hollow] · [opaco/translúcido] · highlight: [posición exacta del specular] · blur: [valor exacto]
 
-3. JERARQUÍA DE COMPONENTES:
+3. TABLA DE TRADUCCIÓN CSS → REACT NATIVE (por elemento):
+   Esta tabla es la que usa el implementador. Elimina la "interpretación".
+   | Propiedad CSS (master) | Valor Master | Prop RN | Valor RN exacto |
+   |------------------------|-------------|---------|-----------------|
+   | font-size | 20px | fontSize | 20 |
+   | font-weight | 700 | fontWeight | '700' |
+   | border-radius | 14px | borderRadius | 14 |
+   | background | #000000 | backgroundColor | '#000000' |
+   | padding | 12px 20px | paddingVertical / paddingHorizontal | 12 / 20 |
+   | min-height | 46px | minHeight | 46 |
+   | gap | 9px | gap | 9 |
+   | border | 0.45px solid rgba(255,255,255,0.12) | borderWidth / borderColor | 0.45 / 'rgba(255,255,255,0.12)' |
+   Completar esta tabla para CADA sub-componente del inventario. Cero valores aproximados.
+
+4. JERARQUÍA DE COMPONENTES:
    [árbol indentado tal como aparece en el HTML · sin inventar]
 
 REGLAS ABSOLUTAS:
@@ -1740,15 +1754,16 @@ Cualquier elemento del master que no esté en el spec → marcarlo como SPEC_GAP
 | [elemento] | [propiedad] | [valor exacto master] | [valor real en código] | MATCH / MISMATCH |
 
 Cubrir cada sub-elemento: Tipografía · Dimensiones · Flexbox/Grid · Colores (hex exactos) · Copy (string literal) · Bordes · Sombras · Interacciones · **Tipo Visual** (sólido/hueco · frosted/neon · esfera/anillo · filled/hollow — naturaleza del componente)
-REGLA DE STOP INMEDIATO: Al encontrar el PRIMER MISMATCH → detener la tabla, escribir "STOP — MISMATCH en [elemento]:[propiedad] — corrigiendo ahora" y emitir el código corregido completo para ese elemento. Solo entonces continuar con el siguiente item de la tabla. No acumular mismatches para corregir después.
-La tabla completa debe estar llena al terminar — pero la corrección ocurre item por item, no al final.
 
-[FASE 2] CÓDIGO FUENTE DE PARIDAD ABSOLUTA (100% COMPLETO):
-- Entregar el/los archivos COMPLETOS con paridad pixel-by-pixel absoluta — de principio a fin
-- PROHIBIDO: placeholders, truncación, "// resto igual", "// código anterior", "// el resto permanece"
-- Si cortás el código → la entrega se considera FALLIDA automáticamente
+REGLA DE AUDITORÍA COMPLETA PRIMERO: completar la tabla ENTERA sin pausar a corregir nada. Registrar MATCH o MISMATCH para cada elemento. Al terminar → tener la lista completa de todo lo que diverge. Corregir DESPUÉS, en FASE 2.
+
+[FASE 2] BATCH FIX — UN SOLO PASE PARA TODOS LOS MISMATCHES:
+- Tomar la lista completa de MISMATCH de la FASE 1
+- Escribir el/los archivos COMPLETOS con TODOS los fixes aplicados de una sola vez
+- Un solo archivo de principio a fin, incorporando cada fix de la lista
+- PROHIBIDO: placeholders, truncación, "// resto igual", "// código anterior"
 - Si una sección ya coincide al 100% → certificarlo explícitamente ("Líneas X-Y: MATCH certificado")
-- Si hay diferencia de 1px → DESTRUIR la sección y reemplazarla con el clon exacto del master
+- Si hay diferencia de 1px → DESTRUIR y reemplazar con el clon exacto del master
 
 [FASE 3] JURAMENTO DE VERIFICACIÓN VISUAL:
 Completar los siguientes items con [x] (no [ ]) — cada uno requiere verificación real, no automática:
@@ -1780,9 +1795,11 @@ Items con discrepancia: [lista con líneas exactas, o "ninguno"]
 
 Si `FIDELITY_STATUS=FAIL`:
 
-1. **STOP absoluto en el primer MISMATCH.** No continuar verificando los siguientes items. Corregir el primero AHORA con código completo (sin placeholders) y luego continuar con la verificación del siguiente.
+1. **Auditoría completa primero.** Completar la tabla ENTERA de FASE 1 sin parar. Tener la lista de TODOS los MISMATCH. Solo entonces pasar a FASE 2.
 
-2. Dispatch de un **segundo agente independiente** `Frontend Developer` para re-verificar (no el mismo agente que corrigió — bias de confirmación):
+2. **BATCH FIX.** Escribir el archivo completo con TODOS los fixes en un solo pase. No corregir un elemento, verificar, corregir el siguiente. Un archivo → todos los fixes.
+
+3. Dispatch de un **segundo agente independiente** `Frontend Developer` para re-verificar (no el mismo agente que corrigió — bias de confirmación):
 ```
 Sos el SEGUNDO VERIFICADOR — no el implementador. Leé [$MOCKUP_SOURCE] sección [$COMPONENTE] con Read tool. Leé el código actual con Read tool. Completá la MATRIZ DE AUDITORÍA MICROSCÓPICA independientemente del primer verificador. No leas el output del primer verificador antes de completar tu propia matriz. Reportá FIDELITY_STATUS con JURAMENTO + evidencia de líneas.
 ```
