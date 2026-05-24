@@ -1392,6 +1392,9 @@ INSTRUCCIONES:
    COMPONENTES LEGACY A DESTRUIR:
    - [ ] [estilo/clase/estructura vieja] → DESTRUIR Y REEMPLAZAR con [nuevo]
 
+   TIPO VISUAL (naturaleza del componente — capturar explícitamente):
+   - [ ] [elemento]: [sólido/hueco] · [frosted/neon/flat] · [filled/ring/hollow] · [opaco/translúcido] · highlight: [posición exacta del specular] · blur: [valor exacto]
+
 3. JERARQUÍA DE COMPONENTES:
    [árbol indentado tal como aparece en el HTML · sin inventar]
 
@@ -1652,7 +1655,7 @@ PROTOCOLO DE AUDITORÍA EN 3 FASES:
 |:---|:---|:---|:---|:---|
 | [elemento] | [propiedad] | [valor exacto master] | [valor real en código] | MATCH / MISMATCH |
 
-Cubrir cada sub-elemento: Tipografía · Dimensiones · Flexbox/Grid · Colores (hex exactos) · Copy (string literal) · Bordes · Sombras · Interacciones
+Cubrir cada sub-elemento: Tipografía · Dimensiones · Flexbox/Grid · Colores (hex exactos) · Copy (string literal) · Bordes · Sombras · Interacciones · **Tipo Visual** (sólido/hueco · frosted/neon · esfera/anillo · filled/hollow — naturaleza del componente)
 REGLA DE STOP INMEDIATO: Al encontrar el PRIMER MISMATCH → detener la tabla, escribir "STOP — MISMATCH en [elemento]:[propiedad] — corrigiendo ahora" y emitir el código corregido completo para ese elemento. Solo entonces continuar con el siguiente item de la tabla. No acumular mismatches para corregir después.
 La tabla completa debe estar llena al terminar — pero la corrección ocurre item por item, no al final.
 
@@ -1672,6 +1675,7 @@ Completar los siguientes items con [x] (no [ ]) — cada uno requiere verificaci
 - [x o FAIL] Copy: cada string literal verificado carácter por carácter
 - [x o FAIL] Legacy: ningún estilo heredado interfiere con el componente
 - [x o FAIL] Herencia CSS: confirmado que no hay override no-intencional desde parent
+- [x o FAIL] Tipo visual: sólido vs hueco · frosted vs neon · esfera vs anillo · filled vs empty — naturaleza visual del componente verificada contra master. "Similar" NO es MATCH.
 
 Para cada item del JURAMENTO, citar la evidencia explícita:
 - "[x] Tipografía — fontFamily: 'PlusJakartaSans-SemiBold' · línea 47 del código · master línea 312 del HTML"
