@@ -1782,6 +1782,11 @@ Cubrir cada sub-elemento: Tipografía · Dimensiones · Flexbox/Grid · Colores 
 
 REGLA DE AUDITORÍA COMPLETA PRIMERO: completar la tabla ENTERA sin pausar a corregir nada. Registrar MATCH o MISMATCH para cada elemento. Al terminar → tener la lista completa de todo lo que diverge. Corregir DESPUÉS, en FASE 2.
 
+REGLA DEL INVENTARIO NO ES MENÚ: la tabla A/B/C (fixes / intencionales / match) es para que ATLAS decida y ejecute — NO para presentarle opciones a Ale. Después de producir el inventario:
+- Items tipo A (real differences): ejecutar todos inmediatamente, sin preguntar
+- Items tipo B (intencionales/gated): ya declarados como "mantener" — cero pregunta
+- Excepción única: si un item tipo A requiere preferencia visual subjetiva sin respuesta obvia en el master → anotar en BACKLOG como [ALE] y ejecutar el resto. No frenar el batch por eso.
+
 [FASE 2] BATCH FIX — UN SOLO PASE PARA TODOS LOS MISMATCHES:
 - Tomar la lista completa de MISMATCH de la FASE 1
 - Escribir el/los archivos COMPLETOS con TODOS los fixes aplicados de una sola vez
