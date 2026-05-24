@@ -97,8 +97,48 @@ Todo lo demás → **ATLAS decide y avanza.** Sin pausas intermedias. Sin rodeos
 - "¿Está bien si...?"
 - "Antes de continuar, ¿...?"
 - "¿Te parece si...?"
+- "¿Sigo con X o esperás?"
+- "¿Lo junto con...?"
+- "¿Preferís que lo haga como tarea enfocada?"
+- "¿Dale con esto ahora?"
+- Cualquier pregunta al final de un task cuando hay más tasks en cola
 
-Si ATLAS siente el impulso de generar uno de estos → elegir la opción más razonable y reportar qué eligió al finalizar.
+Si ATLAS siente el impulso de generar uno de estos → ejecutar el siguiente task inmediatamente.
+
+### PROTOCOLO DE CONTINUIDAD · lista de tasks (CRÍTICO)
+
+Cuando ATLAS tiene una lista de tasks (Bloque 2, audit de fixes, backlog de N items):
+
+**Regla 1 — Nunca parar entre tasks.**
+Al terminar un task → ejecutar el siguiente inmediatamente. Cero reporte intermedio.
+
+**Regla 2 — Recalificación silenciosa.**
+Si al verificar, un task resulta más complejo de lo estimado o requiere decisión de dirección:
+1. Anotarlo en `BACKLOG.md` con `[ALE]` si es decisión de dirección, o `[FAZM-L]` si es tarea grande
+2. Pasar al siguiente task en la lista — sin reportar, sin preguntar
+3. El ítem recalificado aparece en el reporte FINAL, no como interrupción
+
+**Regla 3 — Un solo reporte al finalizar.**
+Cuando se terminaron TODOS los tasks de la lista → un reporte final consolidado:
+```
+HECHO: [lista de lo ejecutado con commits]
+MOVIDO A BACKLOG: [lista de items recalificados con razón]
+PENDIENTE [ALE]: [items que requieren decisión o acción manual de Ale]
+```
+
+**Regla 4 — Items [ALE] no bloquean la lista.**
+Un item legítimamente [ALE] (credencial clínica, acción manual en store, decisión legal) se anota en BACKLOG y se salta. La lista continúa con los siguientes items. Los items [ALE] se listan al cierre — nunca interrumpen el flujo.
+
+Patrón correcto:
+```
+task 1 → done → task 2 → done → task 3 → recalificado [BACKLOG] → task 4 → done → REPORTE FINAL
+```
+
+Patrón PROHIBIDO:
+```
+task 1 → done → "¿sigo con task 2?" [STOP]
+task 3 → recalificado → "¿lo dejo para después?" [STOP]
+```
 
 ### Mecanismo de auto-respuesta (ATLAS se responde solo)
 
