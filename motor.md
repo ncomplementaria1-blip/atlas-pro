@@ -1279,7 +1279,19 @@ else:
 SPEC_FILE="$PROJECT_REPO/.claude/implementation-spec-$COMPONENTE.md"
 ```
 
-Dispatchar 1 agente `Frontend Developer`. Prompt:
+```bash
+# MASTER_TYPE detection — routing automático sin pausa
+MASTER_TYPE=$(python3 -c "
+try:
+    c = open('$MOCKUP_SOURCE').read()
+    is_tokens = ':root' in c and c.count('--') > 5 and c.count('<div') < 20
+    print('TOKENS_INDEX' if is_tokens else 'UI_SCREEN')
+except: print('UI_SCREEN')
+" 2>/dev/null || echo "UI_SCREEN")
+echo "MASTER_TYPE=$MASTER_TYPE"
+```
+
+**Si MASTER_TYPE=UI_SCREEN:** Dispatchar `Frontend Developer`. Prompt:
 
 ```
 [SISTEMA DE EXTRACCIÓN DE SPEC - EJECUCIÓN OBLIGATORIA]
@@ -1291,6 +1303,7 @@ REGLAS DE EXTRACCIÓN INNEGOCIABLES:
 1. REGLA DE 1-PIXEL: Si no podés leer el valor exacto del HTML → anotarlo como [REQUIERE MEDICIÓN MANUAL] y continuar. Nunca inventar un valor "razonable".
 2. PROHIBICIÓN DE PLACEHOLDERS: Está estrictamente prohibido usar "[valor aproximado]", "[similar a]", o cualquier aproximación. Cada item debe ser el valor literal del HTML.
 3. AISLAMIENTO DE CONTEXTO: Extraer los estilos del componente tal como aparecen — sin asumir que valores heredados del parent se aplican. Listar explícitamente qué hereda y qué sobreescribe.
+4. INPUT FALTANTE: Si el fragmento del master no viene en el mensaje → leer [$MOCKUP_SOURCE] directamente con Read tool. Nunca parar por input faltante.
 
 MASTER DE REFERENCIA: [$MOCKUP_SOURCE] — leer completo con Read tool antes de continuar.
 COMPONENTE A AISLAR: [$COMPONENTE]
@@ -1339,6 +1352,48 @@ REGLAS ABSOLUTAS:
 - Cada item debe ser verificable independientemente contra el HTML fuente
 - Si la sección ya coincide al 100% → certificarlo explícitamente
 - Si hay diferencia de 1px → listar la discrepancia exacta
+```
+
+**Si MASTER_TYPE=TOKENS_INDEX:** Dispatchar `Frontend Developer`. Prompt:
+
+```
+[SISTEMA DE AUDITORÍA DE TOKENS DNA - EJECUCIÓN OBLIGATORIA]
+PROHIBICIÓN ABSOLUTA DE ALUCINACIÓN, OMISIÓN O APROXIMACIÓN.
+
+Actuás como un Compilador de Tokens Front-End. El master [$MOCKUP_SOURCE] es un ÍNDICE DE TOKENS DNA — define variables CSS canónicas en :root. La auditoría correcta es token-vs-token, NO pixel cloning de pantalla. No parar para "aclarar el approach" — detectar y ejecutar.
+
+OBJETIVO: comparar todos los tokens del master contra los tokens actuales de la app. Reportar divergencias con valores exactos de ambos lados.
+
+PASOS OBLIGATORIOS:
+
+1. Leer [$MOCKUP_SOURCE] con Read tool → extraer tabla completa de tokens:
+   | Token CSS | Valor en Master |
+   |-----------|----------------|
+   | --nombre  | valor_exacto   |
+
+2. Leer archivos de tokens de la app (buscar en este orden, leer los que existan):
+   - $PROJECT_REPO/apps/mobile/src/constants/ (tokens.ts · colors.ts · theme.ts)
+   - $PROJECT_REPO/apps/web/tailwind.config.ts
+   - $PROJECT_REPO/apps/mobile/constants/ (Colors.ts · theme.ts)
+   - $PROJECT_REPO/packages/ui/tokens/ (si existe)
+
+3. Comparar token a token:
+   | Token | Valor Master | Valor App | Status |
+   |-------|-------------|-----------|--------|
+   | --nombre | valor_master | valor_app | MATCH / DIVERGE |
+
+4. Escribir resultado en [$SPEC_FILE]:
+   - TOKENS_MATCH: N
+   - TOKENS_DIVERGE: M
+   - Tabla completa de divergencias con valores exactos de ambos lados
+   - Si DIVERGE=0 → certificar: "DNA 100% alineado — cero divergencias"
+
+REGLAS ABSOLUTAS:
+- Si no encontrás un archivo → documentar qué buscaste y continuar con los disponibles
+- Si un token referencia otro (var(--otro)) → resolver la cadena hasta el valor primitivo
+- Si el fragmento no vino en el mensaje → leer [$MOCKUP_SOURCE] directamente. Nunca parar por input faltante.
+- Entregar la tabla completa, no un resumen
+- Cero pausa · cero pregunta
 ```
 
 ```bash
@@ -1607,6 +1662,18 @@ python3 -c "
 import json, datetime
 d = json.load(open('$CHECKPOINT_FILE'))
 d['fidelity_score'] = '$FIDELITY_SCORE'
+fs = '$FIDELITY_SCORE'
+if '/' in fs:
+    try:
+        n, total = int(fs.split('/')[0]), int(fs.split('/')[1])
+        d['fidelity_status'] = 'PASS' if n == total else 'FAIL'
+        d['fidelity_mismatches'] = total - n
+    except:
+        d['fidelity_status'] = 'N/A'
+        d['fidelity_mismatches'] = 0
+else:
+    d['fidelity_status'] = 'N/A'
+    d['fidelity_mismatches'] = 0
 d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
 json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "

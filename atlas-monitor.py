@@ -171,8 +171,23 @@ else:
     score  = ckpt.get("matu_score_final", "?")
     mpass  = ckpt.get("matu_pass", "?")
     branch = ckpt.get("branch_name", "?")
-    fid    = ckpt.get("fidelity_score", "N/A")
-    ts     = ckpt.get("ts", "?")[:19]
+    fid        = ckpt.get("fidelity_score", "N/A")
+    fid_status = ckpt.get("fidelity_status", "N/A")
+    fid_miss   = ckpt.get("fidelity_mismatches", "N/A")
+    ts         = ckpt.get("ts", "?")[:19]
+
+    # Parse fidelity_score → bar display
+    if fid != "N/A" and "/" in str(fid):
+        try:
+            fn, ft = map(int, str(fid).split("/"))
+            fpct = int(fn / ft * 100) if ft else 0
+            fbar = "█" * int(fpct / 10) + "░" * (10 - int(fpct / 10))
+            fid_display = f"{fid} [{fbar}] {fpct}%"
+        except Exception:
+            fid_display = fid
+    else:
+        fid_display = fid
+
     print()
     if status == "PASS" and paso == 9:
         ok(f"  Flujo completo · PASO {paso} {status}")
@@ -182,7 +197,13 @@ else:
         fail(f"  PASO {paso} {status} · posible sesion cortada")
     print(f"  Componente:  {comp}")
     print(f"  Tipo:        {tipo}  |  Branch: {branch}")
-    print(f"  /matu:       {mmode}  |  score {score}  |  pass={mpass}  |  fidelidad {fid}")
+    print(f"  /matu:       {mmode}  |  score {score}  |  pass={mpass}")
+    if fid_status == "PASS":
+        print(f"  Fidelidad 6G: {GREEN}{fid_display}{RESET}  |  status={fid_status}  |  mismatches={fid_miss}")
+    elif fid_status == "FAIL":
+        print(f"  Fidelidad 6G: {RED}{fid_display}{RESET}  |  status={fid_status}  |  mismatches={fid_miss}")
+    else:
+        print(f"  Fidelidad 6G: {fid_display}  |  status={fid_status}")
     print(f"  Timestamp:   {ts}")
 
 # 4C. Session lock (en atlas dir)
@@ -305,5 +326,89 @@ else:
             print(f"    {iid}  [{tipo}] {titulo:<40} {esfuerzo} · {impacto} · {fuente}")
     if implementadas:
         ok(f"  {len(implementadas)} idea(s) ya implementadas")
+
+# 9. PASO 6G — Fidelity Check Audit
+header("9. PASO 6G — Fidelity Check Audit")
+ckpt_6g = load_json(ckpt_path)
+if not ckpt_6g:
+    warn("Sin checkpoint — no se puede auditar 6G")
+else:
+    fid_s  = ckpt_6g.get("fidelity_score", "N/A")
+    fid_st = ckpt_6g.get("fidelity_status", "N/A")
+    fid_m  = ckpt_6g.get("fidelity_mismatches", "N/A")
+    print()
+    if fid_st == "PASS":
+        ok(f"  6G PASS · score {fid_s} · {fid_m} mismatches")
+    elif fid_st == "FAIL":
+        fail(f"  6G FAIL · score {fid_s} · {fid_m} mismatches")
+    else:
+        warn("  6G no ejecutado en este flujo (fidelity_status=N/A)")
+    if fid_s != "N/A" and "/" in str(fid_s):
+        try:
+            fn6, ft6 = map(int, str(fid_s).split("/"))
+            fpct6 = int(fn6 / ft6 * 100) if ft6 else 0
+            fbar6 = "█" * int(fpct6 / 10) + "░" * (10 - int(fpct6 / 10))
+            col6 = GREEN if fpct6 == 100 else (YELLOW if fpct6 >= 80 else RED)
+            print(f"  Score: {col6}{fid_s} [{fbar6}] {fpct6}%{RESET}")
+        except Exception:
+            print(f"  Score: {fid_s}")
+
+# 9B. Spec file analysis
+    comp_6g   = ckpt_6g.get("componente", "")
+    spec_path6 = Path(repo_path) / f".claude/implementation-spec-{comp_6g}.md" if repo_path and comp_6g else None
+    print()
+    if spec_path6 and spec_path6.exists():
+        try:
+            sc = spec_path6.read_text(encoding="utf-8")
+            checked_items   = sc.count("[x]") + sc.count("[x o FAIL]")
+            unchecked_items = sc.count("[ ]")
+            mismatch_lines  = len([l for l in sc.splitlines() if any(kw in l.upper() for kw in ("MISMATCH", "DIVERGE", "FAIL"))])
+            has_juramento   = "JURAMENTO" in sc.upper() or "JURO" in sc.upper()
+            has_second_ver  = "SEGUNDO VERIFICADOR" in sc.upper() or "second_verifier" in sc.lower()
+            print(f"  Spec: {spec_path6.name}")
+            print(f"  Items: checked={checked_items}  unchecked={unchecked_items}  flag-lines={mismatch_lines}")
+            if has_juramento:
+                ok("  JURAMENTO presente en spec")
+            else:
+                warn("  JURAMENTO ausente — spec puede ser incompleta")
+            if has_second_ver:
+                ok("  Segundo verificador registrado")
+            else:
+                warn("  Segundo verificador no registrado en spec")
+        except Exception as e:
+            warn(f"  Error leyendo spec: {e}")
+    elif comp_6g:
+        warn(f"  Spec no encontrada: .claude/implementation-spec-{comp_6g}.md")
+    else:
+        info("  Sin componente en checkpoint — no se puede localizar spec")
+
+# 9C. Historial de fidelidad del log
+    print()
+    fid_evts = [e for e in entries if any(kw in str(e).lower() for kw in ("fidelity", "6g_pass", "6g_fail", "fidelity_pass", "fidelity_fail"))]
+    if fid_evts:
+        print(f"  Historial 6G ({len(fid_evts)} entradas):")
+        for e in fid_evts[-3:]:
+            ts_e = e.get("ts", "?")[:19]
+            ev_e = e.get("evento", "?")
+            sc_e = e.get("fidelity_score", "")
+            print(f"    {ts_e}  {ev_e}  {sc_e}")
+    else:
+        info("  Sin eventos 6G en atlas-proxy-log.jsonl")
+
+# 9D. Learned patterns
+    lp_path6 = PROJECT_DIR / "learned-patterns.md"
+    print()
+    if lp_path6.exists():
+        try:
+            lp = lp_path6.read_text(encoding="utf-8")
+            pattern_count = lp.count("\n---\n") // 2
+            recent = [l for l in lp.splitlines() if l and len(l) > 4 and l[:4].isdigit()]
+            ok(f"  Learned patterns: {pattern_count} patrones registrados (self-learning ACTIVO)")
+            if recent:
+                print(f"  Ultimo: {recent[-1]}")
+        except Exception as e:
+            warn(f"  Error leyendo learned-patterns.md: {e}")
+    else:
+        fail("  learned-patterns.md no encontrado — self-learning NO activo")
 
 print(f"\n{BOLD}{'='*56}{RESET}\n")
