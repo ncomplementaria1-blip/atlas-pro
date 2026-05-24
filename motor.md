@@ -1413,6 +1413,30 @@ except: print('UI_SCREEN')
 echo "MASTER_TYPE=$MASTER_TYPE"
 ```
 
+**CLASIFICACIÓN CSS OBLIGATORIA — antes de extraer spec:**
+
+Para cada elemento del inventario, clasificar:
+
+| Tipo | Propiedades | Acción |
+|------|-------------|--------|
+| **LAYOUT** | flex, margin, padding, gap, borderRadius, backgroundColor (sólido), fontSize, fontWeight, color | Extraer valores exactos → CSS→RN table → implementar directo |
+| **COMPLEX_CSS** | `filter:blur`, `mix-blend-mode`, `conic-gradient`, `backdrop-filter`, `box-shadow` con blur complejo, `radial-gradient` multicapa | **Renderizar a PNG inmediatamente** (Playwright) → usar como `<Image>` en RN. NUNCA intentar portar manualmente. |
+
+**Regla COMPLEX_CSS:** si un elemento tiene aunque sea UNA propiedad COMPLEX_CSS → PNG path. No negociable. El tiempo de porteo manual siempre supera el tiempo de render + integración, y el resultado nunca es pixel-perfect.
+
+```bash
+# Detectar elementos COMPLEX_CSS en el master
+COMPLEX_ELEMENTS=$(python3 -c "
+import re
+c = open('$MOCKUP_SOURCE').read()
+complex_props = ['filter:', 'mix-blend-mode:', 'conic-gradient', 'backdrop-filter:', 'radial-gradient']
+found = [p for p in complex_props if p in c]
+print('COMPLEX_CSS: ' + ', '.join(found) if found else 'LAYOUT_ONLY')
+" 2>/dev/null || echo "UNKNOWN")
+echo "COMPLEX_ELEMENTS=$COMPLEX_ELEMENTS"
+# Si COMPLEX_CSS → generar script Playwright para PNG antes de continuar con el spec
+```
+
 **Si MASTER_TYPE=UI_SCREEN:** Dispatchar `Frontend Developer`. Prompt:
 
 ```
