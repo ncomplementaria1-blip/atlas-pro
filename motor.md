@@ -1736,6 +1736,26 @@ json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
 
+**LIVE_MODE · para correcciones visuales con emulador conectado y Metro UP activo:**
+
+Cuando el emulador está corriendo y Metro UP activo, el loop correcto es:
+```
+editar valor en archivo → guardar → Fast Refresh actualiza en ~1s → comparar con master abierto al lado → si no coincide → editar → guardar → repeat
+```
+
+**PROHIBIDO en LIVE_MODE:**
+- Tomar screenshots para analizar
+- Recortar imágenes (crop) para examinar zonas
+- Correr Python para análisis visual
+- Renderizar el master a PNG antes de cada iteración
+- Cualquier paso de análisis que dure más que ver el emulador
+
+El emulador ES la fuente de verdad en tiempo real. El análisis solo sucede ANTES del primer edit (inventario) y DESPUÉS del último (REPORTE FINAL). En el medio: editar → guardar → mirar → editar → guardar → mirar.
+
+Cuando todos los elementos coinciden visualmente → typecheck → `node scripts/compare-screen.mjs <master>` para captura final objetiva → commit → REPORTE.
+
+---
+
 **6G · FIDELITY CHECK** (si `$SPEC_FILE` existe · post-implementación · pre-/matu):
 
 ```bash
