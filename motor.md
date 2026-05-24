@@ -1056,9 +1056,9 @@ Invocar `/context-save` post-elección.
 
 ---
 
-## PASO 5A · SPEC EXTRACTION (pre-implementación · obligatorio si creative_spin≠[] o CREATE_NEW)
+## PASO 5A · SPEC EXTRACTION · PROTOCOLO PARIDAD PIXEL-PERFECT
 
-**Por qué existe:** el agente de implementación "interpreta" el mockup y toma decisiones propias — spacing distinto, copy parafraseado, colores aproximados. Extraer specs primero lo convierte en un ejecutor preciso, no un diseñador.
+**Por qué existe:** el agente de implementación interpreta el mockup y toma decisiones propias — spacing aproximado, copy parafraseado, colores cercanos pero distintos. El spec extraction convierte al implementador en un ejecutor preciso, no un diseñador. Incluso 1px de diferencia es un fallo.
 
 ```bash
 MOCKUP_SOURCE=$(python3 -c "
@@ -1077,52 +1077,69 @@ else:
 SPEC_FILE="$PROJECT_REPO/.claude/implementation-spec-$COMPONENTE.md"
 ```
 
-Dispatchar 1 agente `general-purpose`. Prompt:
+Dispatchar 1 agente `Frontend Developer`. Prompt:
 
 ```
-Sos un spec extractor. Tu trabajo: leer el HTML del mockup y producir una lista de implementación exacta. Sin interpretación — solo lo que está literalmente en el HTML.
+Actuás como Ingeniero de Software Principal de Front-End y Diseñador UI/UX Técnico especializado en Paridad de Interfaz Dinámica para Aplicaciones Nativas/Móviles.
 
-Leé: [$MOCKUP_SOURCE]
+OBJETIVO MANDATORIO: lograr PARIDAD TOTAL PIXEL-POR-PIXEL entre el mockup master y la implementación.
 
-Devolvé SOLO este formato (cada item verificable):
+MASTER DE REFERENCIA: [$MOCKUP_SOURCE] — leer completo con Read tool antes de continuar.
+COMPONENTE A AISLAR: [$COMPONENTE]
 
-# Implementation Spec — [$COMPONENTE]
-Fuente: [$MOCKUP_SOURCE]
+INSTRUCCIONES:
 
-## Layout
-- [ ] Estructura raíz: [flex/grid · dirección · justify · align]
-- [ ] Padding contenedor: [top right bottom left exacto]
-- [ ] Gap entre elementos: [valor exacto]
+1. MAPPING DETALLADO:
+   Aislar quirúrgicamente la sección [$COMPONENTE] del master.
+   Dividir en sub-componentes atómicos secuenciales (Header, Inputs con estados de validación, Step Indicators, CTAs, Cards, Modals, etc.).
 
-## Colores (hex exactos — no aproximar)
-- [ ] Background: [#hex]
-- [ ] Surface/card: [#hex]
-- [ ] Texto principal: [#hex]
-- [ ] Texto secundario: [#hex]
-- [ ] Acento/marca: [#hex]
-- [ ] [otros colores presentes en el mockup]
+2. EXTRACCIÓN PIXEL-PERFECT de cada sub-componente:
 
-## Tipografía
-- [ ] [elemento]: [font-family] [weight] [size] [line-height si hay] [tracking si hay]
+   TIPOGRAFÍA (valores exactos del HTML):
+   - [ ] [elemento]: font-family · font-weight · font-size · line-height · letter-spacing
 
-## Copy (literal — cero parafraseo)
-- [ ] [nombre del elemento]: "[texto exacto del mockup]"
+   DIMENSIONES Y LAYOUT:
+   - [ ] [elemento]: width · height · margin (top right bottom left) · padding (top right bottom left) · overflow
 
-## Interacciones declaradas
-- [ ] [elemento]: [acción] → [resultado visible]
+   FLEXBOX / GRID / POSICIONAMIENTO:
+   - [ ] [elemento]: flex-direction · justify-content · align-items · gap · position · top/left/right/bottom
 
-## Jerarquía de componentes
-[árbol de componentes tal como aparece en el HTML · indentado]
+   COLORES Y BORDES (hex exactos — cero aproximación):
+   - [ ] Background: [#hex exacto]
+   - [ ] Surface/card: [#hex exacto]
+   - [ ] Texto principal: [#hex exacto]
+   - [ ] Texto secundario: [#hex exacto]
+   - [ ] Acento: [#hex exacto]
+   - [ ] border-radius: [valor exacto]
+   - [ ] box-shadow / elevation: [valor exacto]
 
-REGLA ABSOLUTA: si no está en el HTML → no lo listés. Cero inventar.
+   COPY (literal — cero parafraseo):
+   - [ ] [elemento]: "[texto exacto tal como aparece en el HTML]"
+
+   INTERACCIONES:
+   - [ ] [elemento]: [trigger] → [resultado visual exacto]
+
+   COMPONENTES LEGACY A DESTRUIR:
+   - [ ] [estilo/clase/estructura vieja] → reemplazar con [nuevo]
+
+3. JERARQUÍA DE COMPONENTES:
+   [árbol indentado tal como aparece en el HTML · sin inventar]
+
+REGLAS ABSOLUTAS:
+- Si no está en el HTML → no lo listés
+- Cero interpretación, cero creatividad, cero "similar a"
+- Cada item debe ser verificable independientemente
+- Si la sección ya coincide al 100% → certificarlo explícitamente
+- Si hay diferencia de 1px → listar la discrepancia
 ```
 
 ```bash
 # FAZM: escribir output del agente en $SPEC_FILE
 SPEC_ITEMS=$(grep -c '^\- \[ \]' "$SPEC_FILE" 2>/dev/null || echo "0")
+echo "SPEC EXTRACTION COMPLETO · $SPEC_ITEMS items · $SPEC_FILE"
 ```
 
-# FAZM (interno): spec en $SPEC_FILE · $SPEC_ITEMS items · continuar a PASO 5 con esta lista como input obligatorio
+FAZM (interno): spec en `$SPEC_FILE` · `$SPEC_ITEMS` items · continuar a PASO 5 con esta lista como input obligatorio al implementador.
 
 ---
 
@@ -1135,6 +1152,24 @@ SPEC_ITEMS=$(grep -c '^\- \[ \]' "$SPEC_FILE" 2>/dev/null || echo "0")
 **Web:** implementar desde `$SPEC_FILE` · Tailwind tokens · Server/Client components · `motion` para animaciones.
 
 **Both (monorepo):** implementar según `$ROUTER_PLATFORM` detectado en PASO 1.
+
+### REGLA DE CÓDIGO COMPLETO (ley absoluta · sin excepción)
+
+El agente de implementación NUNCA puede usar placeholders ni truncar código. Prohibido explícitamente:
+
+- `// El resto del código sigue igual`
+- `// Código anterior aquí`
+- `// Insertar estilos aquí`
+- `// ... (mismo que antes)`
+- `{/* existing code */}`
+- Cualquier forma de "el resto es igual al original"
+
+**Regla:** entregar el archivo completo, limpio, refactorizado y listo para producción de extremo a extremo. Si una sección ya coincide al 100% con el spec → certificarlo explícitamente. Si hay diferencia de 1px → reescribir esa sección completa con la corrección exacta.
+
+Incluir esta instrucción verbatim al inicio del prompt del implementador:
+```
+REGLA ABSOLUTA DE ENTREGA: proporcionar el archivo COMPLETO. Sin placeholders, sin truncación, sin "// resto igual". Si el archivo tiene 500 líneas → entregar 500 líneas. Cero excepciones.
+```
 
 ### 5Z · CHECKPOINT COMMIT (obligatorio · anti-loss)
 
@@ -1271,33 +1306,51 @@ if [ ! -f "$SPEC_FILE" ]; then
 fi
 ```
 
-Si `$SPEC_FILE` existe → dispatchar 1 agente `code-reviewer`. Prompt:
+Si `$SPEC_FILE` existe → dispatchar 1 agente `Frontend Developer`. Prompt:
 
 ```
-Sos un verificador de fidelidad. Verificá que la implementación cumple CADA item de la spec. Sin excepciones por "está cerca" — o cumple exactamente o no cumple.
+Actuás como Ingeniero de Software Principal de Front-End especializado en Paridad de Interfaz Dinámica.
 
-SPEC: [contenido de $SPEC_FILE]
+PROBLEMA: se reportó implementación completa pero pueden existir discrepancias visuales con el master. Tu misión: verificación pixel-by-pixel y corrección total.
 
-CÓDIGO: [archivos modificados desde git diff $DIFF_BASE]
+MASTER DE REFERENCIA: [$MOCKUP_SOURCE] — leer con Read tool.
+SPEC EXTRAÍDA: [contenido de $SPEC_FILE]
+CÓDIGO IMPLEMENTADO: [archivos modificados desde git diff $DIFF_BASE — leer con Read tool]
 
-Para cada item de la spec:
-✓ cumple — si el valor en código coincide exactamente con el spec
-✗ desviación — si hay cualquier diferencia · indicar valor real encontrado
+PROTOCOLO DE AUDITORÍA EN 3 FASES:
 
-OUTPUT OBLIGATORIO:
-FIDELITY_SCORE: N/[total]
+[FASE 1] TABLA DE MAPEO (entregar esto primero):
+| Sub-componente | Estado en Master | Estado en Código | Diagnóstico |
+|---|---|---|---|
+| [nombre] | [valor exacto del master] | [valor real en código] | MATCH / DISCREPANCIA: [detalle] |
 
-Items ✗ (solo los que fallan):
-- [item spec] → real: [valor encontrado en código]
+Cubrir: Tipografía · Dimensiones · Flexbox/Grid · Colores · Copy · Bordes · Sombras · Interacciones
 
-Si N = total → FIDELITY_PASS · si N < total → FIDELITY_FAIL
+[FASE 2] CÓDIGO CORREGIDO:
+- Entregar el/los archivos COMPLETOS con paridad pixel-by-pixel absoluta
+- PROHIBIDO: placeholders, truncación, "// resto igual", "// código anterior"
+- Si una sección ya coincide al 100% → certificarlo explícitamente en texto
+- Si hay diferencia de 1px → reescribir esa sección con la corrección exacta
+
+[FASE 3] CHECKLIST DE VERIFICACIÓN:
+- [ ] Tipografía: family · weight · size · line-height · letter-spacing
+- [ ] Espaciados: margin · padding · gap (valores exactos)
+- [ ] Colores: todos los hex verificados contra master
+- [ ] Grid/Flex: dirección · justify · align · overflow
+- [ ] Copy: cada string literal verificado
+- [ ] Componentes legacy: ninguno remanente
+
+OUTPUT FINAL OBLIGATORIO:
+FIDELITY_SCORE: N/[total items]
+FIDELITY_STATUS: PASS | FAIL
+Items con discrepancia: [lista o "ninguno"]
 ```
 
 Si `FIDELITY_FAIL`:
-1. FAZM aplica los fixes de los items ✗ directamente al código
+1. FAZM aplica los fixes de los items ✗ directamente al código (código completo · sin placeholders)
 2. Re-corre typecheck
 3. Re-corre 6G una vez (máximo 2 intentos)
-4. Si sigue FAIL tras 2 intentos → escalar con lista de items irresolubles
+4. Si sigue FAIL tras 2 intentos → escalar con tabla de items irresolubles + causa raíz
 
 ```bash
 # FAZM (interno): FIDELITY_SCORE=N/total · si PASS → continuar a PASO 7 · si FAIL → aplicar fixes en silencio
@@ -1502,13 +1555,12 @@ if [ -n "$CRITICAL_FILES" ]; then
     python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f "$FLOW_LOCK"
     exit 1
   fi
-  # No destructivo → Security Council
+  # No destructivo → Security Council (autónomo · merge automático si PASS)
   CRITICAL_DIFF=$(git diff "$DIFF_BASE_P9" -- $CRITICAL_FILES 2>/dev/null | head -200)
   echo "SECURITY_COUNCIL_NEEDED · dispatching 3 agentes..."
   # FAZM: dispatchar Security Council (ver sección "Security Council" abajo)
-  echo "STOP · Security Council completado · cambios críticos: $CRITICAL_FILES"
-  echo "Requiere OK del project owner para push + merge"
-  exit 0
+  # Si los 3 agentes dan VEREDICTO=PASS + DESTRUCTIVO=NO → continuar flujo normal (merge automático)
+  # Si alguno da FAIL → escalar con causa raíz · no mergear
 fi
 
 # Recovery cross-day: usar branch del checkpoint si disponible
@@ -1932,6 +1984,9 @@ Sin T1: escribí "ninguno".
 
 Agentes: `security-reviewer` · `Legal Compliance Checker` · `Backend Architect`
 Los 3 deben dar VEREDICTO=PASS y DESTRUCTIVO=NO.
+
+**Si los 3 dan PASS + DESTRUCTIVO=NO → FAZM procede automáticamente a merge + push a main. Sin esperar OK de Ale.**
+Si alguno da FAIL o DESTRUCTIVO=SÍ → aplicar los fixes T1 · re-correr Security Council · si sigue FAIL → escalar con causa raíz.
 
 ---
 
