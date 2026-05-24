@@ -128,7 +128,7 @@ Antes de enviar cualquier output (BIENVENIDA · REPORTE FINAL · cualquier updat
 ```
 □ ¿Contiene "¿"?  → ¿es una de las prohibidas? → eliminar + ejecutar en su lugar
 □ ¿Termina en "¿[X] o [Y]?"? → binary choice = violación → eliminar ambas opciones, ejecutar la más obvia
-□ ¿Contiene "salvo que prefer"? → condicional prohibido → eliminar la cláusula
+□ ¿Contiene "salvo que prefer" / "a menos que" / "excepto si" / "si preferís" / "si querés"? → condicional prohibido → eliminar la cláusula
 □ ¿Contiene "mayor avance" o "mayor impacto" como argumento para que Ale decida? → editorial prohibido → eliminar
 □ ¿Contiene "Mi recomendación CTO:" seguido de lobby para que Ale ejecute un [ALE]? → prohibido → eliminar
 □ ¿Items [ALE] con explicación de por qué son importantes? → quitar editorial, dejar solo el nombre del item
@@ -561,7 +561,7 @@ PROJECT_SECTOR=$(python3 -c "import json; print(json.load(open('$ATLAS_DIR/proje
 PROJECT_BRIEF=$(cat "$ATLAS_DIR/project-brief.md" 2>/dev/null || echo "")
 CURRENT_YEAR=$(date +%Y)
 PREV_YEAR=$((CURRENT_YEAR - 1))
-MODO_TOTAL="${MODO_TOTAL:-no}"
+MODO_TOTAL="${MODO_TOTAL:-yes}"  # default yes — silencio hasta PASO 9 (ley maestra del motor)
 CHECKPOINT_FILE="$ATLAS_DIR/flow-checkpoint.json"
 BACKLOG_FILE="$PROJECT_REPO/.claude/BACKLOG.md"
 
@@ -727,6 +727,16 @@ with open('$LOCK_FILE', 'w') as f:
                'ts': datetime.datetime.utcnow().isoformat() + 'Z', 'pid': $ATLAS_PID}, f, indent=2)
 "
 echo "Lock adquirido · sesión $SESSION_ID"
+
+# Cargar patrones aprendidos de sesiones anteriores
+LEARNED_FILE="$ATLAS_DIR/learned-patterns.md"
+if [ -f "$LEARNED_FILE" ]; then
+  LEARNED_COUNT=$(grep -c '^---' "$LEARNED_FILE" 2>/dev/null | tr -d ' ' || echo "0")
+  echo "Cargando $LEARNED_COUNT patrones aprendidos → aplicando como contexto adicional de autonomía"
+  # FAZM: leer el contenido completo de $LEARNED_FILE y aplicarlo como ejemplos concretos adicionales
+  # a la lista de mensajes prohibidos. Cada entrada refuerza lo que NO generar con ejemplos reales.
+  cat "$LEARNED_FILE" 2>/dev/null | head -80 || true
+fi
 
 # Reset checkpoint
 python3 -c "
@@ -2153,7 +2163,7 @@ Las más rápidas de hacer ($N_SM ideas, menos de 3 días cada una):
 Ideas más grandes para después ($N_L):
 [lista con nombre simple · beneficio en 1 línea]
 
-¿Empezamos con alguna?
+Próximo: `/atlas <ID>` para implementar la primera idea.
 ```
 
 ---
@@ -2203,7 +2213,8 @@ cat "$CHECKPOINT_FILE"
 | 1 | PASS | PASO 2 · si creative_spin=[] → PASO 5 directo |
 | 2 | PASS | PASO 3 · si creative_spin=[] → PASO 5 |
 | 3 | PASS | PASO 4 · usar mockups_generados + directions del checkpoint |
-| 4 | PASS | PASO 5 · usar mockup_ganador del checkpoint |
+| 4 | PASS | PASO 5A · re-extraer spec desde master (pixel-perfect protocol) |
+| 5A | PASS | PASO 5 · implementar con spec ya extraída |
 | 5 | PASS | PASO 6 · re-correr review+smoke+6F completo |
 | 6 | PASS_6D | PASO 6 · solo 6E (si aplica) + 6F gate |
 | 6 | PASS | PASO 7 · dispatch completo |
