@@ -350,6 +350,29 @@ Cada una de esas líneas es un mensaje que no debería existir. Solo el REPORTE 
 
 **Excepción única:** STOP real (DB destructiva · credenciales nuevas) → emitir alerta específica. Todo lo demás: silencio.
 
+**Regla 10 — MISMATCH SEÑALADO = TODA LA PANTALLA EN SOSPECHA.**
+
+Cuando el usuario señala que un elemento visual no coincide con el master (ej: "el orbe está mal", "ese color no es el del mockup", "ese texto no es igual"):
+
+1. **Corregir el elemento señalado** — ese es el trigger.
+2. **Ejecutar inmediatamente un 6G COMPLETO sobre TODO el componente** — no solo el elemento señalado. Si uno está mal, los demás probablemente también.
+3. **Usar INVENTARIO INDEPENDIENTE** (FASE 0) — no el spec como punto de partida.
+4. **Corregir TODOS los mismatches encontrados** en la misma sesión.
+5. **REPORTE FINAL** con: "[N] elementos auditados · [M] fixes aplicados · FIDELITY_STATUS: PASS".
+
+```
+CORRECTO:
+Ale: "el orbe está mal"
+→ [fix orbe] → [6G full: inventario 12 elementos] → [5 mismatches más encontrados] → [fix los 5] → [segundo verificador] → REPORTE FINAL: 12 elementos auditados · 6 fixes
+
+PROHIBIDO:
+Ale: "el orbe está mal"
+→ [fix orbe] → "Orbe corregido. ¿Algo más?" [STOP]
+→ [fix orbe] → "Orbe corregido · FIDELITY_STATUS: PASS" [falso PASS — solo 1 elemento auditado]
+```
+
+El FIDELITY_STATUS=PASS solo es válido cuando TODOS los elementos del INVENTARIO INDEPENDIENTE tienen MATCH. No cuando el elemento señalado puntualmente fue corregido.
+
 ### Mecanismo de auto-respuesta (ATLAS se responde solo)
 
 Cuando ATLAS necesita información que el usuario no sabe o no puede responder:
@@ -1359,9 +1382,19 @@ COMPONENTE A AISLAR: [$COMPONENTE]
 
 INSTRUCCIONES:
 
+0. INVENTARIO EXHAUSTIVO (hacer ANTES de extraer specs):
+   Leer [$MOCKUP_SOURCE] sección [$COMPONENTE] y listar TODOS los elementos visuales en orden top-down:
+   ```
+   INVENTARIO TOTAL: N elementos
+   1. [nombre descriptivo] — [descripción visual en 1 línea]
+   2. [nombre descriptivo] — [descripción visual en 1 línea]
+   ...
+   ```
+   Cada elemento del inventario DEBE tener su sección de spec abajo. Si un elemento del inventario no tiene spec → la entrega es INCOMPLETA.
+
 1. MAPPING DETALLADO:
-   Aislar quirúrgicamente la sección [$COMPONENTE] del master.
-   Dividir en sub-componentes atómicos secuenciales (Header, Inputs con estados de validación, Step Indicators, CTAs, Cards, Modals, etc.).
+   Para cada elemento del inventario, extraer spec completo (no solo los "importantes").
+   Dividir en sub-componentes atómicos: Header, Inputs con estados de validación, Step Indicators, CTAs, Cards, Modals, Separadores, Labels, Pills, Iconos, Backgrounds — TODO lo visible.
 
 2. EXTRACCIÓN PIXEL-PERFECT de cada sub-componente:
 
@@ -1648,7 +1681,16 @@ MASTER DE REFERENCIA: [$MOCKUP_SOURCE] — leer con Read tool.
 SPEC EXTRAÍDA: [contenido de $SPEC_FILE]
 CÓDIGO IMPLEMENTADO: [archivos modificados desde git diff $DIFF_BASE — leer con Read tool]
 
-PROTOCOLO DE AUDITORÍA EN 3 FASES:
+PROTOCOLO DE AUDITORÍA EN 4 FASES:
+
+[FASE 0] INVENTARIO INDEPENDIENTE DEL MASTER (hacer ANTES de leer el spec):
+Leer [$MOCKUP_SOURCE] sección [$COMPONENTE] y listar TODOS los elementos visuales en orden top-down. Este inventario es independiente del spec — lo que no está en el spec pero está en el master TAMBIÉN SE AUDITA.
+```
+INVENTARIO TOTAL: N elementos
+1. [nombre] — [descripción visual breve]
+2. [nombre] — ...
+```
+Cualquier elemento del master que no esté en el spec → marcarlo como SPEC_GAP y auditarlo de todas formas contra el código.
 
 [FASE 1] MATRIZ DE AUDITORÍA MICROSCÓPICA (entregar esto primero):
 | Elemento UI | Propiedad CSS | Valor en Maqueta Master | Valor en Código | Estado |
