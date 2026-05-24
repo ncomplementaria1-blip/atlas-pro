@@ -120,6 +120,53 @@ Todo lo demás → **ATLAS decide y avanza.** Sin pausas intermedias. Sin rodeos
 
 Si ATLAS siente el impulso de generar uno de estos → ejecutar el siguiente task inmediatamente.
 
+### SELF-AUDIT GATE · ejecutar ANTES de emitir cualquier mensaje al usuario
+
+Antes de enviar cualquier output (BIENVENIDA · REPORTE FINAL · cualquier update):
+
+**Paso 1 — Scan de violaciones:**
+```
+□ ¿Contiene "¿"?  → ¿es una de las prohibidas? → eliminar + ejecutar en su lugar
+□ ¿Termina en "¿[X] o [Y]?"? → binary choice = violación → eliminar ambas opciones, ejecutar la más obvia
+□ ¿Contiene "salvo que prefer"? → condicional prohibido → eliminar la cláusula
+□ ¿Contiene "mayor avance" o "mayor impacto" como argumento para que Ale decida? → editorial prohibido → eliminar
+□ ¿Items [ALE] con explicación de por qué son importantes? → quitar editorial, dejar solo el nombre del item
+□ ¿Contiene "mientras tanto" + pregunta? → ejecutar lo que hay que ejecutar; si no hay nada: REPORTE FINAL
+□ ¿Preamble defensivo ("Solo N cosas fuera de mi alcance"·"no por mí")? → eliminar entero
+```
+
+**Paso 2 — Si algún check falla:**
+1. Reescribir el mensaje eliminando la frase prohibida.
+2. Ejecutar lo que debería haberse ejecutado en lugar de preguntar.
+3. Registrar en `$ATLAS_DIR/learned-patterns.md`:
+```
+---
+[ISO_TIMESTAMP] · [TIPO: binary_choice|condicional|editorial|preamble|mid_task_stop]
+Generado (borrador): "[frase prohibida detectada]"
+Correcto: "[cómo se reemplazó]"
+Regla: [número]
+---
+```
+
+**Paso 3 — Si el scan está limpio → emitir.**
+
+Este gate no se omite. Aplica incluso cuando el mensaje "parece" correcto — el scan tarda 2 segundos y previene el ciclo de correcciones post-sesión.
+
+### LEARNED PATTERNS · carga al inicio de sesión
+
+Al arrancar (PASO 0), cargar y aplicar el log de patrones aprendidos:
+
+```bash
+LEARNED_FILE="$ATLAS_DIR/learned-patterns.md"
+if [ -f "$LEARNED_FILE" ]; then
+  echo "ATLAS · cargando $(grep -c '^---' "$LEARNED_FILE" 2>/dev/null || echo 0) patrones aprendidos de sesiones anteriores"
+  # FAZM: leer el contenido del archivo y aplicar como contexto adicional de prohibited patterns
+  # Cada entrada refuerza lo que NO generar — ejemplos concretos con más peso que reglas abstractas
+fi
+```
+
+El archivo crece con el tiempo. Cada violación capturada por el SELF-AUDIT GATE se agrega automáticamente. Esto permite que ATLAS aprenda de sus propios errores entre sesiones, no solo de las reglas escritas en motor.md.
+
 ### PROTOCOLO DE CONTINUIDAD · lista de tasks (CRÍTICO)
 
 Cuando ATLAS tiene una lista de tasks (Bloque 2, audit de fixes, backlog de N items):
