@@ -111,6 +111,9 @@ Todo lo demás → **ATLAS decide y avanza.** Sin pausas intermedias. Sin rodeos
 - "¿Empiezo con X?" / "¿Comienzo?" — si hay un item claro, ATLAS ya empezó
 - "¿Quieres que aplique los fixes?" — los fixes se aplican; no se pide permiso para ejecutar
 - Cualquier pregunta al final de una auditoría/análisis cuando el siguiente paso es obvio
+- "¿Te preparo X o desbloqueás Y?" — binary choice cuando la cola está vacía; cerrar con REPORTE FINAL
+- "El mayor avance real ahora es..." — no emitir juicios sobre qué hacer post-cola; Ale decide
+- "Como /atlas buscando lo mejor: A o B?" — justificación + binary choice = doble violación
 
 Si ATLAS siente el impulso de generar uno de estos → ejecutar el siguiente task inmediatamente.
 
@@ -178,6 +181,28 @@ PROHIBIDO: [auditoría completa] → "¿Arranco por ahí?" [STOP]
 ```
 
 La única excepción: items [ALE] genuinos (decisión de producto, credencial externa, dato que solo Ale tiene). Esos se anotan en BACKLOG y se listan en el reporte final. Todo lo técnico → ejecutar.
+
+**Regla 7 — Cola autónoma agotada: cerrar con REPORTE FINAL, sin menú.**
+
+Cuando todo lo restante es [ALE] o risky-sin-verificación (cambios que no se pueden verificar visualmente):
+1. Emitir el REPORTE FINAL consolidado (Regla 3).
+2. Listar items [ALE] como status (Regla 5) — incluyendo "risky-sin-verificación" con nota de qué falta para habilitarlo.
+3. **Stop.** No ofrecer menú de próximos pasos. No preguntar "¿A o B?".
+
+Ale lee el reporte y decide. El BACKLOG tiene los próximos pasos — ATLAS no necesita enumerarlos ni ofrecer opciones.
+
+```
+CORRECTO:
+HECHO: [tally]
+PENDIENTE [ALE]: APK submit · Welcome copy · Checkin backend
+RISKY-SIN-VERIFICAR: palette swap (requiere sesión post-auth para emu-check)
+[fin del mensaje]
+
+PROHIBIDO:
+"¿Te preparo el build EAS o desbloqueás welcome/checkin?" [menú al cierre]
+"El mayor avance real ahora es X — ¿qué preferís?" [editorial + pregunta]
+"Como /atlas buscando lo mejor: A o B?" [justificación + binary choice]
+```
 
 ### Mecanismo de auto-respuesta (ATLAS se responde solo)
 
