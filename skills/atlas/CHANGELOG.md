@@ -2,6 +2,10 @@
 
 Formato: [SemVer](https://semver.org). Fechas absolutas.
 
+## [1.2.0] — 2026-06-27
+### Added
+- **Disciplina GRÁFICA** (`graphic-design-playbook.md`): extiende ATLAS más allá de la pantalla → identidad de marca/logo (tests reductivo/ownable/atemporal), sistema tipográfico y de color de marca, grid & composición editorial (suizo), iconografía como sistema, ilustración/dirección de arte, piezas estáticas (poster/ad/social/OG), e información/data-viz (Tufte). Tells gráfica AI→world-class + salto a Mithos + GATE de revisión gráfica. Destilado del canon (Vignelli/Rand/Müller-Brockmann/Bringhurst/Tufte/Sagmeister) + corpus de design systems. Cableado al codex + CLAUDE.md.
+
 ## [1.1.0] — 2026-06-27
 ### Added
 - **Motor generativo:** `creative-direction-playbook.md` — ATLAS no solo filtra, PROPONE diseño de agencia (proceso territorio→concepto→signature→sistema, 6 motores de generación, escalera de audacia, divergencia real, tests inolvidable/inevitabilidad/ownability, formato de pitch).
@@ -14,4 +18,4 @@ Formato: [SemVer](https://semver.org). Fechas absolutas.
 ### Added
 - **Codex Universal de Craft** (`universal-craft-codex.md`): vara 10/10 project-neutral destilada de 20+ design systems tier-1 + research R3F/motion/splash + short-form/generativo + harness 360. Gate Universal 10/10.
 - ATLAS universalizado: filtro de calidad para CUALQUIER proyecto (codex base + overlay por proyecto). MODO UNIVERSAL sin proyecto.
-- Paquete portable `ATLAS-Pro` para traspaso a otros usuarios.
+- Paquete portable `ATLAS-Universal` para traspaso a otros usuarios.
