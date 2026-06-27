@@ -1,6 +1,6 @@
 #!/bin/bash
 # Enforcement MECÁNICO (2026-06-12 · cierra "gap de enforcement en vivo" del grow-1):
-# ningún commit entra al repo de la skill sin atlas-eval PASS. Ni siquiera FAZM puede saltarlo.
+# ningún commit entra al repo de la skill sin atlas-eval PASS. Ni siquiera ATLAS puede saltarlo.
 cd "$(git rev-parse --show-toplevel)" || exit 1
 python3 eval/atlas-eval.py > /tmp/atlas-eval-precommit.log 2>&1
 if [ $? -ne 0 ]; then

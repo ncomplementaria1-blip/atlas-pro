@@ -8,3 +8,7 @@ skills/atlas/projects/*
 *.flow-lock
 skills/atlas/eval/grow-history.jsonl
 .DS_Store
+
+# Herramientas de maintainer (contienen el mapa de términos · no se publican)
+PUBLISH.sh
+scrub-public.sh

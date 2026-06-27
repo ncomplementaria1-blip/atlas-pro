@@ -49,7 +49,7 @@ skills/atlas/
 │   ├── gesture-choreography-playbook.md (física del gesto)
 │   ├── cinematography-playbook.md       (director de foto para VIDEO)
 │   ├── prompt-craft-playbook.md         (imagen generativa: esencia→cláusulas)
-│   ├── dataviz-tca-safe.md · haptics · perf-profiling · rive-adoption · newarch-gotchas
+│   ├── dataviz-safe-para-datos-sensibles.md · haptics · perf-profiling · rive-adoption · newarch-gotchas
 │   └── youtube-study-playbook.md        (cómo "estudiar" videos de referentes)
 ├── atlas-log.py · atlas-monitor.py · atlas-gc.sh · atlas-setup.sh
 ├── hooks/pre-commit

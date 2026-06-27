@@ -3,7 +3,7 @@
 ATLAS Monitor v1.1
 Audita el estado de /atlas en un proyecto y reporta plan vs realidad.
 Uso: python3 atlas-monitor.py [project_name]
-     python3 atlas-monitor.py nutricomai
+     python3 atlas-monitor.py el proyecto
 """
 
 import json
@@ -14,7 +14,7 @@ from pathlib import Path
 
 # --- config ---
 ATLAS_DIR = Path.home() / ".claude/skills/atlas"
-PROJECT_NAME = sys.argv[1] if len(sys.argv) > 1 else "nutricomai"
+PROJECT_NAME = sys.argv[1] if len(sys.argv) > 1 else "el proyecto"
 PROJECT_DIR = ATLAS_DIR / "projects" / PROJECT_NAME
 
 # colores ANSI
@@ -253,11 +253,11 @@ flow_path = PROJECT_DIR / "flow-rules.md"
 if flow_path.exists():
     content = flow_path.read_text(encoding="utf-8")
     checks = {
-        "ADR-002 TCA-safe":       "ADR-002" in content,
-        "Ley 19.628 (salud)":     "19.628" in content,
+        "ADR-002 safe-para-datos-sensibles":       "ADR-002" in content,
+        "la normativa de protección de datos (salud)":     "la normativa de protección de datos" in content,
         "Ley 21.719":             "21.719" in content,
         "SERNAC compliance":      "SERNAC" in content,
-        "MercadoPago":            "mercadopago" in content.lower(),
+        "un proveedor de pagos":            "un proveedor de pagos" in content.lower(),
         "Anti-patterns hook":     "check-mobile-antipatterns" in content,
     }
     print()

@@ -18,7 +18,7 @@ Uso:
   atlas-log.py <project> propose    --componente X [--accion "contexto de la propuesta"]
   atlas-log.py <project> get-propuesta   # imprime la propuesta pendiente (o NONE)
 
-`propose` persiste la tarea que FAZM propuso al cierre ("¿arranco X?") en flow-checkpoint.json
+`propose` persiste la tarea que ATLAS propuso al cierre ("¿arranco X?") en flow-checkpoint.json
 → si Ale responde "dale/arranca" en OTRA sesión (contexto compactado), el modo filler la recupera
 de acá en vez de caer a proxy. `open`/`close` la consumen (incidente 2026-06-08 "perdiste el contexto").
 Exit: 0 OK · 2 proyecto no encontrado.
