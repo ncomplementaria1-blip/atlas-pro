@@ -1,0 +1,7 @@
+# Estado runtime de ATLAS (no versionar — se regenera por sesión)
+__pycache__/
+*.pyc
+projects/*/session-lock.json
+projects/*/flow-checkpoint.json
+projects/*/.flow-lock
+.flow-lock

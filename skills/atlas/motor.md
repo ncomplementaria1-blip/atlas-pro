@@ -20,7 +20,7 @@ if [ ! -f "$ESTADO_FILE" ]; then
   python3 -c "
 import json, datetime
 estado = {
-  'inicio': datetime.datetime.utcnow().isoformat() + 'Z',
+  'inicio': datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z'),
   'ultima_sesion': None,
   'ultima_accion': 'Proyecto iniciado',
   'componentes_listos': [],
@@ -84,7 +84,7 @@ Todo lo demás → **ATLAS decide y avanza.** Sin pausas intermedias. Sin rodeos
 | Estructura de carpetas | La convención del proyecto detectada vía grep |
 | Nombre de rama | `$BRANCH_PREFIX/$COMPONENTE-$(date +%Y%m%d)` automático |
 | Qué mockup usar si no hay en masters.json | El fallback registrado |
-| Matu mode si hay duda | canonical (más seguro) |
+| Matu mode si hay duda | canonical (más seguro) · SALVO master_covers=yes claro + safety_touch=no → light · safety_touch=yes → canonical siempre |
 | Continuar o no con el siguiente paso | Continuar siempre, salvo los 2 STOP reales |
 | Merge strategy cuando hay divergencia web↔mobile (single screen) | Merge mobile-only primero (ya verificado, menor blast radius) · anotar web follow-up en BACKLOG · nunca preguntar |
 | Merge strategy cuando hay divergencia web↔mobile (app-wide · >100 refs · rompe invariante arquitectural) | Commit en branch sin push · REPORTE FINAL con análisis · marcar como [ALE] merge decision · nunca mergear sin OK |
@@ -636,12 +636,36 @@ GLOSARIO_FILE="$ATLAS_DIR/glosario-usuario.md"
 # NOTA: brand-context.md y matu-context.md son derivados de project-brief.md
 # Si el brief fue editado → regenerar ambos antes de este paso:
 #   FAZM lee el brief actualizado y reescribe brand-context.md + matu-context.md
+# BASE UNIVERSAL (binding 2026-06-26): el codex project-neutral es la vara 10/10 SIEMPRE.
+# Va PRIMERO; el brand-context del proyecto es el OVERLAY que lo especializa (nunca lo contradice).
+UNIVERSAL_CODEX_FILE="$HOME/.claude/skills/atlas/universal-craft-codex.md"
+UNIVERSAL_CODEX=$(cat "$UNIVERSAL_CODEX_FILE" 2>/dev/null || echo "# Codex universal no disponible")
+
 BRAND_CONTEXT_FILE="$ATLAS_DIR/brand-context.md"
 if [ ! -f "$BRAND_CONTEXT_FILE" ]; then
   echo "WARN · brand-context.md no encontrado · usando project-brief.md como fallback"
-  DESIGN_AGENCY_BLOCK=$(cat "$ATLAS_DIR/project-brief.md" 2>/dev/null || echo "# Brand Context no disponible")
+  BRAND_OVERLAY=$(cat "$ATLAS_DIR/project-brief.md" 2>/dev/null || echo "# Brand Context no disponible")
 else
-  DESIGN_AGENCY_BLOCK=$(cat "$BRAND_CONTEXT_FILE")
+  BRAND_OVERLAY=$(cat "$BRAND_CONTEXT_FILE")
+fi
+
+DESIGN_AGENCY_BLOCK="--- BASE UNIVERSAL · universal-craft-codex.md (vara 10/10 · aplica a todo) ---
+$UNIVERSAL_CODEX
+
+--- OVERLAY DEL PROYECTO · brand-context.md (DNA/paleta/voz · especializa el codex) ---
+$BRAND_OVERLAY"
+
+# Inyectar design laws de /impeccable (craft anti-slop) — SOLO path creativo (diseño
+# NUEVO · master_covers=no). NO aplica a replicación de master (#0h: replicar exacto,
+# NO "mejorar"). Eleva la calidad de los 3 mockups nuevos: OKLCH · anti-slop 2 órdenes
+# · absolute bans (side-stripe/gradient-text/glassmorphism/hero-metric/card-grids/modal-first)
+# · register brand/product · em-dash ban.
+IMPECCABLE_LAWS=$(sed -n '/## Shared design laws/,/## Commands/p' "$HOME/.claude/skills/impeccable/SKILL.md" 2>/dev/null | sed '$d')
+if [ -n "$IMPECCABLE_LAWS" ]; then
+  DESIGN_AGENCY_BLOCK="$DESIGN_AGENCY_BLOCK
+
+--- CRAFT ANTI-SLOP · design laws de /impeccable (OBLIGATORIO en diseño nuevo · NO en replicación de master) ---
+$IMPECCABLE_LAWS"
 fi
 ```
 
@@ -667,6 +691,16 @@ PROJECT_REPO=$(python3 -c "import json; print(json.load(open('$ATLAS_DIR/project
 if [ -z "$PROJECT_REPO" ]; then
   echo "FATAL · PROJECT_REPO no encontrado · verificar $ATLAS_DIR/project.json"
   exit 1
+fi
+
+# WORKTREE-AWARE (2026-06-12 · ley multisesión): si la sesión corre DENTRO de un
+# worktree del repo, operar EN el worktree (index separado = aislamiento real) —
+# jamás volver al repo principal, eso rompería la separación de secciones.
+WT_TOP=$(git rev-parse --show-toplevel 2>/dev/null || echo "")
+WT_COMMON=$(git rev-parse --git-common-dir 2>/dev/null || echo "")
+if [ -n "$WT_TOP" ] && [ "$WT_TOP" != "$PROJECT_REPO" ] && echo "$WT_COMMON" | grep -qF "$PROJECT_REPO/.git"; then
+  echo "WORKTREE · operando en $WT_TOP (repo principal: $PROJECT_REPO)"
+  PROJECT_REPO="$WT_TOP"
 fi
 TYPECHECK_CMD=$(python3 -c "import json; print(json.load(open('$ATLAS_DIR/project.json'))['typecheck_cmd'])" 2>/dev/null || echo "npm run typecheck")
 PLATFORM_DEFAULT=$(python3 -c "import json; print(json.load(open('$ATLAS_DIR/project.json'))['platform'])" 2>/dev/null || echo "mobile")
@@ -705,6 +739,7 @@ touch "$BACKLOG_FILE" 2>/dev/null || true
 /atlas --eco <descripción>               — implementación rápida sin creative spin
 /atlas innovate                          — ciclo de innovación: discovery → síntesis → brand filter → backlog
 /atlas innovate <área>                   — innovación enfocada (ej: "onboarding", "dashboard", "gamification")
+/atlas grow                              — ciclo de crecimiento del cerebro: cosecha → destilación → consolidación (con OK Ale)
 ```
 
 Sin argumentos: PROXY_MODE=yes → ir directo a PASO 10 (proxy) sin correr el motor.
@@ -719,6 +754,7 @@ Con `innovate`: ATLAS_MODE=innovate → saltar directamente a PASOS I0-I4 · no 
 ```bash
 ATLAS_MODE="${ATLAS_MODE:-implement}"
 INNOVATE_AREA=""
+DESIGN_TARGET=""
 
 # Detectar /atlas innovate [área]
 if echo "${COMPONENTE:-}" | grep -iq "^innovate"; then
@@ -727,13 +763,52 @@ if echo "${COMPONENTE:-}" | grep -iq "^innovate"; then
   COMPONENTE=""
 fi
 
+# Detectar /atlas design <cosa> — modo PITCH de agencia (genera conceptos, NO shipea)
+# También dispara con NL: "dame conceptos/diseños/opciones", "ideas de diseño para X"
+if echo "${COMPONENTE:-}" | grep -iqE "^design "; then
+  ATLAS_MODE="design"
+  DESIGN_TARGET=$(echo "${COMPONENTE:-}" | sed 's/^[Dd]esign[[:space:]]*//')
+  COMPONENTE=""
+fi
+
+# Detectar /atlas grow
+if echo "${COMPONENTE:-}" | grep -iq "^grow$"; then
+  ATLAS_MODE="grow"; COMPONENTE=""
+fi
+
 # Si ATLAS_MODE=innovate → saltar directamente a PASOS I0-I4
 # No ejecutar Lookup de MASTER_FILE ni PASO 0-10
 if [ "$ATLAS_MODE" = "innovate" ]; then
   echo "ATLAS · INNOVATE MODE · ${INNOVATE_AREA:-todo el producto}"
-  # → ir a sección ATLAS_MODE=innovate · CICLO DE INNOVACIÓN
+  # → leer innovate.md (en esta carpeta · on-demand) y ejecutar el ciclo I0-I4
+fi
+# Si ATLAS_MODE=grow → ciclo de crecimiento del cerebro (G0-G4 · con OK Ale en G2)
+if [ "$ATLAS_MODE" = "grow" ]; then
+  echo "ATLAS · GROW MODE · cosecha → destilación → consolidación"
+  # → leer grow.md (en esta carpeta · on-demand) y ejecutar el ciclo G0-G4
+fi
+# Si ATLAS_MODE=design → PITCH de agencia (genera conceptos impactantes · NO shipea · NO pipeline)
+if [ "$ATLAS_MODE" = "design" ]; then
+  echo "ATLAS · DESIGN MODE · pitch de agencia para: ${DESIGN_TARGET:-?}"
+  # → ejecutar el FLUJO DESIGN (D0-D3) más abajo · saltar Lookup de MASTER y PASO 0-10
 fi
 ```
+
+---
+
+## ATLAS_MODE=design · PITCH DE AGENCIA (genera diseño impactante on-demand)
+
+> Trigger: `/atlas design <cosa>` o NL ("dame conceptos/diseños/opciones impactantes para X"). ATLAS actúa como una agencia world-class: PROPONE conceptos audaces, no replica ni certifica. NO corre el pipeline de implementación (PASO 0-10), NO necesita master ni branch. Output = pitch + mockups HTML para que Ale elija. Es el músculo "ofrece diseños creativos" — el complemento del filtro.
+
+**D0 · Contexto:** detectar proyecto (si hay) para cargar su overlay; si no hay → modo universal (solo codex). Cargar SIEMPRE: `universal-craft-codex.md` (vara) + `creative-direction-playbook.md` (motor) + overlay `brand-context.md` si existe. Trend intel opcional (1 `Trend Researcher` sonnet si el target lo amerita).
+
+**D1 · Divergencia:** dispatchar 3 agentes en paralelo **(model: sonnet · exploración visual)**, uno por eje divergente del playbook §3 (no 3 sabores de lo mismo). Cada uno: AUTONOMIA_BLOCK + DESIGN_AGENCY_BLOCK (codex+playbook+overlay) + el prompt de Creative Spin (mismo del PASO 3) con el FORMATO DE PITCH §8. Generar `A.html`/`B.html`/`C.html` en `docs/mockups/<target>/` (o `~/Desktop/atlas-design/<target>/` si no hay repo).
+
+**D2 · Curaduría (no selección a ciegas):** ATLAS evalúa los 3 contra el Gate Universal 10/10 + los tests creativos del playbook §7 (inolvidable/inevitabilidad/ownability). Reporta los 3 con su pitch + score + una recomendación honesta (cuál y por qué), e injertos posibles (lo mejor de B/C sobre A).
+
+**D3 · Entrega:** presentar a Ale los 3 conceptos (abrir los HTML con `open -n`) + recomendación. Ale elige (o pide round 2 subiendo audacia). Elegido → si quiere shipear, ESE pasa a ser el master y entra al pipeline normal (`/atlas <componente>` con master_covers=yes). El pitch NO se commitea solo.
+
+⛔ En design mode NO aplican los 2 STOP de DB/credenciales (no toca prod) · el único límite es no shipear sin elección de Ale.
 
 ---
 
@@ -848,9 +923,15 @@ import json, datetime
 with open('$LOCK_FILE', 'w') as f:
     json.dump({'locked': True, 'session': '$SESSION_ID', 'task': '$COMPONENTE',
                'branch': '$(git branch --show-current)',
-               'ts': datetime.datetime.utcnow().isoformat() + 'Z', 'pid': $ATLAS_PID}, f, indent=2)
+               'ts': datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z'), 'pid': $ATLAS_PID}, f, indent=2)
 "
 echo "Lock adquirido · sesión $SESSION_ID"
+
+# GC AUTOMÁTICO (2026-06-12 · sin cron — ley · scope SEGURO): limpia SOLO artefactos
+# que atlas mismo generó: /tmp de gates +2d · __pycache__ propio · intel vencido 2×TTL ·
+# worktree prune (refs muertas). Basura externa (plugins/yt/caches Desktop) SOLO con
+# `atlas-gc.sh --full` manual por orden de Ale — jamás automático.
+bash "$ATLAS_DIR/../../atlas-gc.sh" --quiet 2>/dev/null || true
 
 # Cargar patrones aprendidos de sesiones anteriores
 LEARNED_FILE="$ATLAS_DIR/learned-patterns.md"
@@ -869,7 +950,7 @@ with open('$CHECKPOINT_FILE', 'w') as f:
     json.dump({'paso': 0, 'status': 'IN_PROGRESS', 'nuevo_flujo': True,
                'componente': '$COMPONENTE', 'master_file': '$MASTER_FILE',
                'proyecto': '$PROJECT_NAME',
-               'ts': datetime.datetime.utcnow().isoformat() + 'Z'}, f, indent=2)
+               'ts': datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')}, f, indent=2)
 "
 
 # Typecheck
@@ -910,6 +991,10 @@ d = json.load(open('$CHECKPOINT_FILE'))
 d['status'] = 'PASS'; d['paso'] = 0
 json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
+
+# TELEMETRÍA VIVA · ABRIR SESIÓN (BLOQUEANTE · fix auditoría 2026-06-07)
+# Sin esto el estado/checkpoint se congelan (causa raíz: writes no-bloqueantes se salteaban).
+python3 "$ATLAS_DIR/../../atlas-log.py" "$PROJECT_NAME" open --componente "$COMPONENTE" --paso 0
 ```
 
 ---
@@ -918,6 +1003,7 @@ json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 
 | Tier | Condición | Agentes totales | Tokens totales |
 |---|---|---|---|
+| AZUL | fix/patch + **nano** + diff≤50 líneas | ~3 | ~30-50k |
 | VERDE | POLISH/EXTRACT + light + sin creative_spin | ~8 | ~70-100k |
 | AMARILLO | REFACTOR_SIMPLE + light | ~12 | ~90-130k |
 | NARANJA | CREATE_NEW/REWRITE + canonical + sin creative_spin | ~32 | ~200-280k |
@@ -927,7 +1013,7 @@ json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 
 ## PASO 1 · ROUTER (1 llamada · JSON compacto)
 
-Dispatchar 1 agente `general-purpose`:
+Dispatchar 1 agente `general-purpose` **(model: haiku · clasificación simple, no necesita opus)**:
 
 ```
 Analizá: [descripción]
@@ -935,20 +1021,71 @@ Devolvé SOLO este JSON:
 {
   "tipo": "CREATE_NEW | REWRITE_COMPLEX | REFACTOR_SIMPLE | EXTRACT | POLISH",
   "platform": "mobile | web",
-  "matu_mode": "canonical | light",
+  "master_covers": "yes | no",
+  "safety_touch": "yes | no",
+  "matu_mode": "canonical | light | nano",
   "creative_spin": ["Brand Guardian", "UI Designer"],
+  "model_impl": "haiku | sonnet | opus",
   "razon": "1 línea",
   "costo": {
-    "tier": "VERDE | AMARILLO | NARANJA | ROJO",
+    "tier": "AZUL | VERDE | AMARILLO | NARANJA | ROJO",
     "agentes_estimados": N,
     "driver": "paso o factor que explica el tier en 5 palabras"
   }
 }
 Reglas tipo: CREATE_NEW=inexistente; REWRITE_COMPLEX=>3 useSharedValue/Skia/stagger; REFACTOR_SIMPLE=≤100 líneas; EXTRACT=sub-componente; POLISH=ajustes menores
-Reglas matu_mode: canonical si CREATE_NEW/REWRITE_COMPLEX/safety; light si REFACTOR_SIMPLE/EXTRACT/POLISH
-Reglas creative_spin: Brand Guardian si cambio visual; XR Architect si animaciones/depth; UI Designer si layout; Whimsy si onboarding/chat; UX si flows críticos; [] si REFACTOR_SIMPLE/EXTRACT
-Reglas costo.tier: VERDE si POLISH/EXTRACT+light+sin_spin; AMARILLO si REFACTOR+light; NARANJA si CREATE_NEW/REWRITE+canonical+sin_spin; ROJO si CREATE_NEW/REWRITE+canonical+spin≠[]
+Reglas master_covers: yes si un master/spec APROBADO (docs/mockups/… o un componente gemelo ya hecho) define el QUÉ (layout+copy) Y el CÓMO (tokens+patrón) Y cubre TODOS los estados (idle/error/loading/empty/vacío/pressed). no si hay que DESCUBRIR layout/copy/dirección visual O si falta CUALQUIER estado. (Una pantalla puede ser código nuevo PERO diseño ya spec'd → master_covers=yes. PERO ojo: el gate pixelmatch solo verifica el happy-path renderizado → un estado NO spec'd se IMPROVISA y se cuela sin red. Por eso: falta un estado → master_covers=no, ese pedazo va canonical.)
+Reglas safety_touch: yes si toca safety-clínica · auth · pagos · schema/migración · consentimiento · prompt-injection · PII · manejo de datos. Si yes → fuerza canonical SIEMPRE (override duro · la seguridad/calidad nunca se negocia por costo).
+Reglas matu_mode (aplicar EN ORDEN, primera que matchea gana):
+  1. safety_touch=yes → canonical (override · sin excepción).
+  2. master_covers=yes → light (AUNQUE tipo=CREATE_NEW · es replicación spec-driven; el diseño ya es 10/10, solo se verifica fidelidad — gate objetivo pixelmatch + /matu light bastan).
+  3. fix/patch≤50 líneas + no safety → nano.
+  4. (CREATE_NEW o REWRITE_COMPLEX) + master_covers=no → canonical (diseño genuinamente nuevo · redundancia paranoica justificada).
+  5. REFACTOR_SIMPLE/EXTRACT/POLISH → light.
+Reglas creative_spin: [] si master_covers=yes (el diseño YA existe · cero exploración · Regla #0f/#0h) O REFACTOR_SIMPLE/EXTRACT/nano. Sino: Brand Guardian si cambio visual; XR Architect si animaciones/depth; UI Designer si layout; Whimsy si onboarding/chat; UX si flows críticos.
+Reglas costo.tier: AZUL si nano+diff≤50; VERDE si light+sin_spin (POLISH/EXTRACT o master_covers=yes); AMARILLO si REFACTOR+light; NARANJA si canonical+sin_spin; ROJO si canonical+spin≠[]
+Reglas model_impl (modelo para la fase de IMPLEMENTACIÓN): haiku si nano/POLISH/EXTRACT (mecánico trivial); sonnet si master_covers=yes (replicación exacta de spec · no necesita razonamiento de diseño) o REFACTOR_SIMPLE; **opus** si CREATE_NEW/REWRITE_COMPLEX con master_covers=no (razonamiento de diseño genuino). DURO: los reviewers de /matu y cualquier paso con safety_touch=yes → SIEMPRE el top-tier · la calidad/safety NUNCA corre en modelo barato.
+
+**TOP-TIER = `opus`** (claude-opus-4-8 · $5/$25 por Mtok — mitad del precio de fable ($10/$50) con calidad de review IGUAL según benchmark propio 2026-06-09 · corregido 2026-06-10 con ccusage: "fable ~33% más barato" era falso, comparaba contra el precio viejo de Opus 4.1 $15/$75). **EXCEPCIÓN ÚNICA — `fable` SOLO en 6H-3 Director Review:** juicio 100% de gusto cinematográfico, corre solo si VIDEO_APPLIES, contexto = 1 contact-sheet + output = scores (~$0.2/round — ínfimo) · fallback opus si el harness lo rechaza. Esta línea es la única fuente de verdad del top-tier: cuando salga un modelo superior, se actualiza ACÁ y la tabla hereda.
+Backstop master_covers (anti-alucinación · determinista): si devolvés master_covers=yes, el componente DEBE tener un master real en docs/mockups/ (o un gemelo en código). Si un grep no encuentra archivo que lo cubra → master_covers=no → canonical. No inventar cobertura.
 ```
+
+**TRANSFERENCIA FABLE 5 (2026-06-11 · orden directa Ale):** el criterio de razonamiento de Fable 5 vive en `fable5-transfer-playbook.md` (índice + resúmenes) y `fable5/` (archivos profundos). **La tabla "Cómo se consume" del índice es la ÚNICA fuente de ruteo** (single source — no duplicar acá). CADA dispatch de implementación/diseño/debug DEBE cargar según esa tabla: el archivo profundo del pilar (backend/schema/webhook/cron/auth → `fable5/P1-arquitectura.md` · UI/render/animación/a11y → `P2-frontend.md` · bug/investigate/riesgo/decisión → `P3-logica-critica.md` · creative_spin≠[]/innovate/prompt generativo → `P4-creatividad.md`) + **`P5-metacognicion.md` SIEMPRE** (método de auto-corrección) + los transversales por trigger: `seguridad.md` si safety_touch=yes · `testing-estrategia.md` si implementación de código o fix de bug · `llm-engineering.md` si la tarea toca superficie IA. Método universal con SCOPE por proyecto (las reglas de dominio NO viajan — bloque SCOPE de cada archivo). Jamás cargar archivos cuyo trigger no aplica (progressive disclosure). **ECONOMÍA POR MODO:** en replicación mecánica (master_covers=yes · nano · REFACTOR/EXTRACT/POLISH) cargar el RESUMEN inline del pilar (sed del índice), NO el deep — el juicio ahí ya viene del spec; deep donde hay diseño/debug/safety (regla POR MODO del índice). testing-estrategia deep en toda implementación de código.
+
+### Invariantes de calidad 10/10 (NO bajan en `light` · esto hace que barato == 10/10)
+
+`light` NO es "menos calidad" — es **misma verificación, cero redundancia**. Lo que SIEMPRE se cumple, en cualquier modo:
+
+1. **Gate objetivo SIEMPRE** (determinista, no opinión): pixelmatch 6G-2.5 `diff_pct ≤ 5%` vs master · `npm run typecheck` EXIT=0 · tests verde. Diff visual que no matchea master = bug, no "variante" (#0i).
+2. **Mismo umbral PASS** en light que en canonical: avg ≥9.5 · cero agente <9.5 · cero T1. El bar NO se mueve.
+3. **/matu light = agentes ADAPTATIVOS, no menos-fijos.** Se eligen los agentes cuya LENTE el diff realmente toca → cobertura == superficie del cambio. Canonical dispara 13 (redundante); light dispara los relevantes. Toca animación → +fitness-ux; a11y-denso → a11y deep; copy clínico/visible → +Code Reviewer; depth/motion → +XR Architect.
+4. **safety_touch=yes → canonical, sin excepción.** El costo nunca baja safety.
+5. **Escalá ante duda** (iter#2 mismo bug → STOP · #0j/#0k) · nunca shippear roto · master con gap → PARAR y reportar (#0h).
+
+Razón: el master ya es 10/10 certificado → replicarlo lo HEREDA. Lo que se elimina (Creative Spin + 13 agentes redundantes sobre algo ya resuelto) no aportaba calidad — aportaba costo. Doc de referencia: skill `impl-barato`.
+
+### Modelo-por-rol (auto-selección · cada `Agent()` usa el modelo óptimo de su rol)
+
+El modelo se elige por ROL, no uno fijo por sesión. Cada subagente dispatchado lleva su `model`:
+
+| Rol (Agent dispatch) | Modelo | Por qué |
+|---|---|---|
+| Router (clasificar) | **haiku** | clasificación simple |
+| Implementación (Fase 5) | **`model_impl` del Router** | haiku/sonnet mecánico · opus solo diseño nuevo |
+| Creative Spin (PASO 3) | **sonnet** | exploración visual, no necesita top-tier |
+| Smoke / parity / scripts | **haiku** | ejecutar comandos, mecánico |
+| **/matu reviewers (PASO 7)** | **opus SIEMPRE** | calidad no se negocia · catch de issues |
+| Paso con `safety_touch=yes` | **opus SIEMPRE** | seguridad nunca en barato |
+| **6H Director Review (video)** | **fable** (fallback opus) | ÚNICO rol fable: gusto cinematográfico puro · corre poco · costo ínfimo |
+
+**ENFORCEMENT (NO opcional · esto hace que sea real, no aspiracional):** CADA `Agent()` de los PASOS siguientes DEBE pasar `model:` de esta tabla. **Omitir el param = el subagente HEREDA el modelo de sesión = anula la política.** Si una instrucción "Dispatchar X" no trae model → es bug del flujo, asignar el de la tabla. El MAIN loop lo fija Ale (`/model`); esto es solo para subagentes dispatchados. Ahorro: Router + Creative Spin + smoke en haiku/sonnet bajan ~50-70% el costo de esas fases sin tocar la calidad del review (sigue top-tier opus a $5/$25 — fable a $10/$50 = 2x queda SOLO en 6H).
+
+**ECONOMÍA DE CONTEXTO (universal · ahorro SIN pérdida — el bar 10/10 no se toca):**
+1. **Contexto quirúrgico en TODO dispatch** — va el diff/sección relevante, JAMÁS archivos completos (la regla de /matu 7A extendida a todos los pasos). El agente que necesita más, pide la sección específica.
+2. **Prefijo estable primero** en todo prompt de dispatch: AUTONOMIA_BLOCK → criterio fable5 → brand/brief → [al final lo volátil: diff/tarea/round]. El prompt-caching cobra ~10% el prefijo repetido — entre rounds del mismo flujo es plata regalada si el orden lo rompe.
+3. **Pilar por modo** (ver TRANSFERENCIA arriba): deep donde hay juicio · resumen donde hay replicación.
+4. **Jamás re-correr agentes PASS** (ya ley /matu R2+) · jamás re-investigar intel fresco (TTL).
+El ahorro vive en contexto, modelo del ejecutor y cache — NUNCA en bajar el bar (invariantes 10/10) ni en saltar gates (PR80: el gate salteado costó 16h).
 
 ### Parseo del output del Router
 
@@ -970,7 +1107,7 @@ COSTO_DRIVER=$(echo "$ROUTER_JSON_OUTPUT" | python3 -c "import json,sys; print(j
 python3 -c "
 import json, datetime
 entry = {
-  'ts': datetime.datetime.utcnow().isoformat() + 'Z',
+  'ts': datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z'),
   'evento': 'router_costo',
   'proyecto': '$PROJECT_NAME',
   'componente': '$COMPONENTE',
@@ -1008,7 +1145,7 @@ d['router_platform'] = '$ROUTER_PLATFORM'
 d['matu_mode'] = '$MATU_MODE'
 d['creative_spin'] = $CREATIVE_SPIN_JSON
 d['branch_name'] = '$(git branch --show-current)'
-d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
+d['ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
 json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
@@ -1055,10 +1192,12 @@ Si `NEEDS_ARCHITECTURE=no` → saltar directo a PASO 2.
 
 ### 1B-1 · Arquitectura del producto
 
-Dispatchar 1 agente `general-purpose`. Prompt:
+Dispatchar 1 agente `general-purpose` **(model: opus · arquitectura de producto = diseño genuinamente nuevo · top-tier)**. Prompt:
 
 ```
-Sos un arquitecto de producto. Leé el brief del proyecto:
+Sos un arquitecto de producto. CRITERIO OBLIGATORIO: leé con Read tool
+~/.claude/skills/atlas/fable5/P1-arquitectura.md y fable5/P5-metacognicion.md
+ANTES de diseñar — tu output se evalúa contra ese criterio. Leé el brief del proyecto:
 
 [PROJECT_BRIEF — contenido de project-brief.md]
 
@@ -1104,7 +1243,7 @@ Continuar directo a 1B-2 sin mostrar ni pausar. ATLAS elige la arquitectura gene
 
 ### 1B-2 · Full master HTML
 
-Dispatchar agente `Frontend Developer`. Prompt:
+Dispatchar agente `Frontend Developer` **(model: opus · master nuevo del producto entero = diseño genuino · top-tier)**. Prompt (agregar al inicio: CRITERIO OBLIGATORIO — leer con Read tool `fable5/P2-frontend.md` + `fable5/P4-creatividad.md` + `fable5/P5-metacognicion.md`):
 
 ```
 [AUTONOMIA_BLOCK]
@@ -1150,6 +1289,22 @@ MASTER_FILE="$FULL_MASTER_PATH"
 
 ---
 
+## PASO 1C · INTEL GATE (universal · todas las rutas · evalúa SIEMPRE, investiga cuando PAGA)
+
+**Por qué existe:** el criterio interno (fable5 + playbooks) cubre lo ESTABLE; lo volátil (librerías, advisories de seguridad, APIs externas, tendencias) exige señal FRESCA del mundo — con cache TTL, no re-investigando cada tarea. Protocolo completo + técnicas por fuente (web · YouTube · TikTok · docs) + formato del brief: `intel-playbook.md`.
+
+Evaluar la tabla de triggers en segundos (insumos: Router + plan de la tarea):
+- `creative_spin≠[]` → tendencias — YA lo cubre TREND INTEL en PASO 2, no duplicar acá.
+- Dependencia NUEVA o major-version bump → docs oficiales + breaking changes (TTL 30d).
+- `safety_touch=yes` → advisories del stack tocado: CVE/OWASP/lib de auth-pagos (TTL 7d).
+- API externa tocada (MercadoPago · WhatsApp · Cloudinary · stores) → changelog oficial (TTL 14d).
+- Técnica que NINGÚN playbook cubre → estudio dirigido web + video study (permanente → grow).
+- Nada de lo anterior (REFACTOR/EXTRACT/POLISH/replicación) → **SIN dispatch**, continuar.
+
+Con trigger activo: revisar cache `$ATLAS_DIR/intel/` (brief fresco según TTL → REUSAR, cero costo) → vencido/ausente: 1 dispatch **(model: sonnet)** según intel-playbook → brief ≤250 palabras → INYECTARLO al prompt del implementador/diseñador junto al pilar fable5. Brief con `REUTILIZABLE: sí` → lo cosecha `/atlas grow` (G0). Intel INFORMA decisiones — jamás pisa el master ni las leyes (#0h). Investigación falla → continuar con criterio interno + `INTEL: NO_DISPONIBLE` en el reporte.
+
+---
+
 ## PASO 2 · SKILLS DE DISEÑO + TREND INTEL (paralelo · solo si creative_spin≠[])
 
 Si `creative_spin=[]` → saltar PASO 2, 3, 4. Ir directo a PASO 5 desde master.
@@ -1160,7 +1315,7 @@ Si `creative_spin=[]` → saltar PASO 2, 3, 4. Ir directo a PASO 5 desde master.
 TREND_INTEL_FILE="$ATLAS_DIR/trend-intel-$COMPONENTE.md"
 ```
 
-Dispatchar 1 agente `Trend Researcher` al mismo tiempo que los TIER A. Los resultados se consumen en PASO 3 — no bloquea la generación de skills.
+Dispatchar 1 agente `Trend Researcher` **(model: sonnet · research con juicio)** al mismo tiempo que los TIER A. Los resultados se consumen en PASO 3 — no bloquea la generación de skills.
 
 Prompt:
 
@@ -1218,7 +1373,7 @@ python3 -c "
 import json, datetime
 d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 2; d['status'] = 'PASS'
-d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
+d['ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
 json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
@@ -1227,15 +1382,21 @@ json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 
 ## PASO 3 · CREATIVE SPIN (paralelo · solo si creative_spin≠[])
 
-FAZM: leer `$ATLAS_DIR/brand-context.md` e incluir verbatim como DESIGN_AGENCY_BLOCK en cada prompt.
+FAZM: incluir verbatim como DESIGN_AGENCY_BLOCK en cada prompt = universal-craft-codex.md (BASE) + brand-context.md (OVERLAY).
 
 ```bash
+UNIVERSAL_CODEX=$(cat "$HOME/.claude/skills/atlas/universal-craft-codex.md" 2>/dev/null || echo "# Codex universal no disponible")
 BRAND_CONTEXT_FILE="$ATLAS_DIR/brand-context.md"
 if [ -f "$BRAND_CONTEXT_FILE" ]; then
-  DESIGN_AGENCY_BLOCK=$(cat "$BRAND_CONTEXT_FILE")
+  BRAND_OVERLAY=$(cat "$BRAND_CONTEXT_FILE")
 else
-  DESIGN_AGENCY_BLOCK=$(cat "$ATLAS_DIR/project-brief.md" 2>/dev/null || echo "")
+  BRAND_OVERLAY=$(cat "$ATLAS_DIR/project-brief.md" 2>/dev/null || echo "")
 fi
+DESIGN_AGENCY_BLOCK="--- BASE UNIVERSAL · universal-craft-codex.md (vara 10/10) ---
+$UNIVERSAL_CODEX
+
+--- OVERLAY DEL PROYECTO · brand-context.md ---
+$BRAND_OVERLAY"
 TREND_INTEL_FILE="$ATLAS_DIR/trend-intel-$COMPONENTE.md"
 # El Trend Researcher fue dispatched en PASO 2 en paralelo; si aún no escribió → fallback
 TREND_INTEL=$(cat "$TREND_INTEL_FILE" 2>/dev/null || echo "")
@@ -1245,7 +1406,7 @@ if [ -z "$TREND_INTEL" ]; then
 fi
 ```
 
-Dispatchar agentes del `creative_spin` en paralelo. Prompt por agente:
+Dispatchar agentes del `creative_spin` en paralelo **(model: sonnet · exploración visual, no necesita opus)**. Prompt por agente:
 
 ```
 [AUTONOMIA_BLOCK]
@@ -1257,13 +1418,17 @@ Dispatchar agentes del `creative_spin` en paralelo. Prompt por agente:
 TREND INTEL — lo que está ganando HOY en este sector ($PREV_YEAR-$CURRENT_YEAR):
 [TREND_INTEL — contenido de $TREND_INTEL_FILE]
 
-Eres [AGENTE] en sprint creativo para [componente].
-EJE ASIGNADO: [A=editorial/tipográfico | B=espacial/profundidad | C=material/táctil]
+CRITERIO CREATIVO (obligatorio · leer con Read tool ANTES de proponer):
+  1. ~/.claude/skills/atlas/creative-direction-playbook.md — el MOTOR generativo: proceso de agencia (territorio→concepto→signature→sistema), los 6 motores de generación de concepto, la escalera de audacia (subir 1 peldaño), los tests inolvidable/inevitabilidad/ownability. NO opcional — es lo que separa "correcto" de "inolvidable".
+  2. ~/.claude/skills/atlas/fable5/P4-creatividad.md y P5-metacognicion.md — trasplante estructural, restricciones-primero, test de inevitabilidad, auto-corrección.
+
+Eres [AGENTE] en sprint creativo de nivel agencia world-class para [componente].
+EJE ASIGNADO: [A=editorial/tipográfico | B=espacial/profundidad | C=material/táctil] — pero divergí de verdad (playbook §3): tu concepto debe sonar a un PRODUCTO distinto de los otros dos ejes, no al mismo con otra tipografía.
 DIRECCIÓN ESTÉTICA: [síntesis de outputs TIER A del PASO 2]
 MASTER (spec inmutable): [grep -Fn "$COMPONENTE" "$PROJECT_REPO/$MASTER_FILE" 2>/dev/null | head -10 || head -30 "$PROJECT_REPO/$MASTER_FILE" 2>/dev/null | head -10]
-TAREA: UNA dirección visual de nivel agencia siguiendo el WORKFLOW INTERNO. Máx 12 líneas · sin código.
-OBLIGATORIO: tu dirección debe incorporar al menos 1 tendencia del TREND INTEL y explicar cómo la adapta al DNA de la marca — no copiar, transformar.
-Cerrá con: REFERENCIA (1 trabajo world-class publicado en $PREV_YEAR-$CURRENT_YEAR) + ¿qué hace UNFORGETTABLE este diseño en el contexto actual? + auto-corrección anti-slop (SÍ/NO + qué reemplazaste).
+TAREA: UNA dirección visual IMPACTANTE de nivel agencia. Usá al menos 1 de los 6 motores de generación (playbook §2) para escapar del cliché del rubro. Subí 1 peldaño de audacia (playbook §5) sin caer en ruido. Máx 12 líneas · sin código.
+OBLIGATORIO: incorporar ≥1 tendencia del TREND INTEL transformada (no copiada) al DNA de la marca · producir un ELEMENTO SIGNATURE irreplicable (playbook §4).
+Cerrá con el FORMATO DE PITCH del playbook §8: CONCEPTO (nombre 2-4 palabras) · TERRITORIO · IDEA ORGANIZADORA · ELEMENTO SIGNATURE · SISTEMA · REFERENCIA ($PREV_YEAR-$CURRENT_YEAR + qué principio robaste/transformaste) · POR QUÉ ES INOLVIDABLE · PELDAÑO DE AUDACIA · ANTI-SLOP (qué cliché mataste).
 ```
 
 Generar mockups en `$MOCKUP_BASE_PATH/$COMPONENTE/A.html`, `B.html`, `C.html`.
@@ -1300,7 +1465,7 @@ d['directions'] = {
     'B': os.environ.get('DIRECTION_B', ''),
     'C': os.environ.get('DIRECTION_C', '')
 }
-d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
+d['ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
 json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 PYEOF
 ```
@@ -1322,7 +1487,7 @@ for f in A B C; do
 done
 ```
 
-Dispatchar 3 agentes en paralelo — `Brand Guardian` · `UI Designer` · `fitness-ux-specialist`. Incluir AUTONOMIA_BLOCK + DESIGN_AGENCY_BLOCK al inicio:
+Dispatchar 3 agentes en paralelo **(model: sonnet · selección de mockup)** — `Brand Guardian` · `UI Designer` · `fitness-ux-specialist`. Incluir AUTONOMIA_BLOCK + DESIGN_AGENCY_BLOCK al inicio:
 
 ```
 [AUTONOMIA_BLOCK]
@@ -1330,6 +1495,8 @@ Dispatchar 3 agentes en paralelo — `Brand Guardian` · `UI Designer` · `fitne
 [DESIGN_AGENCY_BLOCK — contenido de brand-context.md]
 
 [PROJECT_BRIEF — contenido de project-brief.md · contexto narrativo vivo del producto]
+
+CRITERIO FABLE5 (obligatorio): leé con Read tool ~/.claude/skills/atlas/fable5/P4-creatividad.md (test de inevitabilidad · vara del producto) y P5-metacognicion.md (calibración: tu score es una señal a calibrar, no una cortesía).
 
 Eres [AGENTE] · Brand Council.
 
@@ -1373,7 +1540,7 @@ d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 4; d['status'] = 'PASS'
 d['mockup_ganador'] = '$MOCKUP_GANADOR'
 d['matu_rounds_done'] = 0; d['matu_pass'] = False
-d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
+d['ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
 json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
@@ -1439,7 +1606,7 @@ echo "COMPLEX_ELEMENTS=$COMPLEX_ELEMENTS"
 # Si COMPLEX_CSS → generar script Playwright para PNG antes de continuar con el spec
 ```
 
-**Si MASTER_TYPE=UI_SCREEN:** Dispatchar `Frontend Developer`. Prompt:
+**Si MASTER_TYPE=UI_SCREEN:** Dispatchar `Frontend Developer` **(model: $MODEL_IMPL · sonnet si master_covers=yes / opus si diseño nuevo)**. Prompt:
 
 ```
 [SISTEMA DE EXTRACCIÓN DE SPEC - EJECUCIÓN OBLIGATORIA]
@@ -1521,15 +1688,37 @@ INSTRUCCIONES:
 4. JERARQUÍA DE COMPONENTES:
    [árbol indentado tal como aparece en el HTML · sin inventar]
 
+4B. TABLA DE PROHIBICIÓN (1B) — WHAT IS NOT IN MASTER:
+   Leer el CSS del componente e identificar qué propiedades visuales NO aparecen.
+   Esto previene que el implementador agregue "mejoras" no autorizadas.
+   
+   | Elemento visual | Propiedad CSS ausente en master | Prohibición para implementación |
+   |-----------------|--------------------------------|--------------------------------|
+   | [ej: arcos SVG] | linear-gradient (no aparece en .arc) | NO agregar LinearGradient a arcos |
+   | [ej: tiles] | box-shadow con spread extra | NO agregar elevation no especificada |
+   | [completar para todos los elementos del inventario] | | |
+   
+   REGLA: todo elemento visual que NO tiene referencia CSS en este componente → PROHIBIDO en implementación.
+   "Para que se vea mejor" NO es razón válida. Solo el master es fuente de verdad.
+
+4C. GATE DE OWNERSHIP — para cada elemento del inventario (paso 0), verificar:
+   ```
+   □ [elemento] → tiene propiedades en tabla 1A: SÍ/NO
+   Si NO → aparece en tabla 1B → NO implementar / NO agregar
+   ```
+   Listar cualquier elemento planificado que no tenga dueño en 1A — el implementador debe eliminarlo.
+
 REGLAS ABSOLUTAS:
 - Si no está en el HTML → no lo listés
 - Cero interpretación, cero creatividad, cero "similar a"
+- Cero gradientes, shadows, borders, blur que no estén explícitos en el CSS del componente
+- Copiar valores hex carácter a carácter — nunca aproximar con paleta "similar"
 - Cada item debe ser verificable independientemente contra el HTML fuente
 - Si la sección ya coincide al 100% → certificarlo explícitamente
 - Si hay diferencia de 1px → listar la discrepancia exacta
 ```
 
-**Si MASTER_TYPE=TOKENS_INDEX:** Dispatchar `Frontend Developer`. Prompt:
+**Si MASTER_TYPE=TOKENS_INDEX:** Dispatchar `Frontend Developer` **(model: $MODEL_IMPL)**. Prompt:
 
 ```
 [SISTEMA DE AUDITORÍA DE TOKENS DNA - EJECUCIÓN OBLIGATORIA]
@@ -1582,12 +1771,14 @@ import json, datetime
 d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = '5A'; d['status'] = 'PASS'
 d['spec_file'] = '$SPEC_FILE'; d['spec_items'] = $SPEC_ITEMS
-d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
+d['ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
 json.dump(d, open('$CHECKPOINT_FILE', 'w'), indent=2)
 "
 ```
 
 FAZM (interno): spec en `$SPEC_FILE` · `$SPEC_ITEMS` items · continuar a PASO 5 con esta lista como input obligatorio al implementador.
+El `$SPEC_FILE` debe incluir las tablas 1A (propiedades presentes), 1B (prohibiciones explícitas) y 1C (ownership gate).
+Si `$SPEC_FILE` no incluye tabla 1B → extraerla manualmente antes de invocar `$IMPLEMENT_SKILL`.
 
 ---
 
@@ -1595,9 +1786,13 @@ FAZM (interno): spec en `$SPEC_FILE` · `$SPEC_ITEMS` items · continuar a PASO 
 
 **REGLA DE FIDELIDAD:** el agente de implementación DEBE recibir `$SPEC_FILE` como primer input. Implementa contra la lista de specs — no contra el mockup visual directamente.
 
-**Mobile:** invocar `$IMPLEMENT_SKILL` · componente + master + mockup elegido + `$SPEC_FILE`.
+**Context reset · PLAN→EXEC (anti-alucinación · roadmap #2):** la exploración de PASO 2-4 (creative spin, trend intel, deliberación de mockups) es RUIDO para el ejecutor. El implementador arranca limpio: recibe SOLO `$SPEC_FILE` + master + mockup ganador, no re-procesa la conversación previa. En sesión larga (>40% contexto) → dispatchar la implementación como subagente fresco (context propio) que lee el spec, no la historia. Regla: el ejecutor lee el spec, no la conversación.
 
-**Web:** implementar desde `$SPEC_FILE` · Tailwind tokens · Server/Client components · `motion` para animaciones.
+**REGLA DE PROHIBICIÓN ADITIVA (crítica · causa raíz de fallas históricas):** el implementador NUNCA puede agregar propiedades visuales que no estén en la tabla 1A del `$SPEC_FILE`. Si el master no tiene LinearGradient en un elemento, el código no tiene LinearGradient. Si el master no tiene box-shadow en un componente, el código no tiene shadow. La visibilidad se logra con el color exacto del master, no con decoraciones inventadas.
+
+**Mobile:** invocar `$IMPLEMENT_SKILL` · componente + master + mockup elegido + `$SPEC_FILE` (incluyendo tabla 1B obligatoria) + **archivos de criterio fable5 según la tabla del índice** (mínimo: `P2-frontend.md` + `testing-estrategia.md` + `P5-metacognicion.md` · +`seguridad.md` si safety_touch · +`llm-engineering.md` si superficie IA).
+
+**Web:** implementar desde `$SPEC_FILE` · Tailwind tokens · Server/Client components · `motion` para animaciones · mismos archivos de criterio fable5 que mobile.
 
 **Both (monorepo):** implementar según `$ROUTER_PLATFORM` detectado en PASO 1.
 
@@ -1637,13 +1832,13 @@ fi
 
 git commit -m "wip(checkpoint): $COMPONENTE · PASO 5 · pre-review · revertible
 
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+Co-Authored-By: Claude <noreply@anthropic.com>"
 
 python3 -c "
 import json, datetime
 d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 5; d['status'] = 'PASS'
-d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
+d['ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
 json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
@@ -1670,7 +1865,7 @@ python3 -c "
 import json, datetime
 d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 6; d['status'] = 'PASS_6D'
-d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
+d['ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
 json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
@@ -1721,9 +1916,40 @@ if [ "$ROUTER_PLATFORM" = "mobile" ]; then
     VISUAL_GATE_STATUS="PASS_SIMCTL"
   fi
 else
-  TARGET_FILE=$(git diff --name-only "$DIFF_BASE" 2>/dev/null | grep -E "\.(tsx|ts|jsx|js|css)$" | head -1)
-  PARIDAD_EVIDENCIA=$(grep -c "$COMPONENTE" "$PROJECT_REPO/$TARGET_FILE" 2>/dev/null || echo "0")
-  VISUAL_GATE_STATUS="WEB_GREP"
+  # WEB: screenshot real con Playwright contra dev server (puerto del proyecto)
+  PARIDAD_EVIDENCIA=""
+  WEB_PORT=$(python3 -c "import json; print(json.load(open('$ATLAS_DIR/project.json')).get('dev_server_port', 3000))" 2>/dev/null || echo "3000")
+  WEB_ROUTE=$(python3 -c "import json; print(json.load(open('$ATLAS_DIR/project.json')).get('component_routes', {}).get('$COMPONENTE', '/'))" 2>/dev/null || echo "/")
+  WEB_URL="http://localhost:${WEB_PORT}${WEB_ROUTE}"
+  PARIDAD_PNG="/tmp/paridad-web-$COMPONENTE.png"
+
+  # 1. Verificar dev server vivo
+  DEV_ALIVE=$(curl -s -o /dev/null -w "%{http_code}" "$WEB_URL" --max-time 5 2>/dev/null || echo "000")
+  if [ "$DEV_ALIVE" = "200" ] || [ "$DEV_ALIVE" = "304" ]; then
+    # 2. Screenshot via Node script (Playwright headless)
+    cat > /tmp/atlas-web-shot.mjs <<EOF
+import { chromium } from 'playwright';
+const browser = await chromium.launch({ headless: true });
+const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
+await page.goto('$WEB_URL', { waitUntil: 'networkidle', timeout: 30000 });
+await page.waitForTimeout(1500);
+await page.screenshot({ path: '$PARIDAD_PNG', fullPage: false });
+await browser.close();
+EOF
+    (cd "$PROJECT_REPO" && node /tmp/atlas-web-shot.mjs 2>/tmp/atlas-web-shot.err) && \
+      [ -s "$PARIDAD_PNG" ] && \
+      PARIDAD_EVIDENCIA="$PARIDAD_PNG"
+    if [ -z "$PARIDAD_EVIDENCIA" ]; then
+      echo "VISUAL_GATE · Playwright falló · error:"; tail -5 /tmp/atlas-web-shot.err 2>/dev/null
+      VISUAL_GATE_STATUS="BLOCKED"
+    else
+      VISUAL_GATE_STATUS="PASS_WEB"
+    fi
+  else
+    echo "VISUAL_GATE · dev server no responde en $WEB_URL (HTTP=$DEV_ALIVE) · push PROHIBIDO sin verificación visual"
+    echo "ACCIÓN REQUERIDA: levantar dev server (npm run dev) y re-correr PASO 6F"
+    VISUAL_GATE_STATUS="BLOCKED"
+  fi
 fi
 echo "PARIDAD_EVIDENCIA=$PARIDAD_EVIDENCIA"
 echo "VISUAL_GATE_STATUS=$VISUAL_GATE_STATUS"
@@ -1794,20 +2020,301 @@ Cuando todos los elementos coinciden visualmente → typecheck → `node scripts
 
 ---
 
-**6G · FIDELITY CHECK** (si `$SPEC_FILE` existe · post-implementación · pre-/matu):
+**6G · VISUAL DIFF LOOP** (post-implementación · pre-/matu · BLOQUEANTE para CREATE_NEW/REWRITE_COMPLEX/POLISH visuales):
+
+**Por qué existe:** la auditoría de código contra spec NO captura bugs visuales reales. Un componente puede tener fontSize:14 (igual al spec) pero verse distinto al master por shadow, gradient, border, layout edge cases. El único oráculo confiable es comparar **screenshot del componente renderizado** contra **screenshot del master HTML renderizado**.
+
+**Diferencia con auditoría tradicional:**
+- Antes (6G v1): agente lee CÓDIGO + lee HTML → audita texto. Visual fidelity ciega.
+- Ahora (6G v2): script renderiza AMBOS a PNG → agente con vision multi-modal compara IMÁGENES → fix → re-render → re-evaluate. Loop hasta 9.5/10 visual.
+
+### 6G-1 · Pre-flight: detectar si aplica
 
 ```bash
 SPEC_FILE="$PROJECT_REPO/.claude/implementation-spec-$COMPONENTE.md"
-if [ ! -f "$SPEC_FILE" ]; then
-  echo "SKIP 6G · no hay spec file (creative_spin=[] o REFACTOR) · continuar a PASO 7"
+VISUAL_LOOP_APPLIES="yes"
+
+# Skip si refactor puro sin cambio visual (EXTRACT sin UI · POLISH backend)
+if [ "$ROUTER_TIPO" = "EXTRACT" ] || [ "$ROUTER_TIPO" = "REFACTOR_SIMPLE" ]; then
+  VISUAL_LOOP_APPLIES="no"
+  echo "SKIP 6G · tipo=$ROUTER_TIPO sin cambio visual · continuar a PASO 7"
+fi
+
+# Skip si no hay master (creative_spin=[] sin ganador)
+if [ ! -f "$MOCKUP_SOURCE" ] && [ ! -f "$PROJECT_REPO/$MASTER_FILE" ]; then
+  VISUAL_LOOP_APPLIES="no"
+  echo "SKIP 6G · no hay master para comparar · continuar a PASO 7"
 fi
 ```
 
-Si `$SPEC_FILE` existe → dispatchar 1 agente `Frontend Developer`. Prompt:
+Si `VISUAL_LOOP_APPLIES=no` → saltar a PASO 7 directo.
+
+### 6G-2 · Render dual screenshots (universal mobile + web)
+
+```bash
+VISUAL_DIFF_DIR="/tmp/atlas-visual/$COMPONENTE-$(date +%s)"
+mkdir -p "$VISUAL_DIFF_DIR"
+MASTER_PNG="$VISUAL_DIFF_DIR/master.png"
+IMPL_PNG="$VISUAL_DIFF_DIR/impl.png"
+
+if [ "$ROUTER_PLATFORM" = "mobile" ]; then
+  # MASTER: render HTML a PNG mobile-sized (393×851 = iPhone 14)
+  node "$PROJECT_REPO/scripts/visual-diff-loop.mjs" \
+    --mode=master \
+    --master="$MOCKUP_SOURCE" \
+    --component="$COMPONENTE" \
+    --out="$MASTER_PNG" \
+    --viewport=mobile 2>&1 | tail -5
+
+  # IMPL: screenshot del emulator/simulator
+  if xcrun simctl io booted screenshot "$IMPL_PNG" 2>/dev/null; then
+    echo "IMPL_SOURCE=simulator"
+  elif adb exec-out screencap -p > "$IMPL_PNG" 2>/dev/null && [ -s "$IMPL_PNG" ]; then
+    echo "IMPL_SOURCE=android_emulator"
+  else
+    echo "VISUAL_LOOP · BLOQUEADO · sin emulator/simulator activo"
+    echo "ACCIÓN: arrancar emulator (xcrun simctl boot · adb devices) y reintentar"
+    VISUAL_LOOP_STATUS="BLOCKED_NO_DEVICE"
+  fi
+
+elif [ "$ROUTER_PLATFORM" = "web" ] || [ "$ROUTER_PLATFORM" = "both" ]; then
+  # MASTER: render HTML a PNG desktop-sized (1440×900)
+  node "$PROJECT_REPO/scripts/visual-diff-loop.mjs" \
+    --mode=master \
+    --master="$MOCKUP_SOURCE" \
+    --component="$COMPONENTE" \
+    --out="$MASTER_PNG" \
+    --viewport=desktop 2>&1 | tail -5
+
+  # IMPL: Playwright screenshot del dev server (auto-detecta puerto)
+  DEV_PORT="${DEV_PORT:-3001}"
+  curl -sf "http://localhost:$DEV_PORT" -o /dev/null
+  if [ $? -ne 0 ]; then
+    echo "VISUAL_LOOP · WARN · dev server no responde en :$DEV_PORT · intentando arrancar"
+    cd "$PROJECT_REPO/apps/web" && nohup npm run dev > /tmp/atlas-dev.log 2>&1 &
+    DEV_PID=$!
+    sleep 12
+  fi
+
+  node "$PROJECT_REPO/scripts/visual-diff-loop.mjs" \
+    --mode=impl-web \
+    --url="http://localhost:$DEV_PORT" \
+    --component="$COMPONENTE" \
+    --out="$IMPL_PNG" \
+    --viewport=desktop 2>&1 | tail -5
+
+  [ -s "$IMPL_PNG" ] || VISUAL_LOOP_STATUS="BLOCKED_NO_DEVSERVER"
+fi
+
+# Validar que ambos PNGs existen y son no-vacíos
+if [ ! -s "$MASTER_PNG" ] || [ ! -s "$IMPL_PNG" ]; then
+  echo "VISUAL_LOOP · BLOQUEADO · screenshots incompletos · master=$([ -s $MASTER_PNG ] && echo OK || echo FAIL) impl=$([ -s $IMPL_PNG ] && echo OK || echo FAIL)"
+  VISUAL_LOOP_STATUS="${VISUAL_LOOP_STATUS:-BLOCKED_SCREENSHOTS}"
+fi
+
+echo "VISUAL_LOOP · master=$MASTER_PNG · impl=$IMPL_PNG · status=${VISUAL_LOOP_STATUS:-READY}"
+```
+
+Si `VISUAL_LOOP_STATUS != READY` → fallback a 6G-LEGACY (auditoría de código abajo) con flag `VISUAL_GATE: PENDIENTE_NO_RENDER` en reporte final.
+
+### 6G-2.5 · Pre-gate pixelmatch determinista (NUEVO · barato · sin agente multimodal)
+
+Antes de invocar al agente multimodal (caro · 1-3 min por round), correr un gate determinista basado en pixelmatch:
+
+```bash
+PIXEL_DIFF_THRESHOLD="${PIXEL_DIFF_THRESHOLD:-0.05}"   # 5% default
+PIXEL_THRESHOLD="${PIXEL_THRESHOLD:-0.1}"               # ignora anti-aliasing
+
+if [ "$VISUAL_LOOP_STATUS" = "READY" ]; then
+  COMPARE_JSON=$(node "$PROJECT_REPO/scripts/visual-diff-loop.mjs" \
+    --platform="$ROUTER_PLATFORM" \
+    --component="$COMPONENTE" \
+    --master="$MOCKUP_SOURCE" \
+    --threshold="$PIXEL_DIFF_THRESHOLD" \
+    --pixelthreshold="$PIXEL_THRESHOLD" \
+    --compare 2>&1 | tail -50)
+
+  PIXEL_DIFF_PCT=$(echo "$COMPARE_JSON" | grep -oE '"diff_pct"[[:space:]]*:[[:space:]]*[0-9.]+' | awk -F: '{print $2}' | tr -d ' ')
+  PIXEL_STATUS=$(echo "$COMPARE_JSON" | grep -oE '"status"[[:space:]]*:[[:space:]]*"(PASS|FAIL)"' | awk -F'"' '{print $4}')
+  DIFF_PNG=$(echo "$COMPARE_JSON" | grep -oE '"diff_png"[[:space:]]*:[[:space:]]*"[^"]+"' | awk -F'"' '{print $4}')
+
+  echo "PIXEL_GATE · diff_pct=$PIXEL_DIFF_PCT · status=$PIXEL_STATUS · diff_png=$DIFF_PNG"
+
+  # Pre-gate PASS → saltar 6G-3 multimodal, ir a PASO 7
+  if [ "$PIXEL_STATUS" = "PASS" ]; then
+    echo "VISUAL_LOOP · PASS automático (pixel-gate) · ahorro de round multimodal"
+    VISUAL_GATE="PASS_PIXEL"
+    VISUAL_SCORE="9.5"   # determinista equivalente
+    # → saltar a PASO 7
+  else
+    echo "VISUAL_LOOP · pixel-gate FAIL (diff_pct=$PIXEL_DIFF_PCT > $PIXEL_DIFF_THRESHOLD) · continuar con 6G-3 multimodal"
+    VISUAL_GATE="PENDING_MULTIMODAL"
+    # → continuar a 6G-3
+  fi
+fi
+```
+
+**Cuándo confiar en el pre-gate:**
+- `diff_pct ≤ 0.05` → PASS confiable para REFACTOR_SIMPLE, EXTRACT, POLISH (cambios estructurales mínimos)
+- `diff_pct ≤ 0.03` (modo estricto) → PASS confiable también para CREATE_NEW
+
+**Cuándo NO confiar (forzar 6G-3 multimodal):**
+- Componente nuevo con muchos elementos dinámicos (carga lazy · animaciones)
+- Tier1 visible en el `diff_png` (zonas rojas concentradas en áreas críticas: gauges, badges, foto principal)
+- Tipografía con anti-aliasing distinto entre master y impl (false positives)
+
+Override manual: `export FORCE_MULTIMODAL=yes` antes de correr → ignora pre-gate, va directo a 6G-3.
+
+### 6G-3 · Visual Diff Loop iterativo (max 5 rounds · threshold 9.5/10)
+
+```bash
+VISUAL_ROUND=1
+VISUAL_MAX_ROUNDS=5
+VISUAL_THRESHOLD=9.5
+VISUAL_SCORE=0
+```
+
+**Para cada round (hasta PASS o max_rounds):**
+
+Dispatchar 1 agente `Frontend Developer` con vision multi-modal **(model: opus · es un GATE de certificación visual, no implementación — top-tier SIEMPRE · fix audit 2026-06-08: corría en $MODEL_IMPL)**. Prompt:
 
 ```
-[SISTEMA DE CONTROL DE CALIDAD COMPILATORIO - EJECUCIÓN OBLIGATORIA]
+[VISUAL DIFF EVALUATOR - EJECUCIÓN OBLIGATORIA]
+PROHIBICIÓN ABSOLUTA DE ALUCINACIÓN. SOLO REPORTÁS LO QUE VES EN LAS IMÁGENES.
+
+Sos un Visual Diff Evaluator de fidelidad pixel-perfect. Recibís DOS imágenes:
+1. MASTER: screenshot del mockup HTML canónico (la fuente de verdad)
+2. IMPL: screenshot del componente implementado (lo que renderiza la app real)
+
+Tu único trabajo: identificar TODAS las diferencias visuales entre ambas y reportarlas con fix exacto.
+
+INPUTS:
+- MASTER_IMAGE: [$MASTER_PNG] — usar Read tool con esta ruta
+- IMPL_IMAGE: [$IMPL_PNG] — usar Read tool con esta ruta
+- COMPONENTE: [$COMPONENTE]
+- SPEC_FILE (referencia secundaria): [$SPEC_FILE]
+- ROUND: [$VISUAL_ROUND de $VISUAL_MAX_ROUNDS]
+
+PROTOCOLO EN 3 FASES:
+
+[FASE 1] INVENTARIO VISUAL DEL MASTER (antes de mirar IMPL):
+Listá top-down todos los elementos visuales de MASTER. Por cada elemento:
+- nombre breve
+- color dominante observado
+- tipografía aproximada (size · weight)
+- spacing/padding visible
+- forma (rect · circle · pill · custom)
+- estado (sólido · gradient · frosted · hollow · ring · filled)
+
+Cero referencia a IMPL en esta fase. Solo lo que ves en MASTER.
+
+[FASE 2] MATRIZ DE COMPARACIÓN VISUAL:
+| Elemento | Aspecto MASTER | Aspecto IMPL | Diff | Severidad |
+|----------|---------------|--------------|------|-----------|
+| [nombre] | [descripción] | [descripción] | [qué difiere] | T1/T2/T3 |
+
+Severidades:
+- T1 (bloqueante): forma/color/tipografía claramente distinta · elemento ausente · layout roto
+- T2 (visible): spacing off por >4px · color desplazado · weight incorrecto
+- T3 (sutil): kerning · letter-spacing · shadow opacity menor
+
+Completar la matriz ENTERA antes de proponer fixes.
+
+[FASE 3] FIX PLAN (por cada diff T1+T2):
+| Diff | Archivo (best guess) | Línea/prop | Valor actual | Valor a aplicar |
+|------|----------------------|------------|--------------|-----------------|
+
+OUTPUT FINAL OBLIGATORIO (formato exacto · FAZM parsea esto):
+```
+VISUAL_SCORE: N.N/10
+VISUAL_TIER1_COUNT: N
+VISUAL_TIER2_COUNT: N
+VISUAL_TIER3_COUNT: N
+VISUAL_STATUS: PASS (score≥9.5 AND T1=0) | FAIL
+VISUAL_FIXES_REQUIRED:
+- [archivo:línea] · [prop] · [valor actual] → [valor master]
+- ...
+```
+
+REGLAS:
+- Cero "looks similar" · cero "approximately matches" · cero hedging
+- Cada diff necesita valor concreto en master + valor concreto en impl
+- Si no podés ver un elemento en IMPL → reportar como ELEMENTO_AUSENTE T1
+- Si MASTER es scroll completo y IMPL es solo viewport → reportar como SCROLL_MISMATCH T2
+- Cero saltarse FASE 1 · cero saltarse FASE 2 antes de FASE 3
+```
+
+**Parseo del output + decisión:**
+
+```bash
+# FAZM (interno): extraer VISUAL_SCORE del output del agente
+# VISUAL_SCORE=$(grep '^VISUAL_SCORE:' <output> | awk '{print $2}' | cut -d/ -f1)
+# VISUAL_TIER1=$(grep '^VISUAL_TIER1_COUNT:' <output> | awk '{print $2}')
+
+if (( $(echo "$VISUAL_SCORE >= $VISUAL_THRESHOLD" | bc -l) )) && [ "$VISUAL_TIER1" = "0" ]; then
+  VISUAL_LOOP_STATUS="PASS"
+  echo "VISUAL_LOOP · PASS round $VISUAL_ROUND · score=$VISUAL_SCORE"
+else
+  echo "VISUAL_LOOP · round $VISUAL_ROUND FAIL · score=$VISUAL_SCORE · T1=$VISUAL_TIER1"
+  if [ "$VISUAL_ROUND" -lt "$VISUAL_MAX_ROUNDS" ]; then
+    # Dispatchar agente implementador con VISUAL_FIXES_REQUIRED
+    # → aplica fixes en batch → re-render → re-evaluate round N+1
+    VISUAL_ROUND=$((VISUAL_ROUND + 1))
+    # (re-correr 6G-2 render + 6G-3 evaluate)
+  else
+    echo "VISUAL_LOOP · STOP · 5 rounds sin PASS · escalar a Ale con tabla de diffs irresolubles"
+    VISUAL_LOOP_STATUS="BLOCKED_MAX_ROUNDS"
+  fi
+fi
+```
+
+**Loop completo (pseudo-código del orquestador):**
+
+```
+while round ≤ 5:
+  render_master(MASTER_PNG)
+  render_impl(IMPL_PNG)
+  dispatch(visual_evaluator with both PNGs)
+  parse VISUAL_SCORE, VISUAL_TIER1
+  if score ≥ 9.5 and tier1 == 0:
+    break PASS
+  else:
+    dispatch(implementador with VISUAL_FIXES_REQUIRED)
+    typecheck → if FAIL → STOP
+    commit checkpoint (revertible)
+    round += 1
+escalate if not PASS at round 5
+```
+
+Checkpoint post-6G:
+```bash
+python3 -c "
+import json, datetime
+d = json.load(open('$CHECKPOINT_FILE'))
+d['paso'] = '6G'
+d['visual_loop_status'] = '$VISUAL_LOOP_STATUS'
+d['visual_score'] = '$VISUAL_SCORE'
+d['visual_rounds'] = $VISUAL_ROUND
+d['visual_master_png'] = '$MASTER_PNG'
+d['visual_impl_png'] = '$IMPL_PNG'
+d['ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
+json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
+"
+```
+
+---
+
+### 6G-LEGACY · Auditoría de código contra spec (fallback solo si screenshots no disponibles)
+
+Solo se ejecuta si `VISUAL_LOOP_STATUS=BLOCKED_*` (sin emulator/dev server). Es el fallback histórico — NO reemplaza el visual loop.
+
+Si `$SPEC_FILE` existe → dispatchar 1 agente `Frontend Developer` **(model: opus · gate de certificación de fidelidad — top-tier SIEMPRE)**. Prompt:
+
+```
+[SISTEMA DE CONTROL DE CALIDAD COMPILATORIO - EJECUCIÓN OBLIGATORIA · MODO FALLBACK]
 PROHIBICIÓN ABSOLUTA DE ALUCINACIÓN, SIMPLIFICACIÓN O USO DE PLACEHOLDERS.
+
+NOTA: Este es el fallback de auditoría de código. El VISUAL DIFF LOOP (6G v2) está bloqueado por falta de render disponible. Tu auditoría es NECESARIA pero NO SUFICIENTE — el reporte final debe marcar VISUAL_GATE: PENDIENTE_NO_RENDER.
 
 Actuás como un Compilador Front-End Humano y Diseñador de Píxel Perfecto con nivel de atención hiper-enfocado. Tu único objetivo es verificar con fidelidad matemática y visual del 100% la implementación contra la maqueta maestra. No tenés permiso para optimizar, reinterpretar, resumir o "mejorar" el diseño. Si el diseño aprobado usa padding de 23px, la implementación DEBE usar 23px.
 
@@ -1887,7 +2394,7 @@ Si `FIDELITY_STATUS=FAIL`:
 
 2. **BATCH FIX.** Escribir el archivo completo con TODOS los fixes en un solo pase. No corregir un elemento, verificar, corregir el siguiente. Un archivo → todos los fixes.
 
-3. Dispatch de un **segundo agente independiente** `Frontend Developer` para re-verificar (no el mismo agente que corrigió — bias de confirmación):
+3. Dispatch de un **segundo agente independiente** `Frontend Developer` **(model: opus · mismo gate, par independiente)** para re-verificar (no el mismo agente que corrigió — bias de confirmación):
 ```
 Sos el SEGUNDO VERIFICADOR — no el implementador. Leé [$MOCKUP_SOURCE] sección [$COMPONENTE] con Read tool. Leé el código actual con Read tool. Completá la MATRIZ DE AUDITORÍA MICROSCÓPICA independientemente del primer verificador. No leas el output del primer verificador antes de completar tu propia matriz. Reportá FIDELITY_STATUS con JURAMENTO + evidencia de líneas.
 ```
@@ -1916,10 +2423,113 @@ if '/' in fs:
 else:
     d['fidelity_status'] = 'N/A'
     d['fidelity_mismatches'] = 0
-d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
+d['ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
 json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
+
+---
+
+## PASO 6H · DIRECTOR REVIEW (video) — gate "todo sea 10/10" · BLOQUEANTE si VIDEO_APPLIES=yes
+
+**Por qué existe:** un video generado/pre-renderizado puede pasar typecheck y verse "ok en el código" y aun así gritar "esto lo hizo una IA" (morphing, flicker, movimiento sin motivo, grade chillón, loop con salto). El único oráculo es **mirar los frames con ojo de director de foto** contra la rúbrica. Es el gemelo del 6G visual, pero para VIDEO: encuadre, lente, movimiento motivado, luz, grade, montaje, continuidad, sonido, lens-character, cero tells AI. Detalle/rúbrica: `cinematography-playbook.md` §12-13.
+
+### 6H-1 · Detectar si aplica (self-contained)
+
+```bash
+VIDEO_APPLIES="no"; VIDEO_TRIGGER=""
+# Aplica si la tarea toca/produce un asset de video o una superficie de video conocida.
+if echo "$COMPONENTE" | grep -qiE "video|splash|orbe|orb|totem|estanque|landing|hero|ad|reel|clip|celebraci|rive"; then
+  VIDEO_APPLIES="yes"; VIDEO_TRIGGER="keyword"
+fi
+# O si el diff/working-tree introduce/cambia un asset de video (señal fuerte · pisa keyword).
+if git -C "$PROJECT_REPO" status --porcelain 2>/dev/null | grep -qiE "\.(mp4|mov|webm|gif)$"; then
+  VIDEO_APPLIES="yes"; VIDEO_TRIGGER="asset"
+fi
+[ "$VIDEO_APPLIES" = "no" ] && echo "SKIP 6H · la tarea no produce/toca video · continuar a PASO 7"
+```
+
+Si `VIDEO_APPLIES=no` → saltar a PASO 7 directo. (Independiente de 6G: una tarea puede disparar ambos, uno, o ninguno.)
+
+### 6H-2 · Extraer frames del clip (reusa la técnica del youtube-study-playbook)
+
+```bash
+VIDEO_FILE="${VIDEO_FILE:-$(git -C "$PROJECT_REPO" status --porcelain | grep -ioE '[^ ]+\.(mp4|mov|webm)$' | head -1)}"
+DIR_DIR="/tmp/atlas-director/$COMPONENTE-$(date +%s)"; mkdir -p "$DIR_DIR"
+SHEET_PNG="$DIR_DIR/contact-sheet.png"
+if [ -n "$VIDEO_FILE" ] && [ -f "$PROJECT_REPO/$VIDEO_FILE" ]; then
+  # Tile ADAPTATIVO (fix 2026-06-12): cubre el clip ENTERO hasta 32 frames (4 col × ≤8 filas).
+  # Antes 4x4 fijo: clips >8s a 2fps truncaban la cola del video fuera del contact-sheet.
+  DUR=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$PROJECT_REPO/$VIDEO_FILE" 2>/dev/null | cut -d. -f1); DUR=${DUR:-8}
+  TILE_FPS=$(python3 -c "d=max(int('$DUR'),1); print(round(min(2, 32/d), 3))")
+  TILE_ROWS=$(python3 -c "import math; d=max(int('$DUR'),1); print(min(8, max(2, math.ceil(min(2,32/d)*d/4))))")
+  ffmpeg -y -i "$PROJECT_REPO/$VIDEO_FILE" -vf "fps=$TILE_FPS,scale=360:-1,tile=4x$TILE_ROWS" "$SHEET_PNG" 2>&1 | tail -2
+  # loop-check: ¿primer frame ~= último? (salto perceptible = FAIL §9/§13)
+  ffmpeg -y -i "$PROJECT_REPO/$VIDEO_FILE" -vf "select=eq(n\,0)" -vframes 1 "$DIR_DIR/first.png" 2>/dev/null
+  DIRECTOR_STATUS="READY"
+elif [ "$VIDEO_TRIGGER" = "keyword" ]; then
+  # FIX falso bloqueo (audit 2026-06-08): keyword matcheó ("landing hero"...) pero la tarea NO
+  # produjo clip → no hay nada que dirigir · downgrade a SKIP, NUNCA bloquear push por esto.
+  echo "SKIP 6H · keyword sin clip producido · continuar a PASO 7"
+  VIDEO_APPLIES="no"; DIRECTOR_STATUS="SKIP_NO_VIDEO_OUTPUT"
+else
+  echo "DIRECTOR · BLOQUEADO · hay asset de video en el diff pero no se pudo leer · setear VIDEO_FILE=ruta y reintentar"
+  DIRECTOR_STATUS="BLOCKED_NO_CLIP"
+fi
+```
+
+Si `DIRECTOR_STATUS=BLOCKED_*` → reportar `DIRECTOR_GATE: PENDIENTE_NO_RENDER` · push prohibido (igual que 6G sin screenshot). `SKIP_NO_VIDEO_OUTPUT` NO bloquea — sigue a PASO 7.
+
+### 6H-3 · Director review loop (max 5 rounds · threshold 9.5/10 · model: fable)
+
+Dispatchar 1 agente **fable** (ÚNICO rol en fable — juicio 100% estético-cinematográfico, costo ínfimo por diseño: contact-sheet + scores · fallback opus · ver modelo-por-rol · ⛔ desde 2026-06-23 fable sale de los planes [promo 9-22 jun]: ir DIRECTO al fallback opus, no quemar créditos API) con el contact-sheet como imagen + `cinematography-playbook.md` (rúbrica §12 + anti-slop §13) + el brief de proyecto. Prompt: *"Sos director de foto. Puntuá los 10 ejes de la rúbrica §12 sobre estos frames (0-10 c/u). PASS = promedio ≥9.5 Y ningún eje <8 Y cero tells AI §13. Devolvé `DIRECTOR_SCORE: N.N/10`, los ejes <8, los tells detectados, y un FIX PLAN concreto por plano (qué cambiar en el prompt generativo / pipeline, no 'mejorar')."*
+
+```bash
+DIRECTOR_SCORE=0; DIRECTOR_ROUND=1; DIRECTOR_MAX=5; DIRECTOR_THRESHOLD=9.5
+# loop: extraer frames → review director (fable · única etapa en fable) → si <9.5 o tell AI → refinar el plano que falló
+#       (re-prompt grok-cli / re-render / re-corte) → re-extraer → re-review round N+1.
+# NO regenerar a ciegas: aplicar el FIX PLAN sobre el plano puntual (playbook §10 iteración).
+if (( $(echo "$DIRECTOR_SCORE >= $DIRECTOR_THRESHOLD" | bc -l) )) && [ "$DIRECTOR_TELLS" = "0" ]; then
+  DIRECTOR_STATUS="PASS"; echo "DIRECTOR · PASS round $DIRECTOR_ROUND · score=$DIRECTOR_SCORE"
+elif [ "$DIRECTOR_ROUND" -ge "$DIRECTOR_MAX" ]; then
+  DIRECTOR_STATUS="BLOCKED_MAX_ROUNDS"; echo "DIRECTOR · STOP · 5 rounds sin PASS · escalar a Ale con frames + ejes en rojo"
+fi
+```
+
+Checkpoint post-6H:
+```bash
+python3 -c "
+import json, datetime
+d = json.load(open('$CHECKPOINT_FILE'))
+d['paso'] = '6H'
+d['director_status'] = '$DIRECTOR_STATUS'      # PASS | BLOCKED_* | FAIL
+d['director_score']  = '$DIRECTOR_SCORE'        # str 'N.N'
+d['director_rounds'] = $DIRECTOR_ROUND          # int
+d['director_sheet']  = '$SHEET_PNG'
+d['ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
+json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
+"
+```
+
+⛔ `DIRECTOR_STATUS != PASS` (y no BLOCKED legítimo) → push prohibido. El video no se shipea hasta 10/10 o escalada a Ale.
+
+---
+
+## PASO 6I · ESSENCE GATE (imagen estática generada) — BLOQUEANTE si IMAGE_APPLIES=yes
+
+**Por qué existe:** el video tiene 6H; la imagen GENERADA (logo render · hero · og-image · ad · ilustración · asset de marca) salía sin verificación — y es el medio más propenso a tells de IA. Método de prompt + lista de esencia: `prompt-craft-playbook.md` (esencia → cláusulas → pre-flight → gate).
+
+```bash
+# IMAGE_APPLIES la SETEA el propio flujo al invocar un generador (grok-cli image ·
+# nano-banana · mk-image · /ai-image-generation) — junto con IMAGE_FILE y la lista
+# de ESENCIA escrita ANTES de generar (prompt-craft B1 · sin lista = FAIL de protocolo).
+IMAGE_APPLIES="${IMAGE_APPLIES:-no}"
+[ "$IMAGE_APPLIES" = "no" ] && echo "SKIP 6I · la tarea no generó imagen estática · continuar a PASO 7"
+```
+
+Si aplica → dispatchar 1 agente vision **(model: opus · gate de certificación — top-tier SIEMPRE)** con la imagen + la LISTA DE ESENCIA + los negativos declarados. Prompt: *"Verificá ITEM POR ITEM de la lista de esencia contra la imagen: PASS/FAIL con evidencia visual de cada uno. Después cazá tells de IA: manos/dedos deformes · texto ilegible o inventado · simetría plástica · saturación uniforme sin sujeto · bokeh falso · watermark fantasma. Devolvé `ESSENCE_STATUS: PASS (N/N + cero tells) | FAIL` + la cláusula del prompt que produjo cada FAIL."*
+
+FAIL → reescribir SOLO la cláusula fallida (prompt-craft B4: jamás regenerar a ciegas) → regenerar → re-gate · max 5 rounds → escalar con tabla de cláusulas en rojo. ⛔ `ESSENCE_STATUS != PASS` → el asset NO se shipea ni se integra. Guardar el prompt ganador junto al asset (`<asset>.prompt.md`).
 
 ---
 
@@ -1931,15 +2541,70 @@ FAZM: leer `$ATLAS_DIR/matu-context.md` e incluir verbatim como bloque CONTEXTO 
 MATU_CONTEXT=$(cat "$ATLAS_DIR/matu-context.md")
 ```
 
-**canonical** (CREATE_NEW/REWRITE_COMPLEX/safety): Bloque A (6) + Bloque B GAN (8) + Bloque C según clasificación · avg ≥9.5 · cero T1
+---
 
-**light** (REFACTOR_SIMPLE/EXTRACT/POLISH): Brand Guardian · UI Designer · fitness-ux-specialist · avg ≥9.0 · cero T1
+### 7A · Pre-dispatch: token budget (OBLIGATORIO · corre antes de despachar cualquier agente)
+
+**Objetivo:** preparar DIFF_CONTENT y SPEC_SNIPPET para que los agentes reciban SOLO lo relevante, no archivos completos.
+
+```bash
+# 1. Extraer diff de los archivos cambiados (desde el commit base del flow)
+DIFF_BASE_P7=$(python3 -c "import json; print(json.load(open('$CHECKPOINT_FILE')).get('diff_base','HEAD~1'))" 2>/dev/null || echo "HEAD~1")
+DIFF_CONTENT=$(git diff "$DIFF_BASE_P7" -- $(git diff --name-only "$DIFF_BASE_P7" | head -5 | tr '\n' ' ') 2>/dev/null | head -300)
+DIFF_LINES=$(echo "$DIFF_CONTENT" | wc -l | tr -d ' ')
+
+# 2. Extraer spec relevante del master mockup (solo sección del componente)
+# Buscar el bloque CSS/HTML correspondiente al componente — no leer el HTML completo
+SPEC_SNIPPET=""
+if [ -n "$MASTER_FILE" ] && [ -f "$MASTER_FILE" ]; then
+  # Extraer líneas que mencionan el componente (±20 líneas de contexto)
+  COMPONENT_SLUG=$(echo "$COMPONENTE" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | cut -c1-20)
+  SPEC_SNIPPET=$(grep -n -i "$COMPONENT_SLUG\|$(echo $COMPONENTE | awk '{print $1}')" "$MASTER_FILE" 2>/dev/null \
+    | head -5 \
+    | awk -F: '{print $1}' \
+    | while read ln; do sed -n "$((ln-5)),$((ln+20))p" "$MASTER_FILE"; done \
+    | head -80)
+  # Fallback: si el componente no matchea por nombre, incluir los primeros 60 líneas de CSS del master
+  if [ -z "$SPEC_SNIPPET" ]; then
+    SPEC_SNIPPET=$(grep -A 2 "^<style\|\.voice-tag\|\.alexia-header\|\.orb\|\.progress\|:root" "$MASTER_FILE" 2>/dev/null | head -80)
+  fi
+fi
+
+# 3. Determinar matu_mode efectivo
+# nano: diff ≤ 50 líneas + light + no safety → 1 agente · 80% ahorro tokens
+MATU_MODE_EFFECTIVE="$MATU_MODE"
+if [ "$DIFF_LINES" -le 50 ] && [ "$MATU_MODE" = "light" ] && [ "${SAFETY_FLAG:-no}" = "no" ]; then
+  MATU_MODE_EFFECTIVE="nano"
+  echo "PASO 7 · NANO-MATU activado · diff=$DIFF_LINES líneas · 1 agente"
+else
+  echo "PASO 7 · matu_mode=$MATU_MODE_EFFECTIVE · diff=$DIFF_LINES líneas"
+fi
+
+export DIFF_CONTENT SPEC_SNIPPET DIFF_LINES MATU_MODE_EFFECTIVE
+```
+
+**Regla de contexto para todos los agentes de /matu (inmutable):**
+- PASAR: `DIFF_CONTENT` (qué cambió) + `SPEC_SNIPPET` (spec relevante del master) + `MATU_CONTEXT`
+- NUNCA pasar: path completo del archivo · el agente NO debe leer el archivo completo
+- Si el agente necesita más contexto → escalar con qué sección específica necesita, no leer el archivo completo
+
+---
+
+**nano** (diff ≤ 50 líneas · light · no safety): 1 agente Brand Guardian · avg ≥9.0 · cero T1
+
+**canonical** (safety_touch=yes · diseño NUEVO master_covers=no): Bloque A (6) + Bloque B GAN (8) + Bloque C según clasificación · avg ≥9.5 · cero T1
+
+**light** (master_covers=yes · REFACTOR_SIMPLE/EXTRACT/POLISH): ADAPTATIVO — núcleo Brand Guardian + UI Designer + a11y-architect + relevantes por superficie (fitness-ux si motion · Mobile App Builder si mobile · Code Reviewer si copy/clínico · performance-optimizer si web · security-reviewer si forms/data) · típico 3-6 · avg ≥9.5 · cero T1 · gate pixelmatch obligatorio
+
+**Reviewer adversarial (safety/arquitectura · 2º par de ojos · roadmap #4 · Anthropic, sin credencial ni costo):** cuando `safety_touch=yes` o diseño/arquitectura NUEVA (canonical), SUMAR al panel 1 agente **opus** con rol REFUTADOR — prompt: "Asumí que esta decisión/código tiene un defecto grave de seguridad o arquitectura. Encontralo: ¿qué edge-case, hueco de auth/pagos/PII, o falla de diseño se les pasó? Sé adversarial, no complaciente. Si tras buscar a fondo no hallás nada real, decilo explícito." Un issue T1 del refutador bloquea PASS igual que un T1 del panel. Complementa el panel que CERTIFICA con el ángulo opuesto que REFUTA. Reemplaza a Codex sin costo; lo único que Codex agregaría es el ángulo cross-vendor (marginal para solista).
 
 ```
-/matu [canonical|light] "$COMPONENTE · [descripción · archivos afectados · master: $MASTER_FILE]"
+/matu [canonical|light|nano] "$COMPONENTE · [descripción · archivos afectados · master: $MASTER_FILE]"
 ```
 
 Round 2+: re-dispatchar SOLO agentes con T1. Máximo 5 rounds.
+
+**System evolution · post-FAIL (self-improving · roadmap #3):** si /matu o /qa falla por un PATRÓN (no un typo puntual), además de arreglar la línea, dispatchar 1 agente **opus**: "este bug pasó pese al flujo — ¿qué regla/gate/playbook lo hubiera prevenido? Proponé 1 mejora concreta a motor.md / learned-patterns (NO la ejecutes)". **Registrar la propuesta (BLOQUEANTE) con `python3 "$ATLAS_DIR/../../atlas-log.py" "$PROJECT_NAME" learn --slug <slug> --falla "<qué pasó pese al flujo>" --propuesta "<la mejora>"`** — appendea el bloque fechado a learned-patterns.md. (Fix auditoría 2026-06-07: el loop estaba CONGELADO — 0 entradas en junio pese a fallas reales como el bug progressive-disclosure; ahora el append es mecánico, no "que lo registre".) Ale aprueba antes de aplicarla al motor. Así el harness mejora por experiencia en vez de repetir clases de bug. Tras tocar el motor → correr `python3 eval/atlas-eval.py` (no debe bajar de PASS).
 
 Pre-dispatch R2+ · typecheck:
 ```bash
@@ -1998,7 +2663,7 @@ python3 -c "
 import json, datetime
 d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 8; d['status'] = 'IN_PROGRESS'
-d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
+d['ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
 json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
@@ -2010,13 +2675,15 @@ Invocar `/qa` con foco en el componente. Tests mínimos obligatorios (PASS = los
 
 A11y básica (no bloquea · si falla, agregar a `.claude/BACKLOG.md` como `[A11Y-DEUDA] $COMPONENTE: [descripción]`).
 
+Criterio completo de QUÉ testear y cómo (suite por riesgo · qué NO testear): `fable5/testing-estrategia.md` (ya cargado vía Router si aplica). Regla dura de ese módulo que aplica acá: todo bug arreglado durante este flujo deja su test commiteado JUNTO al fix — sin excepción.
+
 Checkpoint cierre PASO 8 (solo en PASS):
 ```bash
 python3 -c "
 import json, datetime
 d = json.load(open('$CHECKPOINT_FILE'))
 d['paso'] = 8; d['status'] = 'PASS'
-d['ts'] = datetime.datetime.utcnow().isoformat() + 'Z'
+d['ts'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
 json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 "
 ```
@@ -2034,7 +2701,8 @@ if [ "$TYPECHECK_EXIT" -ne 0 ]; then
   python3 -c "import json; open('$LOCK_FILE','w').write(json.dumps({'locked':False,'session':None,'task':None,'branch':None,'ts':None,'pid':None}, indent=2))" && rm -f "$FLOW_LOCK"
   exit 1
 fi
-grep -rn "console\.log\|debugger" src/ 2>/dev/null && echo "LIMPIAR" || echo "OK"
+# Scoped al diff del flujo (monorepo-safe: apps/ y packages/ incluidos · node_modules fuera)
+git diff --name-only "$DIFF_BASE" 2>/dev/null | grep -E '\.(ts|tsx|js|jsx)$' | xargs grep -ln "console\.log\|debugger" 2>/dev/null && echo "LIMPIAR" || echo "OK"
 ```
 
 Commit:
@@ -2068,7 +2736,7 @@ git commit -m "$PLATFORM_PREFIX: $COMPONENTE · /matu $MATU_MODE_COMMIT ${MATU_S
 Master: $MASTER_FILE
 /matu: R1 → R${MATU_ROUNDS_COMMIT} PASS ${MATU_SCORE_COMMIT} · mockup $MOCKUP_COMMIT
 
-Co-Authored-By: Claude Sonnet 4.6 <noreply@anthropic.com>"
+Co-Authored-By: Claude <noreply@anthropic.com>"
 ```
 
 Liberar locks + loguear costo real:
@@ -2080,7 +2748,7 @@ MATU_ROUNDS=$(python3 -c "import json; d=json.load(open('$CHECKPOINT_FILE')); pr
 python3 -c "
 import json, datetime
 entry = {
-  'ts': datetime.datetime.utcnow().isoformat() + 'Z',
+  'ts': datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z'),
   'evento': 'flujo_completado',
   'proyecto': '$PROJECT_NAME',
   'componente': '$COMPONENTE',
@@ -2161,7 +2829,7 @@ if comp in d.get('componentes_pendientes', []):
 
 total = len(d['componentes_listos']) + len(d.get('componentes_pendientes', []))
 d['progreso_pct'] = int(len(d['componentes_listos']) / max(total, 1) * 100)
-d['ultima_sesion'] = datetime.datetime.utcnow().isoformat() + 'Z'
+d['ultima_sesion'] = datetime.datetime.now(datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
 d['ultima_accion'] = f'$COMPONENTE terminado · /matu PASS $MATU_SCORE_COMMIT'
 d['sesiones_totales'] = d.get('sesiones_totales', 0) + 1
 
@@ -2175,6 +2843,8 @@ json.dump(d, open('$ESTADO_FILE', 'w', encoding='utf-8'), indent=2, ensure_ascii
 print(f'Estado actualizado · {d[\"progreso_pct\"]}% completo · {len(d[\"componentes_listos\"])} listo(s)')
 "
 ```
+
+**Telemetría de cierre (BLOQUEANTE · ambos finales · fix audit 2026-06-08):** si el run cierra SIN llegar al bloque push/merge (cierre en commit-local esperando verificación de Ale en device — el camino MÁS frecuente) → `python3 "$ATLAS_DIR/../../atlas-log.py" "$PROJECT_NAME" close --status PASS_LOCAL --accion "$COMPONENTE · commit local · espera device-check Ale"`. (El happy-path con push ya actualiza estado arriba — NO duplicar.) Sin close, el run no está completo.
 
 **Output al usuario — PASO 9 es el único mensaje de cierre del flujo completo:**
 
@@ -2199,319 +2869,19 @@ FAZM: leer `$ATLAS_DIR/flow-rules.md` sección "PASO 10 · Proxy behavior" y eje
 
 ```bash
 PROXY_RULES=$(cat "$ATLAS_DIR/flow-rules.md")
-# FAZM: dispatchar Agent(subagent_type="Product Manager", prompt="[contenido de la sección PASO 10 de flow-rules.md]")
+# FAZM: dispatchar Agent(subagent_type="Product Manager", model: sonnet — lectura+priorización, no necesita opus, prompt="[contenido de la sección PASO 10 de flow-rules.md]")
 ```
 
 Si flow-rules.md no tiene sección PASO 10 → Proxy genérico:
 ```
-Sos el proxy de [PROJECT_NAME]. Lee .claude/BACKLOG.md · elegí la siguiente tarea según prioridad · reportá "PRÓXIMO TASK: [ID] [desc] · invocar /atlas". NO invocar /atlas directamente.
+Sos el proxy de [PROJECT_NAME]. 0. RECONCILIAR contra git real (git log --oneline -5 + branch --show-current): si project-estado.json es más viejo que el último commit → marcarlo [STALE] y reportar lo que dice git. 1. Lee .claude/BACKLOG.md · elegí la siguiente tarea según prioridad. 2. REALITY-CHECK: verificá que el deliverable del task NO exista ya (glob mockups + git log) — si existe, proponé el SIGUIENTE paso real, nunca recrear lo hecho. 3. CEREBRO: si learned-patterns.md del proyecto acumula ≥8 entradas sin [CONSOLIDADO] (o ≥30 días sin ciclo grow) → incluir "/atlas grow" como candidato prioritario — digestión pendiente. 4. Reportá "PRÓXIMO TASK: [ID] [desc] · invocar /atlas". NO invocar /atlas directamente.
 ```
 
 ---
 
 ## ATLAS_MODE=innovate · CICLO DE INNOVACIÓN
 
-**Trigger:** `/atlas innovate` | `/atlas innovate <área>`
-
-ATLAS entra en modo innovación. No corre el flujo de implementación (PASO 0-10). Ejecuta discovery → síntesis → brand filter → output al BACKLOG.
-
-```bash
-INNOVATION_BACKLOG="$ATLAS_DIR/innovation-backlog.json"
-INNOVATION_CONTEXT=$(python3 << PYEOF
-import json, os
-lines = []
-try:
-    estado = json.load(open("$ATLAS_DIR/project-estado.json", encoding="utf-8"))
-    listos = estado.get("componentes_listos", [])
-    pendientes = estado.get("componentes_pendientes", [])
-    lines.append(f"Componentes listos ({len(listos)}): {', '.join(listos)}")
-    lines.append(f"Componentes pendientes ({len(pendientes)}): {', '.join(pendientes)}")
-    lines.append(f"Progreso: {estado.get('progreso_pct', 0)}%")
-except Exception:
-    lines.append("Estado: no disponible")
-try:
-    masters = json.load(open("$ATLAS_DIR/masters.json", encoding="utf-8"))
-    comps = list(masters.get("components", {}).keys())
-    lines.append(f"Secciones con master: {', '.join(comps)}")
-except Exception:
-    pass
-try:
-    prev = json.load(open("$INNOVATION_BACKLOG", encoding="utf-8"))
-    prev_ideas = [i.get("titulo","") for i in prev.get("ideas",[]) if i.get("estado") not in ["implementada"]]
-    if prev_ideas:
-        lines.append(f"Ideas previas pendientes: {', '.join(prev_ideas[:5])}")
-except Exception:
-    pass
-print("\n".join(lines))
-PYEOF
-)
-BACKLOG_PREVIEW=$(head -40 "$BACKLOG_FILE" 2>/dev/null || echo "BACKLOG no accesible")
-```
-
-### PASO I0 · CONTEXT SCAN
-
-```bash
-echo "ATLAS · INNOVATE MODE"
-echo "Proyecto: $PROJECT_DISPLAY_NAME · Sector: $PROJECT_SECTOR · Área: ${INNOVATE_AREA:-todo el producto}"
-echo "$INNOVATION_CONTEXT"
-```
-
-### PASO I1 · DISCOVERY (4 agentes en paralelo)
-
-Dispatchar en paralelo: `Trend Researcher` · `Product Manager` · `UX Researcher` · `Behavioral Nudge Engine`.
-
-**Trend Researcher:**
-```
-[AUTONOMIA_BLOCK]
-
-Sos un Trend Researcher especializado en innovación de producto digital.
-
-PROYECTO: $PROJECT_DISPLAY_NAME
-SECTOR: $PROJECT_SECTOR
-ÁREA DE FOCO: ${INNOVATE_AREA:-todo el producto}
-CONTEXTO DEL PRODUCTO: $PROJECT_BRIEF
-ESTADO ACTUAL: $INNOVATION_CONTEXT
-
-TAREA:
-1. Identificá 4-5 tendencias concretas en apps de $PROJECT_SECTOR en $PREV_YEAR-$CURRENT_YEAR.
-   Para cada tendencia: app que la implementa mejor · por qué funciona · cómo aplica en $PROJECT_DISPLAY_NAME.
-
-2. Generá 5 ideas específicas (NO genéricas — deben ser únicamente aplicables a $PROJECT_DISPLAY_NAME):
-
-Para cada idea usar este formato exacto:
-IDEA: [título conciso]
-TIPO: [sección | widget | feature | flujo | nueva_area | mejora_ux]
-ESFUERZO: [S=<4h | M=1-3días | L=1-2sem]
-IMPACTO: [alto | medio | bajo]
-DESCRIPCIÓN: [2 líneas — qué es y cómo funciona]
-REFERENCIA: [app que lo hace bien hoy]
-```
-
-**Product Manager:**
-```
-[AUTONOMIA_BLOCK]
-
-Sos un Product Manager senior especializado en apps de $PROJECT_SECTOR.
-
-PROYECTO: $PROJECT_DISPLAY_NAME
-SECTOR: $PROJECT_SECTOR
-ÁREA DE FOCO: ${INNOVATE_AREA:-todo el producto}
-CONTEXTO DEL PRODUCTO: $PROJECT_BRIEF
-ESTADO ACTUAL: $INNOVATION_CONTEXT
-BACKLOG ACTUAL: $BACKLOG_PREVIEW
-
-TAREA:
-1. Identificá los 3 gaps más importantes del producto vs best-in-class en $PROJECT_SECTOR.
-
-2. Generá 5 ideas priorizadas por impacto en retención/conversión/engagement:
-
-Para cada idea:
-IDEA: [título conciso]
-TIPO: [sección | widget | feature | flujo | nueva_area | mejora_ux]
-ESFUERZO: [S=<4h | M=1-3días | L=1-2sem]
-IMPACTO: [alto | medio | bajo]
-DESCRIPCIÓN: [2 líneas — qué es y qué problema resuelve]
-MÉTRICA: [retención | conversión | engagement | NPS | revenue]
-```
-
-**UX Researcher:**
-```
-[AUTONOMIA_BLOCK]
-
-Sos un UX Researcher experto en apps de $PROJECT_SECTOR con enfoque en behavioral design.
-
-PROYECTO: $PROJECT_DISPLAY_NAME
-SECTOR: $PROJECT_SECTOR
-ÁREA DE FOCO: ${INNOVATE_AREA:-todo el producto}
-CONTEXTO DEL PRODUCTO: $PROJECT_BRIEF
-ESTADO ACTUAL: $INNOVATION_CONTEXT
-
-TAREA:
-Identificá oportunidades de mejora de experiencia en $PROJECT_DISPLAY_NAME.
-Enfocate en: friction points del sector · progressive disclosure · empty states como momentos de engagement · micro-interactions que generan hábito · flujos rotos o costosos cognitivamente.
-
-Generá 5 ideas específicas:
-
-Para cada idea:
-IDEA: [título conciso]
-TIPO: [widget | flujo | micro-interaction | onboarding | empty-state | mejora_ux]
-ESFUERZO: [S=<4h | M=1-3días | L=1-2sem]
-IMPACTO: [alto | medio | bajo]
-DESCRIPCIÓN: [2 líneas — qué cambia en la experiencia]
-FRICTION: [qué fricción elimina o qué hábito crea]
-```
-
-**Behavioral Nudge Engine:**
-```
-[AUTONOMIA_BLOCK]
-
-Sos un Behavioral Design specialist con expertise en motivación y engagement en apps de $PROJECT_SECTOR.
-
-PROYECTO: $PROJECT_DISPLAY_NAME
-SECTOR: $PROJECT_SECTOR
-ÁREA DE FOCO: ${INNOVATE_AREA:-todo el producto}
-CONTEXTO DEL PRODUCTO: $PROJECT_BRIEF
-
-TAREA:
-Diseñá mejoras basadas en psicología del comportamiento para $PROJECT_DISPLAY_NAME.
-Frameworks: BJ Fogg Behavior Model · Self-Determination Theory · Variable Reward Loops · Social Proof · Implementation Intentions.
-
-Generá 5 ideas específicas:
-
-Para cada idea:
-IDEA: [título conciso]
-TIPO: [widget | feature | flujo | gamification | social | habit_loop | nudge]
-ESFUERZO: [S=<4h | M=1-3días | L=1-2sem]
-IMPACTO: [alto | medio | bajo]
-DESCRIPCIÓN: [2 líneas — el mecanismo psicológico + cómo se implementa]
-FRAMEWORK: [principio que lo sustenta]
-```
-
-### PASO I2 · SÍNTESIS
-
-```bash
-# FAZM: capturar output real de los 4 agentes
-IDEAS_TREND="[FAZM: output real del Trend Researcher]"
-IDEAS_PM="[FAZM: output real del Product Manager]"
-IDEAS_UX="[FAZM: output real del UX Researcher]"
-IDEAS_BEHAV="[FAZM: output real del Behavioral Nudge Engine]"
-
-for _var in IDEAS_TREND IDEAS_PM IDEAS_UX IDEAS_BEHAV; do
-  _val="${!_var}"
-  if echo "$_val" | grep -q "FAZM: output real"; then
-    echo "ERROR · $_var no fue reemplazado con el output del agente"
-    exit 1
-  fi
-done
-```
-
-FAZM consolida: desduplicar por título · rankear por score = impacto×esfuerzo (alto×S=9 · alto×M=6 · alto×L=3 · medio×S=6 · medio×M=4 · etc) · mantener top 15 ideas únicas ordenadas de mayor a menor score.
-
-### PASO I3 · BRAND FILTER
-
-Dispatchar 2 agentes en paralelo — `Brand Guardian` · `UI Designer`. Incluir DESIGN_AGENCY_BLOCK:
-
-```
-[AUTONOMIA_BLOCK]
-
-[DESIGN_AGENCY_BLOCK]
-
-Sos [AGENTE] · Innovation Brand Filter de $PROJECT_DISPLAY_NAME.
-
-IDEAS A EVALUAR:
-[lista consolidada del PASO I2 — top 15 ideas con su tipo/esfuerzo/impacto/descripción]
-
-TAREA: Evaluá cada idea contra el DNA y posicionamiento de $PROJECT_DISPLAY_NAME.
-
-Para cada idea usar este formato:
-IDEA-N: PASS | FILTER | ADAPT
-Razón: [1 línea]
-Si ADAPT: [qué ajustar para que encaje]
-
-CRITERIOS:
-FILTER → rompe la identidad de marca, contradice el posicionamiento estratégico, introduce inconsistencia grave de producto
-ADAPT → buena idea, mal framing o implementación — se puede ajustar y queda mejor
-PASS → encaja con el DNA y suma al posicionamiento
-
-NO filtrar ideas solo por ser ambiciosas o técnicamente complejas.
-```
-
-Agregación:
-- PASS de ambos → PASS
-- FILTER de alguno → revisar razón · si es objetiva → FILTER · si es subjetiva → PASS
-- ADAPT de alguno → incorporar el ajuste → PASS_ADAPTED
-
-### PASO I4 · OUTPUT
-
-```bash
-python3 << PYEOF
-import json, datetime
-
-atlas_dir = "$ATLAS_DIR"
-backlog_file = "$BACKLOG_FILE"
-innovation_file = f"{atlas_dir}/innovation-backlog.json"
-
-# Cargar existente o crear
-try:
-    existing = json.load(open(innovation_file, encoding="utf-8"))
-    ideas_existentes = existing.get("ideas", [])
-    max_id = max((int(i.get("id","INV-000").split("-")[1]) for i in ideas_existentes if i.get("id","").startswith("INV-")), default=0)
-except Exception:
-    ideas_existentes = []
-    max_id = 0
-
-# FAZM: reemplazar con lista real de ideas PASS/PASS_ADAPTED del PASO I3
-# Formato de cada idea: {"titulo":..., "tipo":..., "esfuerzo":"S|M|L", "impacto":"alto|medio|bajo",
-#   "descripcion":..., "fuente":"Trend Researcher|Product Manager|UX Researcher|Behavioral Nudge Engine",
-#   "brand_filter":"PASS|PASS_ADAPTED", "estado":"propuesta", "area":"$INNOVATE_AREA"}
-nuevas_ideas = []  # FAZM: poblar con ideas reales
-
-ts = datetime.datetime.utcnow().isoformat() + "Z"
-for i, idea in enumerate(nuevas_ideas, start=max_id + 1):
-    idea["id"] = f"INV-{i:03d}"
-    idea["ts"] = ts
-    idea["estado"] = "propuesta"
-
-todas = ideas_existentes + nuevas_ideas
-output = {
-    "project": "$PROJECT_NAME",
-    "sector": "$PROJECT_SECTOR",
-    "generated_at": ts,
-    "ideas": todas
-}
-json.dump(output, open(innovation_file, "w"), indent=2, ensure_ascii=False)
-
-# Inyectar ideas S/M en BACKLOG.md
-ideas_backlog = [i for i in nuevas_ideas if i.get("esfuerzo") in ("S", "M")]
-if ideas_backlog:
-    try:
-        nuevas_tasks = f"\n## IDEAS INNOVACION · {ts[:10]}\n"
-        for idea in ideas_backlog:
-            desc = idea.get("descripcion","")[:80]
-            nuevas_tasks += f"- [ ] [{idea['id']}] [{idea['tipo'].upper()}] {idea['titulo']} — {desc}\n"
-        with open(backlog_file, "a", encoding="utf-8") as f:
-            f.write(nuevas_tasks)
-        print(f"  {len(ideas_backlog)} ideas S/M inyectadas en BACKLOG")
-    except Exception as e:
-        print(f"  WARN · BACKLOG no accesible: {e}")
-
-n_l = [i for i in nuevas_ideas if i.get("esfuerzo") == "L"]
-print(f"  Total ideas: {len(todas)} · Nuevas: {len(nuevas_ideas)} · En BACKLOG: {len(ideas_backlog)} · Sprint futuro (L): {len(n_l)}")
-print(f"  → {innovation_file}")
-PYEOF
-```
-
-**Output al usuario post-innovate:**
-
-Si `USER_NIVEL=avanzado`:
-```
-ATLAS · INNOVATE · $PROJECT_DISPLAY_NAME
-$N ideas generadas · $N_SM en BACKLOG (S/M) · $N_L para sprint futuro
-
-Top ideas inmediatas (S/M, por score):
-[lista top 5 con ID · tipo · título · esfuerzo · impacto]
-
-Ideas de sprint (L):
-[lista top 3 con ID · tipo · título]
-
-→ innovation-backlog.json actualizado
-→ /atlas <INV-ID> para implementar cualquiera
-```
-
-Si `USER_NIVEL=basico`:
-```
-Listo. Encontré $N ideas nuevas para $PROJECT_DISPLAY_NAME.
-
-Las más rápidas de hacer ($N_SM ideas, menos de 3 días cada una):
-[lista con nombre simple · para qué sirve · cuánto tarda]
-
-Ideas más grandes para después ($N_L):
-[lista con nombre simple · beneficio en 1 línea]
-
-Próximo: `/atlas <ID>` para implementar la primera idea.
-```
-
----
+Cargado ON-DEMAND. Si `ATLAS_MODE=innovate` → leer `innovate.md` (en esta carpeta) y ejecutar el ciclo I0-I4. Si `ATLAS_MODE=grow` → leer `grow.md` y ejecutar el ciclo G0-G4 (crecimiento del cerebro: cosecha → destilación opus → propuesta a Ale → consolidación verificada → poda). No están inline para no cargar ~300 líneas en cada invocación de implementación (progressive disclosure · skill-design-playbook #1).
 
 ## Security Council · Prompt por agente
 
@@ -2538,7 +2908,7 @@ TIER 1 — BLOQUEANTES:
 Sin T1: escribí "ninguno".
 ```
 
-Agentes: `security-reviewer` · `Legal Compliance Checker` · `Backend Architect`
+Agentes: `security-reviewer` · `Legal Compliance Checker` · `Backend Architect` — los 3 con **model: opus** (safety SIEMPRE top-tier) e incluyendo `~/.claude/skills/atlas/fable5/seguridad.md` como contexto (threat model STRIDE-lite + reglas de oro — leer con Read tool).
 Los 3 deben dar VEREDICTO=PASS y DESTRUCTIVO=NO.
 
 **Si los 3 dan PASS + DESTRUCTIVO=NO → FAZM procede automáticamente a merge + push a main. Sin esperar OK de Ale.**

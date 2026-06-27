@@ -1,0 +1,8 @@
+{
+  "motor_lines": 2911,
+  "motor_tokens": 37916,
+  "paso_headers": 17,
+  "gates_present": 10,
+  "playbooks": 12,
+  "note": "baseline 2026-06-12 post mejoras-finales (transferencia fable5 + intel + 6I + grow + hook pre-commit)"
+}

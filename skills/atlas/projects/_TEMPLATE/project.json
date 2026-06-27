@@ -1,0 +1,29 @@
+{
+  "name": "TU_PROYECTO",
+  "tagline": "una línea que captura el alma del producto",
+  "repo_path": "/ruta/absoluta/a/tu/repo",
+  "typecheck_cmd": "npm run typecheck",
+  "platform": "both",
+  "deploy": "vercel",
+  "country": "CL",
+  "critical_paths_regex": "schema|migration|payment|auth|credentials|\\.env",
+  "staging_paths_regex": "^(apps/|src/|packages/)",
+  "matu_mode_default": "canonical",
+  "creative_spin_enabled": true,
+  "branch_prefix_create": "feat",
+  "branch_prefix_refactor": "refactor",
+  "smoke_platform": "both",
+  "implement_mobile_skill": "/implement-mobile",
+  "proxy_backlog": ".claude/BACKLOG.md",
+  "mockup_base_path": "docs/mockups",
+  "sector": "describe_tu_sector",
+  "dev_server_port": 3000,
+  "dev_server_cmd": "npm run dev",
+  "mobile_emulator": "auto",
+  "visual_diff_threshold": 9.5,
+  "visual_diff_max_rounds": 5,
+  "component_routes": {
+    "home": "/",
+    "ejemplo": "/ejemplo"
+  }
+}

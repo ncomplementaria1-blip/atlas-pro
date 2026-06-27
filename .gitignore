@@ -1,4 +1,10 @@
-projects/
-*.bak.*
-*.motor-bak.*
+# Proyectos del receptor (privados) — solo se versiona la plantilla
+skills/atlas/projects/*
+!skills/atlas/projects/_TEMPLATE/
+
+# Runtime / generado
+**/__pycache__/
+*.pyc
+*.flow-lock
+skills/atlas/eval/grow-history.jsonl
 .DS_Store
