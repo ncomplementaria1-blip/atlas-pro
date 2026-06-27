@@ -3,7 +3,7 @@
 > código (CREATE_NEW / REWRITE / REFACTOR) y en TODO fix de bug, además del pilar.
 >
 > **SCOPE: el MÉTODO es UNIVERSAL.** Los ejemplos (un proveedor de pagos, DOB, food-vision) son
-> material didáctico de el proyecto — en otro proyecto: mismo método, flujos críticos
+> material didáctico del proyecto — en otro proyecto: mismo método, flujos críticos
 > DEL proyecto activo. Scope Discipline manda.
 >
 > **Contexto que motiva este módulo:** riesgo documentado del proyecto = 0% coverage

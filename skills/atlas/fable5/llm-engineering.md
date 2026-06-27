@@ -5,7 +5,7 @@
 > PII) vive en `seguridad.md` B4 — este módulo es la INGENIERÍA: cómo se construye.
 >
 > **SCOPE: el MÉTODO es UNIVERSAL.** Los ejemplos (el asistente, platos chilenos, un canal de mensajería)
-> son material didáctico de el proyecto — en otro proyecto: mismo método, dominio del
+> son material didáctico del proyecto — en otro proyecto: mismo método, dominio del
 > proyecto activo. Scope Discipline manda.
 
 ## A) Framework Mental

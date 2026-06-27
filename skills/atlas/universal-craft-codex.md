@@ -2,7 +2,7 @@
 
 > **Qué es:** la capa BASE de criterio world-class de ATLAS. Project-neutral: ninguna marca, ningún color, ningún producto. Destilado de 20+ design systems tier-1 (Apple, Stripe, Linear, Vercel, Figma, Ferrari, Tesla, Coinbase, Revolut, Cohere, ElevenLabs, x.ai, Raycast, Superhuman, Notion…), reportes deep-research (R3F cinemática · motion RN · splash/onboarding), transcripts de referentes (Candillon, Freya, Emil, Rauno, Cole Medin, Anthropic AppliedAI), y estudio de short-form/generativo. Fecha de corte: 2026-06.
 >
-> **Cómo se usa:** ATLAS lo carga como la vara de 10/10 para CUALQUIER proyecto (configurado o no). El criterio de un proyecto = **este codex (base) + su overlay** (`brand-context.md` del proyecto = DNA, paleta, voz, restricciones). El overlay NUNCA contradice el codex; lo especializa. Para el proyecto el overlay es `worldclass-craft.md` + `projects/el proyecto/brand-context.md`.
+> **Cómo se usa:** ATLAS lo carga como la vara de 10/10 para CUALQUIER proyecto (configurado o no). El criterio de un proyecto = **este codex (base) + su overlay** (`brand-context.md` del proyecto = DNA, paleta, voz, restricciones). El overlay NUNCA contradice el codex; lo especializa. El overlay del proyecto (ejemplo) es `worldclass-craft.md` + `projects/<tu-proyecto>/brand-context.md`.
 >
 > **Vara vs motor:** este codex es la VARA (qué se ve 10/10 · evaluación/filtro). Para GENERAR diseño impactante (cómo inventar un concepto de agencia world-class) su complemento es `creative-direction-playbook.md` — el MOTOR generativo. ATLAS no es solo filtro: en modo `design` y en el Creative Spin usa los dos juntos (codex = piso de calidad · playbook = alcance creativo).
 >

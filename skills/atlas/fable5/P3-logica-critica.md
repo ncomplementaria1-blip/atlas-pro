@@ -3,7 +3,7 @@
 > El resumen ejecutivo vive en `../fable5-transfer-playbook.md` — esto es el nivel completo.
 >
 > **SCOPE: este pilar es ~100% UNIVERSAL** — trisección, sesgos, formato de decisión y
-> riesgo aplican a cualquier proyecto. Los desafíos D1-D3 son casos reales de el proyecto
+> riesgo aplican a cualquier proyecto. Los desafíos D1-D3 son casos reales del proyecto
 > usados como material didáctico: replicar el MÉTODO, no las conclusiones específicas.
 
 ## A) Framework Mental

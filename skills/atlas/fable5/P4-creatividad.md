@@ -5,7 +5,7 @@
 >
 > **SCOPE: el MÉTODO es UNIVERSAL** (trasplante estructural, desbloqueo, prompting,
 > convergencia con criterio previo). El banco de isomorfismos B2 y los desafíos están
-> calibrados a el proyecto (su vara, su datos sensibles, sus vetos) — en otro proyecto: mismo método,
+> calibrados al proyecto (su vara, su datos sensibles, sus vetos) — en otro proyecto: mismo método,
 > construir/usar el banco y la vara DEL proyecto activo (`projects/<name>/` + su
 > CLAUDE.md). La línea ética de variable-reward es universal en salud; en otros dominios
 > evaluarla explícitamente, no asumirla.

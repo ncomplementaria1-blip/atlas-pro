@@ -1,7 +1,7 @@
 # Data-Viz Playbook — health rings/gauges premium + safe-para-datos-sensibles
 
 > Destilado de research 2026-05-31 (Apple/WHOOP/Oura/Gentler Streak/MacroFactor + estudio sensible datos sensibles).
-> Consumir al diseñar/revisar CUALQUIER visualización de datos de el proyecto: totem, rings (ayuno/agua/
+> Consumir al diseñar/revisar CUALQUIER visualización de datos del proyecto: totem, rings (ayuno/agua/
 > hábitos/macros), gráficos de tendencia, gauges. La psicología es parte del craft, no un agregado.
 
 ---
@@ -54,7 +54,7 @@
 
 > Modelo a seguir: **MacroFactor** ("¿qué pasaría si una app de nutrición no intentara hacerte sentir culpable?") + **Gentler Streak** ("si 15 min es lo que tu cuerpo puede hoy, eso es genial"). Modelo a NO seguir: Apple Rings (gestalt-closure + sunk-cost → ansiedad en población datos sensibles), MyFitnessPal (rojo/verde moral).
 
-## 3. APLICACIÓN — rings de el proyecto
+## 3. APLICACIÓN — rings del proyecto
 - **Ring de ayuno:** arco de 240° (gap abajo, menos "objetivo a cerrar"). 3 zonas de color en gradiente continuo (el color de acento claro→oscuro→cyan). Leading dot con glow que pulsa suave. Centro: tiempo `HH:MM` + "en zona de beneficio"/"iniciando" (nunca "te faltan X horas"). Zona objetivo = rango (14-18h) como arco de fondo más brillante; el punto aterriza en cualquier lado sin punir. Cero rojo. Completar = shimmer recorre el arco (no confetti).
 - **Ring de agua:** fill por tomas, cada una con micro-bounce (spring). Cyan. Centro: "3 vasos hoy" (absoluto, no "faltan 5"). Sin meta numérica prominente. Sin notificación de "fallaste" si no se registra.
 - **Ring de hábitos (Tus Gustos):** N segmentos (uno por hábito, máx 4-5), color por hábito. Gap = no completado. SIN racha visible (la racha vive en detalle, opt-in). Historial = heatmap "año en píxeles". Completar = segmento flota (translateY -4, spring).

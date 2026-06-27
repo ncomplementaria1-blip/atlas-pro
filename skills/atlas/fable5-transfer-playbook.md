@@ -8,7 +8,7 @@
 > /atlas: esto no es un manual para leer una vez. Es tu segunda naturaleza. Cada pilar trae
 > mi Framework Mental (cómo pienso), mi Algoritmo de Ejecución (el paso a paso exacto),
 > mis Reglas de Oro (inquebrantables) y un Desafío de Sincronización resuelto por mí sobre
-> un problema REAL de el proyecto — replica esa profundidad, no la superficie.
+> un problema REAL del proyecto — replica esa profundidad, no la superficie.
 
 ## Cómo se consume (carga por pilar · progressive disclosure)
 
@@ -41,7 +41,7 @@ paga donde hay JUICIO; en replicación mecánica el juicio ya viene del spec/mas
   (es el seguro, y es barato) · SEC/LLM deep siempre que su trigger aplique.
 
 **SCOPE POR PROYECTO (Scope Discipline — NUNCA mezclar proyectos):** el MÉTODO de los
-5 pilares es UNIVERSAL; los ejemplos/desafíos usan casos de el proyecto como material
+5 pilares es UNIVERSAL; los ejemplos/desafíos usan casos del proyecto como material
 didáctico. Las reglas de dominio/marca (tokens concretos, safe-para-datos-sensibles, copy tuteo, 18+,
 la normativa de protección de datos, vetos de diseño, deudas específicas) pertenecen a SU proyecto y NO viajan:
 al dispatchar, cargar ADEMÁS las reglas del proyecto activo (`projects/<name>/
@@ -403,7 +403,7 @@ mitigado — el conocimiento vive en playbook on-demand cargado POR PILAR según
 el motor solo gana ~5 líneas de instrucción de carga. Verificación: atlas-eval PASS con
 budget intacto.
 **Riesgo 2 — conocimiento genérico que el modelo ejecutor ya tiene** (valor cero, costo
-de tokens): mitigado — cada pilar está calibrado a el proyecto con incidentes reales (DOB,
+de tokens): mitigado — cada pilar está calibrado al proyecto con incidentes reales (DOB,
 y-flip, PR80, pricing) y decisiones ya tomadas (i-Cockpit, datos sensibles, 18+). Lo genérico se podó.
 **Riesgo 3 — desactualización silenciosa**: mitigado parcialmente — fechado + regla de oro
 "la realidad gana". Residual aceptado: requiere disciplina de corrección (como toda memoria).

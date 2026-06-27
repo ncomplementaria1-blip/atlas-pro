@@ -66,7 +66,7 @@ La calidez NO es decoración — es reducción de fricción cognitiva + voz huma
 5. **Anticipación, no streak.** Finch manda al pájaro de aventura → volvés por curiosidad. → el asistente cierra el día
    con "vi algo en tu semana, mañana te cuento" (curiosidad, no obligación/racha que castiga). Re-engagement sin culpa.
 6. **⛔ Descartar:** el pájaro, los rainbows, el XP, las evoluciones Pokémon. Robamos la RELACIÓN (nombrar,
-   invertir, reaccionar, celebrar chico, anticipar), con el lenguaje el color de acento-adulto-premium de el proyecto.
+   invertir, reaccionar, celebrar chico, anticipar), con el lenguaje el color de acento-adulto-premium del proyecto.
 
 ---
 
@@ -80,7 +80,7 @@ La calidez NO es decoración — es reducción de fricción cognitiva + voz huma
 4. **Celebración micro-orgánica**: bloom 350ms + 6 partículas que vuelven al orb, sin texto. El gesto dice todo.
 5. **Anticipación del mañana**: el asistente cierra con curiosidad (insight de la semana), no con resumen de calorías ni racha.
 
-> Regla de oro transversal: el wow de el proyecto no es un efecto — es que el asistente se sienta una presencia cálida
+> Regla de oro transversal: el wow del proyecto no es un efecto — es que el asistente se sienta una presencia cálida
 > que te acompaña sin culpa. La tecnología desaparece; queda el cuidado.
 
 Relacionado: `worldclass-craft.md` (ADN) · `motion-playbook.md` · `dataviz-safe-para-datos-sensibles.md` ·

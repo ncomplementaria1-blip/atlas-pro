@@ -4,7 +4,7 @@
 > ADEMÁS del pilar de la tarea. Profundiza el threat-model B5 de P1.
 >
 > **SCOPE: el MÉTODO es UNIVERSAL.** Los casos (OAuth plaintext, food-vision, un canal de mensajería,
-> la normativa de protección de datos) son material didáctico de el proyecto/Chile — en otro proyecto: mismo
+> la normativa de protección de datos) son material didáctico del proyecto/Chile — en otro proyecto: mismo
 > método, regulación y deudas DEL proyecto activo. Scope Discipline manda.
 
 ## A) Framework Mental

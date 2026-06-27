@@ -6,7 +6,7 @@
 >
 > **SCOPE: este pilar es 100% UNIVERSAL** — calibración, post-error, jerarquía de
 > fuentes y auto-debug aplican a TODO proyecto y TODA tarea. Los casos citados
-> (PR80, y-flip, pricing) son material didáctico de el proyecto/tooling: replicar el
+> (PR80, y-flip, pricing) son material didáctico del proyecto/tooling: replicar el
 > ciclo, no memorizar los casos.
 
 ## A) Framework Mental

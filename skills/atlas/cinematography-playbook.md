@@ -15,7 +15,7 @@ Un clip "cinematic 4k beautiful" sin intención es slop. Test del director: por 
 
 ---
 
-## 1. Las 4 superficies de video de el proyecto (qué dirige el director en cada una)
+## 1. Las 4 superficies de video del proyecto (qué dirige el director en cada una)
 | Superficie | Pipeline | Lo que el director controla | Restricción dura |
 |---|---|---|---|
 | **Splash / wow one-shot** | Escena 3D offline (R3F/Grok) → MP4 ~1MB ffmpeg | plano único, push-in motivado, ignición de luz, loop perfecto | 2-3s · ≤1MB · loop sin costura · idéntico en todo device |

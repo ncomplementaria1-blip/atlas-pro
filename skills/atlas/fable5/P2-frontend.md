@@ -5,7 +5,7 @@
 > que decide cuál técnica usar y cuándo.
 >
 > **SCOPE: el MÉTODO es UNIVERSAL** (cajones de estado, render budget, máquinas de
-> estado, a11y, Web Vitals — cualquier proyecto). Lo calibrado a el proyecto NO viaja a
+> estado, a11y, Web Vitals — cualquier proyecto). Lo calibrado al proyecto NO viaja a
 > otros proyectos: tokens concretos (`bg-bg-base`/Plus Jakarta = SU design system; la
 > regla universal es "tokens del design system del proyecto activo, jamás hex"),
 > safe-para-datos-sensibles (dominio salud), copy tuteo (productos de Ale — verificar por proyecto),
