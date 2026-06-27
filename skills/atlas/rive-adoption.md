@@ -1,4 +1,4 @@
-# Rive Adoption Playbook — onboarding + celebraciones (NutricomAI RN/Expo)
+# Rive Adoption Playbook — onboarding + celebraciones (el proyecto RN/Expo)
 
 > Destilado de research 2026-05-31. Consumir cuando se implemente onboarding o los 7 micro-momentos/
 > celebraciones. Rive = lógica interactiva de estados sobre vectores. NO reemplaza Skia para GPU/glass.
@@ -16,7 +16,7 @@
 ## 2. ⛔ Runtime correcto (2026)
 - **USAR `@rive-app/react-native`** (Nitro Modules, nuevo). Hooks: `useRiveFile`, `useRive`, `useViewModelInstance`, `useRiveNumber`, `useRiveTrigger`, `useRiveEvent`. Requiere RN 0.78+ / Expo SDK 53+ (SDK 54 = RN 0.81, OK). Componente `<RiveView/>`.
 - ⛔ **NO usar `rive-react-native`** (legacy): ROTO en RN 0.80+ (Expo SDK 54 no compila, errores Kotlin). Sin mantenimiento.
-- Setup Expo: `npx expo install @rive-app/react-native react-native-nitro-modules` + `expo-build-properties` (compileSdk 36, iOS 15.1) + `expo prebuild --clean` + development build (no Expo Go). NutricomAI ya usa `eas build` → encaja.
+- Setup Expo: `npx expo install @rive-app/react-native react-native-nitro-modules` + `expo-build-properties` (compileSdk 36, iOS 15.1) + `expo prebuild --clean` + development build (no Expo Go). el proyecto ya usa `eas build` → encaja.
 - Por qué Rive > Lottie: formato binario `.riv` 10-15× más chico (240KB Lottie → 16KB Rive); renderer propio multi-thread (NO Skia: lo sacaron en android v10) → 60fps vs 17fps de Lottie en gama baja (benchmark Callstack/Sony Xperia Z3). Costo: ~30MB más GPU memory.
 
 ## 3. State machines (el modelo mental)
@@ -24,14 +24,14 @@
 - Estados: Animation / Blend-1D (mezcla por número, ej. intensidad de celebración) / Blend-2D / Any-State (interrupciones) / Exit.
 - Triggers one-shot desde JS; Events de la animación → callback JS (ej. "terminé → navegá").
 
-## 4. State machine ejemplo: "Primer logro" (<60s, TCA-safe)
+## 4. State machine ejemplo: "Primer logro" (<60s, safe-para-datos-sensibles)
 ```
 [Idle] --triggerAchievement--> [Appear] (0.3s ease-out scale+opacity)
-  --> [Bloom] (orb vectorial se expande + anillo de luz, 0.8s · Blend-1D por achievementType: esmeralda→amber)
+  --> [Bloom] (orb vectorial se expande + anillo de luz, 0.8s · Blend-1D por achievementType: el color de acento→amber)
   --> [Hold] (loop suave 2s, lee el mensaje)
   --> [Dismiss] (fade 0.4s) --onComplete event--> [Idle]
 ```
-TCA-safe: el plato/orb aparece COMPLETO (no un contador que "se llena"); la celebración es sobre el reconocimiento/registro, NO sobre el valor calórico. Sin fanfarria de déficit.
+safe-para-datos-sensibles: el plato/orb aparece COMPLETO (no un contador que "se llena"); la celebración es sobre el reconocimiento/registro, NO sobre el valor calórico. Sin fanfarria de déficit.
 
 ## 5. Bugs conocidos / mitigaciones
 - Scroll jank en Android release (rive-android 9.13+): pinear `rive-android:9.12.2` en build.gradle.

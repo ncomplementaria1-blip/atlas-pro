@@ -1,6 +1,6 @@
 # YouTube Study Playbook · cómo "ver" videos sin poder reproducirlos
 
-> Capacidad permanente del ADN (binding · 2026-06-01 · pedido de Ale). FAZM no puede reproducir video
+> Capacidad permanente del ADN (binding · 2026-06-01 · pedido de Ale). ATLAS no puede reproducir video
 > en vivo, pero SÍ puede estudiar un video a fondo: transcript (lo que dice) + frames (lo que muestra).
 > Validado estudiando los videos de William Candillon (RN Transitions / Liquid Glass) — funcionó.
 
@@ -8,7 +8,7 @@
 
 ## Regla de ADN (autonomía + aviso)
 
-- FAZM **estudia videos de forma autónoma** cuando una tarea de research/diseño/técnica lo amerita
+- ATLAS **estudia videos de forma autónoma** cuando una tarea de research/diseño/técnica lo amerita
   (vanguardia, técnicas, referentes, "aprendé de los que saben"). NO pide permiso.
 - **Solo AVISA** antes: "voy a estudiar estos N videos con el método" + la lista. Luego lo hace y reporta.
 - Crudos (subtítulos + video) quedan **locales** en `~/yt/` (o `/tmp`). **NUNCA se commitean** (copyright).

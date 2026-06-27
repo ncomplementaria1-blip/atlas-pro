@@ -1,21 +1,21 @@
 # PILAR 2 · INGENIERÍA DE FRONTEND Y EXPERIENCIA DE USUARIO — versión profunda
 > Transferencia Fable 5 · 2026-06-11 · se carga en dispatches UI/render/animación/a11y.
 > Complementa (NO duplica) los playbooks técnicos: skia-sksl, motion, perf-profiling,
-> gesture-choreography, newarch-gotchas, dataviz-tca-safe, haptics. Esto es el CRITERIO
+> gesture-choreography, newarch-gotchas, dataviz-safe-para-datos-sensibles, haptics. Esto es el CRITERIO
 > que decide cuál técnica usar y cuándo.
 >
 > **SCOPE: el MÉTODO es UNIVERSAL** (cajones de estado, render budget, máquinas de
-> estado, a11y, Web Vitals — cualquier proyecto). Lo calibrado a NutricomAI NO viaja a
+> estado, a11y, Web Vitals — cualquier proyecto). Lo calibrado a el proyecto NO viaja a
 > otros proyectos: tokens concretos (`bg-bg-base`/Plus Jakarta = SU design system; la
 > regla universal es "tokens del design system del proyecto activo, jamás hex"),
-> TCA-safe (dominio salud), copy tuteo (productos de Ale — verificar por proyecto),
-> "confianza clínica" como definición de bello. En otro proyecto: mismo método, reglas
+> safe-para-datos-sensibles (dominio salud), copy tuteo (productos de Ale — verificar por proyecto),
+> "confianza sensible" como definición de bello. En otro proyecto: mismo método, reglas
 > de marca/dominio desde `projects/<name>/` + CLAUDE.md de su repo.
 
 ## A) Framework Mental
 
-**Jerarquía inmutable: correcto > rápido > bello.** Pero en NutricomAI "bello" significa
-CONFIANZA CLÍNICA, no espectáculo (ley craft-al-servicio: el craft es el marco, no el
+**Jerarquía inmutable: correcto > rápido > bello.** Pero en el proyecto "bello" significa
+CONFIANZA sensible, no espectáculo (ley craft-al-servicio: el craft es el marco, no el
 cuadro). Una interfaz de nutrición que deslumbra pero confunde es una interfaz fallida;
 una que se siente precisa, calma y rápida construye la confianza que hace que el usuario
 VUELVA — y volver es la única métrica que importa en salud.
@@ -82,7 +82,7 @@ del master.
 
 ### B3. Formularios multi-paso (la máquina de estados — lección DOB)
 
-Todo flujo multi-paso (onboarding, ficha clínica) se modela como máquina de estados
+Todo flujo multi-paso (onboarding, ficha sensible) se modela como máquina de estados
 explícita, NUNCA como pila de useState sueltos:
 1. Estados nombrados (`datos_basicos → cuerpo → objetivos → resumen`) + evento por
    transición. Lo que no es transición nombrada, no puede pasar.
@@ -121,7 +121,7 @@ pesado fuera del main thread, sin re-render en cascada por un click.
 - Listas: FlashList SIEMPRE que pueda crecer (>20 items). estimatedItemSize medido,
   items puros con memo, imágenes al tamaño exacto del layout.
 - Haptics como puntuación, no como ruido: confirmación sutil al completar acción
-  significativa (registro guardado), JAMÁS en cada tap (haptics-playbook + TCA).
+  significativa (registro guardado), JAMÁS en cada tap (haptics-playbook + datos sensibles).
 - New Architecture: versiones pinneadas conocidas (skia 2.2.3 / reanimated 4.1 /
   worklets 0.5, NO React-Compiler) — newarch-gotchas.md es la verdad.
 
@@ -134,7 +134,7 @@ pesado fuera del main thread, sin re-render en cascada por un click.
 4. ¿El flujo completo se puede operar solo con screen reader? (probarlo una vez por
    pantalla nueva: VoiceOver/TalkBack, 2 minutos).
 5. ¿Estados comunicados, no solo coloreados? (error = texto + color, jamás solo color
-   — daltonismo + TCA: el rojo solo ya está prohibido en comida).
+   — daltonismo + datos sensibles: el rojo solo ya está prohibido en comida).
 6. ¿Animaciones respetan reduce-motion? (prefers-reduced-motion / AccessibilityInfo).
 
 ## C) Reglas de Oro (inquebrantables)
@@ -143,7 +143,7 @@ pesado fuera del main thread, sin re-render en cascada por un click.
 - Estado que cruza un redirect de auth JAMÁS vive solo en memoria (ley DOB).
 - Derivado no se guarda. Se calcula.
 - Animar SOLO transform/opacity; layout-thrash (width/height/top) prohibido.
-- TCA-safe en todo dato corporal: sin rachas punitivas, sin rojo culpabilizador en
+- safe-para-datos-sensibles en todo dato corporal: sin rachas punitivas, sin rojo culpabilizador en
   comida, sin peso protagonista. Es identidad del producto.
 - Skia es y-DOWN (invertir uv.y al portar shaders) · SkSL: multiplicar en float space
   (half3*float = null silencioso) · verificar capas vivas con diff de frames.

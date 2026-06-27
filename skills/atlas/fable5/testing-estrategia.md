@@ -2,8 +2,8 @@
 > Transferencia Fable 5 · 2026-06-11 · se carga en dispatches de implementación de
 > código (CREATE_NEW / REWRITE / REFACTOR) y en TODO fix de bug, además del pilar.
 >
-> **SCOPE: el MÉTODO es UNIVERSAL.** Los ejemplos (MercadoPago, DOB, food-vision) son
-> material didáctico de NutricomAI — en otro proyecto: mismo método, flujos críticos
+> **SCOPE: el MÉTODO es UNIVERSAL.** Los ejemplos (un proveedor de pagos, DOB, food-vision) son
+> material didáctico de el proyecto — en otro proyecto: mismo método, flujos críticos
 > DEL proyecto activo. Scope Discipline manda.
 >
 > **Contexto que motiva este módulo:** riesgo documentado del proyecto = 0% coverage
@@ -13,7 +13,7 @@
 ## A) Framework Mental
 
 **Un test es un seguro, no un certificado.** Se compra donde el siniestro es caro
-(pagos, auth, datos clínicos, onboarding) y no se compra donde el siniestro es trivial
+(pagos, auth, datos sensibles, onboarding) y no se compra donde el siniestro es trivial
 (un margin mal alineado lo caza pixelmatch, no un unit test).
 
 **Pirámide INVERTIDA para solo-founder pre-launch:** pocos E2E smoke de flujos críticos
@@ -41,7 +41,7 @@ PEOR que no tener test. Flaky = se arregla hoy o se borra hoy.
 
 1. **Smoke E2E de los flujos que generan plata/confianza** (4-6 tests, no más):
    login+SSO completo · onboarding entero hasta Mi día · registrar comida (texto y
-   foto) · pago sandbox end-to-end · chat básico con Alexia. Herramienta: la que ya
+   foto) · pago sandbox end-to-end · chat básico con el asistente. Herramienta: la que ya
    está en el stack (Playwright/agent-browser — el harness de /qa ya existe).
 2. **Bordes con fixtures** (los bugs caros viven acá): webhook con firma inválida →
    401 · webhook duplicado → idempotente (1 efecto) · payload malformado → 4xx sin

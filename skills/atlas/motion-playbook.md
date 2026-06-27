@@ -25,7 +25,7 @@
 | **Default si dudás** | **ease-out** | siempre se siente responsivo |
 - **ease-out-expo premium (Linear/Vercel/iOS):** `Easing.bezier(0.16, 1, 0.3, 1)`. La desaceleración asintótica nunca se siente como "freno". USAR para orb-guía, ignición, entradas hero.
 - Otros: cards entrando `Easing.bezier(0.25,1,0.5,1)` · dismiss `Easing.bezier(0.4,0,1,1)` (ease-in).
-- ⛔ NUNCA bounce/elastic en UI seria (el cerebro lo lee como juguete o bug). En NutricomAI = ansioso, anti-TCA.
+- ⛔ NUNCA bounce/elastic en UI seria (el cerebro lo lee como juguete o bug). En el proyecto = ansioso, anti-datos sensibles.
 
 ## 3. SPRING vs DURATION
 - **Spring** = todo lo que el usuario TOCA directo (press, drag, swipe). Preserva velocidad al interrumpir (crítico).
@@ -40,7 +40,7 @@ Toda animación touch-driven DEBE poder interrumpirse (el usuario cambia de opin
 ## 5. MATH DE FREYA (que se sienta vivo, no programado)
 - **lerp / ilerp / remap** (el cuchillo suizo): `lerp(a,b,t)=a+(b-a)*t` · `ilerp(a,b,v)=(v-a)/(b-a)` · `remap` = componer ambos. Trabajar SIEMPRE en `t∈[0,1]`; la duración en ms es capa de presentación.
 - **smootherstep (quintic, C2):** `t*t*t*(t*(t*6-15)+10)` — más cremoso que smoothstep cúbico. (Es el mismo quintic del fbm del totem.)
-- **Bézier cuadrática (la curva del orb-guía):** `Q(t)=(1-t)²P0 + 2(1-t)t·P1 + t²P2`. El control point P1 = "la intención del movimiento". Para arco grácil: P1 = midpoint + perpendicular·(dist·0.3). En NutricomAI el arco SIEMPRE curva hacia el centro de pantalla (el orb "siente" la gravedad del contenido).
+- **Bézier cuadrática (la curva del orb-guía):** `Q(t)=(1-t)²P0 + 2(1-t)t·P1 + t²P2`. El control point P1 = "la intención del movimiento". Para arco grácil: P1 = midpoint + perpendicular·(dist·0.3). En el proyecto el arco SIEMPRE curva hacia el centro de pantalla (el orb "siente" la gravedad del contenido).
 - **Splines Catmull-Rom (C1, pasa por los puntos)** para paths multi-waypoint. Para velocidad uniforme: arc-length param (samplear 100 puntos, distancias acumuladas, `interpolate()` progreso→t).
 - **Squash-and-stretch al aterrizar (volumen conservado):** scaleX `1+s*0.18`, scaleY `1-s*0.15` (Y menor → "absorbido", no "aplastado"), `s=sin(local*π)`.
 - **Respiración VIVA = frecuencias irracionales.** Un loop de 3.0s se ve programado. Sumar 2ª armónica de 7.0s (ratio 3/7) → el patrón tarda ~21s en repetir → el ojo lo lee orgánico. `sin(t*2π/3)*2.5 + sin(t*2π/7)*1.0`. Escala respiración ±1.5% (casi imperceptible, registrado inconsciente).
@@ -59,7 +59,7 @@ Toda animación touch-driven DEBE poder interrumpirse (el usuario cambia de opin
 ## 8. REDUCE-MOTION (no opcional · 35% de usuarios afectados por vestibular)
 No eliminar la animación: reducir desplazamiento/escala (opacity fade en vez de slide). Cada animación con su ruta `prefers-reduced-motion`. `AccessibilityInfo.isReduceMotionEnabled()` / `useReducedMotion()`.
 
-## 9. PRESETS NUTRICOMAI (Reanimated)
+## 9. PRESETS el proyecto (Reanimated)
 | Caso | Config | Duración |
 |---|---|---|
 | Orb-guía vuelo | `Easing.bezier(0.16,1,0.3,1)` (o spring `{stiffness:80,damping:18,mass:1.2}`) | 420-500ms |
@@ -68,12 +68,12 @@ No eliminar la animación: reducir desplazamiento/escala (opacity fade en vez de
 | Press card | `withSpring(0.96,{damping:20,stiffness:300})` + haptic Light | spring |
 | FAB aparición | spring `{duration:0.3,bounce:0.15}` | 300ms |
 | Tab indicator | `withSpring({stiffness:400,damping:35})` | spring |
-| Sheet (TCA-safe, sin bounce) | `withSpring({duration:0.4,bounce:0})` | 400ms |
+| Sheet (safe-para-datos-sensibles, sin bounce) | `withSpring({duration:0.4,bounce:0})` | 400ms |
 | Dismiss | `Easing.in(Easing.quad)` | 280ms |
 | Respiración orb | `useClock` + sin() irracional | continuo |
 
-## 10. QUÉ ANIMAR vs NO en NutricomAI
-SÍ: orb-guía (1ª vez + navegación), completar objetivo del día (suave, TCA-safe), registro confirmado→ítem aparece (spring 200ms), escanear→resultado (shared element), tab indicator, sheet de detalle.
+## 10. QUÉ ANIMAR vs NO en el proyecto
+SÍ: orb-guía (1ª vez + navegación), completar objetivo del día (suave, safe-para-datos-sensibles), registro confirmado→ítem aparece (spring 200ms), escanear→resultado (shared element), tab indicator, sheet de detalle.
 NO: lista de alimentos al cargar (directo), texto de macros al actualizar, registro de agua (instantáneo), teclado numérico, todo el flujo de log de comida (alta frecuencia).
 
 ## Referentes

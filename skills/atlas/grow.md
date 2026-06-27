@@ -107,7 +107,7 @@ detecta leyes equivocadas, solo leyes rotas). Ale puede aprobar todo, parte, o n
 ### G4 · PODA + REGISTRO (cerrar el ciclo)
 
 1. En cada learned-patterns.md: marcar las entradas consumidas con
-   `[CONSOLIDADO grow-N → <destino>]` (NUNCA borrarlas — son el historial clínico).
+   `[CONSOLIDADO grow-N → <destino>]` (NUNCA borrarlas — son el historial sensible).
    Las [YA-CUBIERTO] se marcan igual (confirman leyes existentes).
 2. Append a `eval/grow-history.jsonl`:
    `{"ts": "2026-06-12T00:00:00Z", "ciclo": 1, "motor_commit": "abc1234",

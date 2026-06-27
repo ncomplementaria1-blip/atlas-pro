@@ -1,4 +1,4 @@
-# Cinematography Playbook — el Director de Foto de FAZM/NutricomAI
+# Cinematography Playbook — el Director de Foto de ATLAS/el proyecto
 
 > Destilado de craft cinematográfico para TODO output de video (2026-06-07). Consumir al diseñar/dirigir/revisar
 > CUALQUIER video: splash pre-render, clip del orbe/totem, hero de landing, ad Meta/TikTok, celebración Rive→video.
@@ -15,11 +15,11 @@ Un clip "cinematic 4k beautiful" sin intención es slop. Test del director: por 
 
 ---
 
-## 1. Las 4 superficies de video de NutricomAI (qué dirige el director en cada una)
+## 1. Las 4 superficies de video de el proyecto (qué dirige el director en cada una)
 | Superficie | Pipeline | Lo que el director controla | Restricción dura |
 |---|---|---|---|
 | **Splash / wow one-shot** | Escena 3D offline (R3F/Grok) → MP4 ~1MB ffmpeg | plano único, push-in motivado, ignición de luz, loop perfecto | 2-3s · ≤1MB · loop sin costura · idéntico en todo device |
-| **Orbe / totem / agua in-app** | `grok-cli video` → `useVideo` + `ColorMatrix` (luma→alpha) Skia | el clip debe componer: fondo NEGRO PURO, sin banding, materia líquida creíble | 60fps garantizado · clip corto loopable · TCA-safe |
+| **Orbe / totem / agua in-app** | `grok-cli video` → `useVideo` + `ColorMatrix` (luma→alpha) Skia | el clip debe componer: fondo NEGRO PURO, sin banding, materia líquida creíble | 60fps garantizado · clip corto loopable · safe-para-datos-sensibles |
 | **Hero landing web** | R3F real-time O video pre-render | cámara que se mueve, post-stack completo, DOF narrativo | Awwwards-tier · web-only el post 3D |
 | **Ad / social (Meta/TikTok)** | grok-cli / Veo / Kling + `/video-edit` | hook 0-2s, vertical 9:16, ritmo, captions, safe-area | spec de plataforma · deferir estrategia a `/video` + `mk-ad-creative` |
 
@@ -41,33 +41,33 @@ Insight: en mobile el wow vive PRE-RENDERIZADO (no se pelea el hardware · ver w
 - **"Lens character" = imperfección acumulada** (worldclass-craft §2): aberración cromática sutil (0.001-0.002), grano (opacity 0.03-0.05), viñeta (0.55-0.7), un punto de flare/bloom en emisivos. Una lente real nunca es perfecta — esa "suciedad" es lo que lee como cine. ⛔ si podés nombrar el efecto, bajalo.
 
 ## 4. MOVIMIENTO DE CÁMARA (cada uno MOTIVADO · nunca decorativo)
-| Movimiento | Significa | Cuándo en NutricomAI |
+| Movimiento | Significa | Cuándo en el proyecto |
 |---|---|---|
 | **Push-in (dolly/empuje)** | intimidad, revelación, foco emocional | splash: empuje lento al orbe naciendo |
 | **Pull-out** | contexto, soledad, "el todo" | revelar el cockpit completo desde el orbe |
 | **Dolly lateral / truck** | acompañar, presentar | barrer ingredientes/macros |
 | **Tilt / pan** | descubrir, conectar dos puntos | de la comida al dato |
 | **Crane / boom** | escala, cierre de escena | hero de landing |
-| **Handheld** | urgencia, humano, crudo | casi NUNCA en NutricomAI (rompe lo premium/calmo) |
+| **Handheld** | urgencia, humano, crudo | casi NUNCA en el proyecto (rompe lo premium/calmo) |
 | **Locked (trípode)** | control, lujo, observación | producto/identidad · el default premium |
 - **Velocidad de cine**: lenta y con ease (la cámara acelera y frena suave, nunca lineal). Cámara a 60fps = movimiento sub-perceptible; el ojo siente "vivo" sin "se mueve". Easing de cámara = `ease-out-expo` para revelaciones (ver motion-playbook §2).
 - **La cámara se mueve, no solo el objeto** (worldclass-craft §2). Pero **un movimiento por plano**: combinar push+pan+tilt+zoom a la vez = mareo + slop. Restraint también acá.
 - ⛔ **zoom digital brusco, shake gratuito, órbita 360° sin motivo, speed-ramp de plantilla** = tells de AI/TikTok genérico.
 
 ## 5. ILUMINACIÓN (luz motivada · la firma premium)
-- **3 puntos** (worldclass-craft §2): key cálido (la forma) + fill frío bajo (sombra abierta, ratio alto = dramático/low-key) + **rim/back cián** (separa del fondo, amplifica bloom en el borde = halo de producto). El rim ES la firma NutricomAI.
+- **3 puntos** (worldclass-craft §2): key cálido (la forma) + fill frío bajo (sombra abierta, ratio alto = dramático/low-key) + **rim/back cián** (separa del fondo, amplifica bloom en el borde = halo de producto). El rim ES la firma el proyecto.
 - **Luz motivada**: que parezca venir de una fuente del mundo (el propio orbe emite, la pantalla ilumina la cara). Luz sin fuente lógica = videojuego barato.
 - **Low-key dark** (#050505) es la casa: pocas luces, mucho negro, el sujeto emerge. NO subir exposición global — el contraste ES el lujo.
-- **Temperatura/contraste de color**: cálido vs frío en la misma toma da dimensión. Esmeralda #059669/#34D399 = vida (la única saturación fuerte permitida).
+- **Temperatura/contraste de color**: cálido vs frío en la misma toma da dimensión. el color de acento #059669/#34D399 = vida (la única saturación fuerte permitida).
 
 ## 6. COLOR / GRADE (paleta + ACES, no filtro)
-- **ACESFilmic** tone mapping (worldclass-craft §2) · exposure ~1.2 · AgX si el esmeralda sale fluorescente. NUNCA Linear/None.
-- **Paleta DNA**: dark #050505 · esmeralda vida · canales macro (carbo cyan #22D3EE / prote magenta #E879F9 / grasa amber #FBBF24 / fibra lima #84CC16) como acentos puntuales. ⛔ **teal-and-orange genérico de Hollywood = slop** — su grade es esmeralda-sobre-negro, no el cliché.
+- **ACESFilmic** tone mapping (worldclass-craft §2) · exposure ~1.2 · AgX si el el color de acento sale fluorescente. NUNCA Linear/None.
+- **Paleta DNA**: dark #050505 · el color de acento vida · canales macro (carbo cyan #22D3EE / prote magenta #E879F9 / grasa amber #FBBF24 / fibra lima #84CC16) como acentos puntuales. ⛔ **teal-and-orange genérico de Hollywood = slop** — su grade es el color de acento-sobre-negro, no el cliché.
 - **Contraste y crushed blacks** con cuidado: negro profundo SÍ, pero sin perder el detalle del material líquido (banding = muerte del compositing in-app). Exportar 10-bit cuando se pueda; dither al bajar a 8-bit.
 - **Consistencia plano a plano**: el grade es uno solo en toda la pieza (continuidad de color = profesionalismo).
 
 ## 7. RITMO DEL MONTAJE (Walter Murch · "el corte que respira")
-- **Duración de plano = ritmo**: planos largos = calma/lujo/contemplación (NutricomAI diario) · cortes rápidos = energía (ad/hook). El ritmo sigue la **respiración del espectador**, no un BPM mecánico.
+- **Duración de plano = ritmo**: planos largos = calma/lujo/contemplación (el proyecto diario) · cortes rápidos = energía (ad/hook). El ritmo sigue la **respiración del espectador**, no un BPM mecánico.
 - **Regla de Murch (jerarquía del corte):** emoción (51%) > historia > ritmo > eye-trace > planaridad/eje. Cortá donde la EMOCIÓN lo pide antes que donde la continuidad lo permite.
 - **Corte invisible**: cortar en el movimiento (match-on-action), respetar el eje de los 180°, eye-trace (el ojo ya está donde aparece el siguiente plano). **J-cut / L-cut** (el audio entra antes/sale después del corte) = el pegamento pro que hace fluido el montaje.
 - **Match cut** (forma/movimiento que rima entre planos) = elegancia (gota → orbe → plato). **Hold** (dejar respirar el último frame) antes de cortar.
@@ -76,12 +76,12 @@ Insight: en mobile el wow vive PRE-RENDERIZADO (no se pelea el hardware · ver w
 ## 8. SONIDO (el 50% invisible · vende el material)
 - **Sound design diegético** (agua que se mueve, ignición que enciende, click del registro) hace CREÍBLE la imagen — el cerebro "siente" el líquido por el sonido. Un orbe sin sonido de agua se ve CGI; con él, se ve real.
 - **Score**: minimal, cálido (Headspace/Calm), nunca épico-de-stock. ⛔ **música épica genérica + whoosh de transición = el tell #1 de ad-AI**.
-- **TCA-safe en audio**: nada de tensión/alarma/urgencia ansiosa. Respiración, no pulso de pánico (gemelo de la regla de motion). El silencio es una opción premium.
+- **safe-para-datos-sensibles en audio**: nada de tensión/alarma/urgencia ansiosa. Respiración, no pulso de pánico (gemelo de la regla de motion). El silencio es una opción premium.
 - **Ducking** del score bajo la voz/SFX clave. Mezcla: SFX > voz > música.
 
 ## 9. TIEMPO (slow-mo / speed con propósito)
 - **Slow-motion** solo para revelar belleza/detalle que a velocidad real se pierde (la gota cayendo, el líquido reconfigurándose). No slow-mo "porque sí".
-- **Speed-ramp** (acelerar→frenar en el beat) con MUCHO restraint — es el efecto más cliché de los 2020s; en NutricomAI casi nunca.
+- **Speed-ramp** (acelerar→frenar en el beat) con MUCHO restraint — es el efecto más cliché de los 2020s; en el proyecto casi nunca.
 - **Loop perfecto** (splash/orbe in-app): primer frame == último (o cross-dissolve invisible) · sin "salto" perceptible. ffmpeg: cortar en el cruce de fase de la respiración.
 
 ---
@@ -91,7 +91,7 @@ El modelo es tu equipo de rodaje: si le das una orden vaga, improvisa slop. **F�
 `[escala de plano] de [sujeto + acción concreta], [movimiento de cámara motivado], [lente/focal + DOF], [esquema de luz + dirección + temperatura], [paleta/grade + mood], [textura/film stock], [ritmo/duración]`
 
 - ⛔ **Prompt slop:** "a beautiful cinematic 4k video of a glowing orb, amazing, high quality, trending". (Sin intención → el modelo promedia → slop.)
-- ✅ **Prompt dirigido (orbe estanque splash):** "Extreme close-up of a liquid emerald sphere forming from still black water, slow 3-second push-in, 85mm lens shallow depth of field, single warm key from upper-left + cyan rim light behind, near-black #050505 background, emerald #34D399 internal glow, subtle film grain and chromatic aberration, calm and premium, seamless loop, no text."
+- ✅ **Prompt dirigido (orbe la dirección visual del proyecto splash):** "Extreme close-up of a liquid emerald sphere forming from still black water, slow 3-second push-in, 85mm lens shallow depth of field, single warm key from upper-left + cyan rim light behind, near-black #050505 background, emerald #34D399 internal glow, subtle film grain and chromatic aberration, calm and premium, seamless loop, no text."
 - **Negativos** (lo que mata el realismo): `no morphing, no extra fingers, no warped geometry, no text artifacts, no flicker, no oversaturation, no lens flare spam, no fast cuts`.
 - **Consistencia**: fijar seed entre tomas (`grok-cli ... --seed N`) · misma descripción de luz/lente/grade en todos los prompts de una pieza (continuidad). `image-edit`/`video-extend` para mantener el mismo sujeto.
 - **Iteración del director**: generar 3-4 variantes, juzgar contra la RÚBRICA (§12), elegir, refinar el prompt sobre lo que falló (no regenerar a ciegas). El ojo de Ale caza lo que el modelo no.
@@ -99,7 +99,7 @@ El modelo es tu equipo de rodaje: si le das una orden vaga, improvisa slop. **F�
 
 ## 11. PIPELINES TÉCNICOS (la entrega correcta)
 - **Pre-render R3F→MP4** (splash): renderizar a **24fps** (cadencia de cine) o 30 si hay UI · `motion blur` ON (sin él se ve a saltos = CGI) · ffmpeg: `-c:v libx264 -crf 20 -pix_fmt yuv420p -movflags +faststart` · target ~1MB · loop con primer=último frame. Verificar peso y loop ANTES de integrar.
-- **In-app compositing** (totem probado · /matu 9.59 · `EstanqueTotem.tsx`): `grok-cli video` con fondo negro → `useVideo` (Skia) + `ColorMatrix` luma→alpha → compone sobre cualquier pantalla. ⛔ y-flip Skia (worldclass-craft §4) · sin banding · focus-pause batería.
+- **In-app compositing** (totem probado · /matu 9.59 · `la dirección visual del proyecto.tsx`): `grok-cli video` con fondo negro → `useVideo` (Skia) + `ColorMatrix` luma→alpha → compone sobre cualquier pantalla. ⛔ y-flip Skia (worldclass-craft §4) · sin banding · focus-pause batería.
 - **Ad / social**: `/video` (mk-video) orquesta la generación + `/video-edit` corta por transcript/beats · vertical 9:16 · captions quemados · safe-area (la UI de plataforma no tapa el sujeto) · primer frame = thumbnail fuerte.
 - **"Ver" el video para revisarlo** (capacidad ADN · reusar `youtube-study-playbook.md`): `ffmpeg -i clip.mp4 -vf "fps=2,scale=320:-1,tile=4x4" sheet.png` → leer el contact-sheet como imagen → evaluar contra la rúbrica. Crudos en `~/yt`/`/tmp`, nunca commiteados.
 
@@ -114,7 +114,7 @@ Puntuar cada eje 0-10 sobre frames extraídos (§11) + el clip. **PASS = promedi
 5. **Color / grade** — paleta DNA, ACES, consistente, sin teal-orange cliché.
 6. **Ritmo de montaje** — duración por emoción, J/L cuts, corte invisible.
 7. **Continuidad** — eje 180°, color/luz constantes, sin saltos.
-8. **Sonido** — SFX diegético creíble, score restraint, TCA-safe, mezcla limpia.
+8. **Sonido** — SFX diegético creíble, score restraint, safe-para-datos-sensibles, mezcla limpia.
 9. **Lens character / textura** — grano/aberración/viñeta sutiles; nada plástico.
 10. **Cero tells AI** — sin morphing/flicker/uncanny/física imposible/plantilla.
 

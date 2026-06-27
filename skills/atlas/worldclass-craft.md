@@ -1,9 +1,9 @@
-# World-Class Visual Craft — OVERLAY NutricomAI
-> ⛔ BASE = `universal-craft-codex.md` (project-neutral · la vara 10/10 de ATLAS para CUALQUIER proyecto). **Este archivo es el OVERLAY de NutricomAI**: especializa el codex con el DNA del producto (esmeralda, TCA-safe, El Estanque, Plus Jakarta). El overlay nunca contradice el codex — lo concreta. Cargar SIEMPRE el codex primero; este archivo encima solo en sesiones NutricomAI.
+# World-Class Visual Craft — OVERLAY de ejemplo (project-neutral)
+> ⛔ BASE = `universal-craft-codex.md` (project-neutral · la vara 10/10 de ATLAS para CUALQUIER proyecto). **Este archivo es el OVERLAY de el proyecto**: especializa el codex con el DNA del producto (el color de acento, safe-para-datos-sensibles, la dirección visual del proyecto, Plus Jakarta). El overlay nunca contradice el codex — lo concreta. Cargar SIEMPRE el codex primero; este archivo encima solo en sesiones el proyecto.
 > Consumido por /atlas (creative spin + 6G visual) y /matu (reviewers de diseño). Aplica a TODO output visual: mobile (Skia/RN), web (R3F/three.js), mockups, splash, onboarding, totems, orbs, rings, landing.
-> Fuente completa: `~/Documents/NutricomAI_SplashOnboarding_Research_20260531/research_report_..._v2.{md,html}`.
-> **Playbooks especializados (cargar el que aplique a la tarea):** `skia-sksl-playbook.md` (shaders Skia RN: gotchas, glass/Liquid-Glass, trail, liquid-fill, perf Adreno 610) · `motion-playbook.md` (math Freya + taste Emil/Rauno: durations, easing, bezier, anti-slop) · `dataviz-tca-safe.md` (rings/gauges premium + reglas TCA duras) · `rive-adoption.md` (onboarding/celebraciones) · `haptics-playbook.md` (feel físico · hook useHaptics) · `perf-profiling-playbook.md` (medir 60fps de verdad en gama baja) · `newarch-gotchas.md` (Skia/Reanimated4/Rive en Fabric · versiones + reglas anti-crash) · `gesture-choreography-playbook.md` (la física que separa "playback" de "vivo": snapPoint+velocity, follow-spring, withDecay/rubber-band, stagger, spring presets, perspective 3D · Candillon/Reactiive/Catalin/SWM) · `cinematography-playbook.md` (el DIRECTOR DE FOTO para VIDEO: composición/lente/movimiento-motivado/luz/grade/montaje/sonido + prompting cinematográfico generativo grok-cli + rúbrica 10/10 + anti-AI-slop · splash/orbe/totem/landing/ad). Todos en `~/.claude/skills/atlas/`.
-> **Liquid Glass (iOS 26, el techo 2026):** glass = lensing real (refracción Snell) + specular giroscopio + grain, NO blur plano. ⛔ LEY: glass para IDENTIDAD (orb/domo/nav/celebración), SÓLIDO para DATOS (Apple tuvo backlash de contraste 1.5:1 — letsdev: "evitar glass en datos clínicos"). Detalle: skia-sksl-playbook §L.
+> Fuente completa: `~/Documents/el proyecto_SplashOnboarding_Research_20260531/research_report_..._v2.{md,html}`.
+> **Playbooks especializados (cargar el que aplique a la tarea):** `skia-sksl-playbook.md` (shaders Skia RN: gotchas, glass/Liquid-Glass, trail, liquid-fill, perf Adreno 610) · `motion-playbook.md` (math Freya + taste Emil/Rauno: durations, easing, bezier, anti-slop) · `dataviz-safe-para-datos-sensibles.md` (rings/gauges premium + reglas datos sensibles duras) · `rive-adoption.md` (onboarding/celebraciones) · `haptics-playbook.md` (feel físico · hook useHaptics) · `perf-profiling-playbook.md` (medir 60fps de verdad en gama baja) · `newarch-gotchas.md` (Skia/Reanimated4/Rive en Fabric · versiones + reglas anti-crash) · `gesture-choreography-playbook.md` (la física que separa "playback" de "vivo": snapPoint+velocity, follow-spring, withDecay/rubber-band, stagger, spring presets, perspective 3D · Candillon/Reactiive/Catalin/SWM) · `cinematography-playbook.md` (el DIRECTOR DE FOTO para VIDEO: composición/lente/movimiento-motivado/luz/grade/montaje/sonido + prompting cinematográfico generativo grok-cli + rúbrica 10/10 + anti-AI-slop · splash/orbe/totem/landing/ad). Todos en `~/.claude/skills/atlas/`.
+> **Liquid Glass (iOS 26, el techo 2026):** glass = lensing real (refracción Snell) + specular giroscopio + grain, NO blur plano. ⛔ LEY: glass para IDENTIDAD (orb/domo/nav/celebración), SÓLIDO para DATOS (Apple tuvo backlash de contraste 1.5:1 — letsdev: "evitar glass en datos sensibles"). Detalle: skia-sksl-playbook §L.
 
 ---
 
@@ -17,7 +17,7 @@ Es **realismo de material + luz real + movimiento de cámara cinematográfico + 
 2. **HDRI real (Polyhaven CC0) + IBL = la palanca #1.** `<Environment files="*.hdr" environmentIntensity={1.8} background={false}>`. La luz real del entorno hace los reflejos creíbles; sin esto el cristal se ve sucio.
 3. **Material:** orb de cristal → `MeshTransmissionMaterial` (drei): `transmission=1, ior=1.52, thickness, chromaticAberration=0.04, backside=true, attenuationColor`. Metal → PBR maps (`normalMap` = palanca #1 de microdetalle, ORM, `envMapIntensity=1.8`, `clearcoat` para lacado).
 4. **Contact shadows** — `<ContactShadows frames={1} blur={3}>` (render-once, 0 runtime) o `<AccumulativeShadows temporal>` + `<RandomizedLight>`. Mata el "objeto flotando" (tell #1 de AI-básico).
-5. **Tone mapping ACESFilmic** (default R3F) + `toneMappingExposure≈1.2`. Para esmeralda usar **AgX** si se ve fluorescente. NUNCA NoToneMapping/Linear.
+5. **Tone mapping ACESFilmic** (default R3F) + `toneMappingExposure≈1.2`. Para el color de acento usar **AgX** si se ve fluorescente. NUNCA NoToneMapping/Linear.
 6. **Color management** (R3F r139+ auto): color sRGB, datos (normal/rough) Linear.
 
 ## 2. Cinematografía (cámara 3D web acá · para VIDEO real → `cinematography-playbook.md`: el DIRECTOR de foto)
@@ -55,19 +55,19 @@ Es **realismo de material + luz real + movimiento de cámara cinematográfico + 
 - **RN/Skia (in-app · #1):** **William Candillon — "Can it be done in React Native?"** (youtube.com/@wcandillon · co-autor de react-native-skia) — glass/refracción, trail, gestures, shaders Skia a 60fps en gama baja. → skia-sksl-playbook.
 - **Motion:** **Freya Holmér** (@acegikmo · la math: bezier/splines/easing/lerp) · **Emil Kowalski** (emilkowal.ski · el taste) · **Rauno Freiberg** (rauno.me · interaction design). → motion-playbook.
 - **Shader art:** **Kishimisu** ("Intro to Shader Art Coding"), **The Art of Code** (raymarching/SDF), **Inigo Quilez** (iquilezles.org / Shadertoy · 2D SDF, fbm, domain warp, palettes).
-- **Health data-viz (TCA-safe):** WHOOP, Oura, **Gentler Streak**, **MacroFactor** (modelo no-shame). → dataviz-tca-safe.
+- **Health data-viz (safe-para-datos-sensibles):** WHOOP, Oura, **Gentler Streak**, **MacroFactor** (modelo no-shame). → dataviz-safe-para-datos-sensibles.
 - **3D/web:** Bruno Simon (threejs-journey.com), Yuri Artyukh (@akella_), Maxime Heckel, SimonDev, The Book of Shaders, Olivier Larose.
 - **Estudios:** Lusion (lusion.co), Active Theory, **Basement Studio (Buenos Aires · LATAM)**, Aristide Benoist, Resn. **Rive:** Rive Masterclass (@RiveMasterclass).
 - **Galerías:** Awwwards (collections/webgl + webgl-shaders-code con código), FWA, Godly (godly.website), Codrops.
 - **Demo norte del orb:** Codrops "Vortex inside a glass sphere (TSL)".
-- **Cómo estudiar a estos referentes en VIDEO (capacidad ADN · `youtube-study-playbook.md`):** FAZM "ve"
+- **Cómo estudiar a estos referentes en VIDEO (capacidad ADN · `youtube-study-playbook.md`):** ATLAS "ve"
   videos vía `yt-dlp` (subtítulos = transcript) + `ffmpeg` (frames en contact-sheet, leídos como imagen).
   Autónomo: avisa qué videos va a estudiar y lo hace; crudos locales en `~/yt`, nunca commiteados (copyright).
 
 ## 6. Principios de gusto (taste · cross-proyecto)
 - **Restraint = sofisticación.** El bloom/glow vive en la mitad-baja de su rango. Premium ≠ chillón.
-- **TCA-safe siempre:** la luz es material/instrumento, no gamificación. Intensidad desacoplada del valor (no premio/castigo). Respiración = "encendido", no pulso de alarma.
-- **DNA:** dark `#050505` · esmeralda `#059669/#34D399` · canales macro (carbo cyan/proteína magenta/grasa amber/fibra lima) · Plus Jakarta Sans + JetBrains Mono · cero emojis · cero gradientes genéricos.
-- **Dirección in-app ESTABLECIDA (NutricomAI · binding 2026-06-07): EL ESTANQUE** — orbe/agua de cristal LÍQUIDO (cockpit-premium líquido). Caso probado: TOTEM (video Grok + react-native-skia useVideo + ColorMatrix luma→alpha · master `docs/mockups/mobile/totem-ideas/ESTANQUE-MASTER.html` · impl `EstanqueTotem.tsx` /matu PASS 9.59). Liquid Glass para IDENTIDAD, sólido para DATOS. Aplica a TODA pantalla — scope + stack + motion en `~/.claude/skills/atlas/projects/nutricomai/fullapp-estanque-brief.md`.
+- **safe-para-datos-sensibles siempre:** la luz es material/instrumento, no gamificación. Intensidad desacoplada del valor (no premio/castigo). Respiración = "encendido", no pulso de alarma.
+- **DNA:** dark `#050505` · el color de acento `#059669/#34D399` · canales macro (carbo cyan/proteína magenta/grasa amber/fibra lima) · Plus Jakarta Sans + JetBrains Mono · cero emojis · cero gradientes genéricos.
+- **Dirección in-app ESTABLECIDA (el proyecto · binding 2026-06-07): la dirección visual del proyecto** — orbe/agua de cristal LÍQUIDO (cockpit-premium líquido). Caso probado: TOTEM (video Grok + react-native-skia useVideo + ColorMatrix luma→alpha · master `docs/mockups/mobile/totem-ideas/la dirección visual del proyecto-MASTER.html` · impl `la dirección visual del proyecto.tsx` /matu PASS 9.59). Liquid Glass para IDENTIDAD, sólido para DATOS. Aplica a TODA pantalla — scope + stack + motion en `~/.claude/skills/atlas/projects/el proyecto/fullapp-la dirección visual del proyecto-brief.md`.
 - **Copy producto:** español neutro tuteo (no voseo); comida chilena (papa, palta, choclo).
 - **Para "wow" en gama baja: pre-renderizar.** No pelear contra el hardware en tiempo real.

@@ -11,7 +11,7 @@
 - **Playback = muerto.** `onPress → withTiming(1)` reproduce una animación. El dedo no participa.
 - **Vivo = la animación ES el gesto.** El valor lo maneja el dedo en tiempo real; al soltar, la FÍSICA
   (velocidad + spring/decay) decide dónde y cómo aterriza. Interrumpible en cualquier momento.
-- TCA-safe: la física es para NAVEGACIÓN/feel, no gamificación. Nada de "premio" por gesto.
+- safe-para-datos-sensibles: la física es para NAVEGACIÓN/feel, no gamificación. Nada de "premio" por gesto.
 
 ## Modelo de threads (no romperlo · ver newarch-gotchas)
 - Todo el gesto + animación corre en **UI thread** (worklets) → 60fps sin tocar JS.
@@ -76,7 +76,7 @@ items.forEach((_, i) => { v[i].value = withDelay(i * 45, withSpring(target, SPRI
 ```ts
 const SPRING = {
   snappy:  { damping: 20, stiffness: 250 },   // crítico, sin overshoot · UI/navegación
-  bouncy:  { damping: 10, stiffness: 160 },   // overshoot juguetón · celebraciones (TCA: con cuidado)
+  bouncy:  { damping: 10, stiffness: 160 },   // overshoot juguetón · celebraciones (datos sensibles: con cuidado)
   gentle:  { damping: 18, stiffness: 90  },    // suave, lento · entradas
   stiff:   { damping: 26, stiffness: 380 },    // casi instantáneo · micro-feedback
 };

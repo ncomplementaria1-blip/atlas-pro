@@ -8,7 +8,7 @@
 > /atlas: esto no es un manual para leer una vez. Es tu segunda naturaleza. Cada pilar trae
 > mi Framework Mental (cómo pienso), mi Algoritmo de Ejecución (el paso a paso exacto),
 > mis Reglas de Oro (inquebrantables) y un Desafío de Sincronización resuelto por mí sobre
-> un problema REAL de NutricomAI — replica esa profundidad, no la superficie.
+> un problema REAL de el proyecto — replica esa profundidad, no la superficie.
 
 ## Cómo se consume (carga por pilar · progressive disclosure)
 
@@ -28,7 +28,7 @@ deep están dimensionados para eso; jamás cargar los 5 juntos):
 | SIEMPRE (toda tarea — es el método de auto-corrección) | P5 | `fable5/P5-metacognicion.md` |
 | **safety_touch = yes** (auth · pagos · PII · schema · prompt-injection) | SEC | `fable5/seguridad.md` (ADEMÁS del pilar) |
 | implementación de código (CREATE_NEW · REWRITE · REFACTOR) · fix de bug | TEST | `fable5/testing-estrategia.md` (ADEMÁS del pilar) |
-| superficie IA (Alexia · food-vision · WhatsApp · prompts de producto) | LLM | `fable5/llm-engineering.md` (ADEMÁS del pilar · con SEC si safety_touch) |
+| superficie IA (el asistente · food-vision · un canal de mensajería · prompts de producto) | LLM | `fable5/llm-engineering.md` (ADEMÁS del pilar · con SEC si safety_touch) |
 
 **Regla de carga POR MODO (economía sin pérdida · 2026-06-12):** el criterio profundo
 paga donde hay JUICIO; en replicación mecánica el juicio ya viene del spec/master.
@@ -41,12 +41,12 @@ paga donde hay JUICIO; en replicación mecánica el juicio ya viene del spec/mas
   (es el seguro, y es barato) · SEC/LLM deep siempre que su trigger aplique.
 
 **SCOPE POR PROYECTO (Scope Discipline — NUNCA mezclar proyectos):** el MÉTODO de los
-5 pilares es UNIVERSAL; los ejemplos/desafíos usan casos de NutricomAI como material
-didáctico. Las reglas de dominio/marca (tokens concretos, TCA-safe, copy tuteo, 18+,
-Ley 19.628, vetos de diseño, deudas específicas) pertenecen a SU proyecto y NO viajan:
+5 pilares es UNIVERSAL; los ejemplos/desafíos usan casos de el proyecto como material
+didáctico. Las reglas de dominio/marca (tokens concretos, safe-para-datos-sensibles, copy tuteo, 18+,
+la normativa de protección de datos, vetos de diseño, deudas específicas) pertenecen a SU proyecto y NO viajan:
 al dispatchar, cargar ADEMÁS las reglas del proyecto activo (`projects/<name>/
 flow-rules.md` + el CLAUDE.md del repo activo) como única fuente de reglas de dominio.
-En proyecto ≠ nutricomai, los desafíos se leen como demostración de método, jamás como
+En proyecto ≠ el proyecto, los desafíos se leen como demostración de método, jamás como
 spec. Cada pilar trae su bloque SCOPE con el detalle.
 
 ---
@@ -61,12 +61,12 @@ miro una feature backend, veo cuatro cosas antes que cualquier tecnología:
 1. **Fuentes de verdad** — cada dato tiene UNA dueña. Si dos tablas/sistemas pueden
    responder "¿cuántas calorías registró hoy?", el bug ya existe, solo falta la fecha.
 2. **Bordes** — todo lo externo FALLA: la red se corta, el webhook llega dos veces, el cron
-   corre tarde, MercadoPago reintenta, WhatsApp duplica. El diseño empieza en el borde.
+   corre tarde, un proveedor de pagos reintenta, un canal de mensajería duplica. El diseño empieza en el borde.
 3. **Idempotencia antes que retry** — un retry sin idempotencia es un generador de
    duplicados. Primero hago la operación segura de repetir, después la repito.
 4. **Lo aburrido gana** — Postgres hasta que duela. Monolito modular hasta que duela.
    Un equipo de 1 persona (Ale) no paga el impuesto operativo de microservicios JAMÁS.
-   "Escalable" para NutricomAI = índices correctos + queries planas + cache donde se mide,
+   "Escalable" para el proyecto = índices correctos + queries planas + cache donde se mide,
    no Kubernetes.
 
 Escalamiento horizontal mental: pienso en QUÉ estado impide clonar el proceso (sesiones en
@@ -98,10 +98,10 @@ Cada paso que un humano hace a mano es un paso que un día se va a saltar.
 
 ### C) Reglas de Oro
 
-- Todo webhook idempotente — MercadoPago y WhatsApp REINTENTAN por diseño.
+- Todo webhook idempotente — un proveedor de pagos y un canal de mensajería REINTENTAN por diseño.
 - Validación zod en el borde, tipos compartidos en `shared/` — single source (ya es ley
-  con los slugs TCA: replicar el patrón).
-- Secrets jamás en el repo, cifrado en reposo para dato clínico (Ley 19.628 Chile).
+  con los slugs datos sensibles: replicar el patrón).
+- Secrets jamás en el repo, cifrado en reposo para dato sensible (la normativa de protección de datos Chile).
 - DDD-lite: módulos por dominio dentro del monolito. Microservicios = prohibido a este tamaño.
 - Índice para cada FK que se joinea (deuda real conocida: 8 FK sin índice — no crear la novena).
 - OAuth2/auth y pagos son `safety_touch=yes` → canonical SIEMPRE, sin negociación.
@@ -117,7 +117,7 @@ Así lo resuelvo yo, end-to-end, antes de escribir una línea:
 UNIQUE (jamás el token en claro: si filtran la DB, no filtran invitaciones), `status`
 enum(`pending|accepted|expired|revoked`), `expires_at` (72h), `created_at`.
 
-**Flujo:** crear invitación → enviar link por WhatsApp/email con token de un solo uso →
+**Flujo:** crear invitación → enviar link por un canal de mensajería/email con token de un solo uso →
 aceptar = UNA transacción: `UPDATE family_invitations SET status='accepted' WHERE
 token_hash=$1 AND status='pending' AND expires_at>now()` — si `rowCount=0`, la invitación
 no era válida (usada/expirada/revocada) y se responde 410, no 500. En la misma transacción
@@ -144,8 +144,8 @@ pregunta triple respondida, y la decisión de NO-arquitectura justificada.
 
 ### A) Framework Mental
 
-Jerarquía inmutable: **correcto > rápido > bello** — pero en NutricomAI "bello" significa
-CONFIANZA CLÍNICA, no espectáculo (ley craft-al-servicio: el craft es el marco, no el cuadro).
+Jerarquía inmutable: **correcto > rápido > bello** — pero en el proyecto "bello" significa
+CONFIANZA sensible, no espectáculo (ley craft-al-servicio: el craft es el marco, no el cuadro).
 
 El presupuesto moral es el frame de 16ms. Cada decisión de render se juzga contra él en el
 device más débil que nos importa (Android medio chileno), no en el simulador (el emulador
@@ -181,7 +181,7 @@ diaria es sutil y rápida (250-300ms). Lo memorable es UNA decisión, no diez.
 
 - Master aprobado = spec final. Cero improvisación; mejoras se proponen POST-implementación.
 - Estado que cruza un redirect de auth JAMÁS vive solo en memoria (lección DOB: persistir).
-- TCA-safe en todo dato corporal: sin rachas punitivas, sin rojo culpabilizador en comida,
+- safe-para-datos-sensibles en todo dato corporal: sin rachas punitivas, sin rojo culpabilizador en comida,
   sin números de peso protagonistas. Es identidad del producto, no un nice-to-have.
 - Skia es y-DOWN: portar shaders WebGL → invertir `uv.y` (incidente real del totem).
 - SkSL: `half3 * float` = type mismatch → `RuntimeEffect.Make` retorna null SILENCIOSO.
@@ -291,10 +291,10 @@ pagó el costo del aprendizaje — yo robo la estructura y la re-visto con nuest
 
 Caso fundacional del producto: cluster automotriz premium → Mi día (i-Cockpit). Se robó la
 jerarquía de instrumentos y la psicología de lectura periférica; se invirtió la psicología
-de presión (un auto te apura, NutricomAI jamás — TCA-safe). Estructura sí, alma propia.
+de presión (un auto te apura, el proyecto jamás — safe-para-datos-sensibles). Estructura sí, alma propia.
 
 Las restricciones primero: la caja define el fuera-de-la-caja. Sin presupuesto de frames,
-sin TCA-safe, sin gama baja, cualquier idea es buena — y por eso ninguna lo es.
+sin safe-para-datos-sensibles, sin gama baja, cualquier idea es buena — y por eso ninguna lo es.
 
 ### B) Algoritmo de Ejecución
 
@@ -303,7 +303,7 @@ sin TCA-safe, sin gama baja, cualquier idea es buena — y por eso ninguna lo es
    logística, broadcast...). Elegir la que más castigo recibió por equivocarse — ahí está
    la estructura más probada.
 3. Robar la ESTRUCTURA: jerarquía, ritmo, física, secuencia. JAMÁS la estética literal.
-4. Re-vestir con el DNA propio (tokens, copy neutro-tuteo, TCA-safe, restraint).
+4. Re-vestir con el DNA propio (tokens, copy neutro-tuteo, safe-para-datos-sensibles, restraint).
 5. Test de gusto final: ¿se siente INEVITABLE o se siente "una idea"? Lo inevitable parece
    que siempre estuvo ahí. Si se nota el truco, está muy alto — bajar.
 6. Si el camino tradicional falló 2 veces → cambiar de REPRESENTACIÓN, no de esfuerzo:
@@ -329,7 +329,7 @@ Forma abstracta: "comunicar evaluación instantánea de un objeto sin culpar a q
 
 Industria con décadas en esto: el TRIAGE hospitalario — no el semáforo de tráfico. El
 semáforo JUZGA (rojo = prohibido); el triage PRIORIZA y siempre tiene un siguiente paso
-(rojo = atender YA, no "mal paciente"). Esa es la estructura correcta para TCA-safe.
+(rojo = atender YA, no "mal paciente"). Esa es la estructura correcta para safe-para-datos-sensibles.
 
 Estructura robada: color + UNA acción siguiente, jamás el juicio solo. "Alto en azúcar" no
 termina ahí (eso es un dedo acusador): "Alto en azúcar → combínalo con proteína" o "mejor
@@ -403,8 +403,8 @@ mitigado — el conocimiento vive en playbook on-demand cargado POR PILAR según
 el motor solo gana ~5 líneas de instrucción de carga. Verificación: atlas-eval PASS con
 budget intacto.
 **Riesgo 2 — conocimiento genérico que el modelo ejecutor ya tiene** (valor cero, costo
-de tokens): mitigado — cada pilar está calibrado a NutricomAI con incidentes reales (DOB,
-y-flip, PR80, pricing) y decisiones ya tomadas (i-Cockpit, TCA, 18+). Lo genérico se podó.
+de tokens): mitigado — cada pilar está calibrado a el proyecto con incidentes reales (DOB,
+y-flip, PR80, pricing) y decisiones ya tomadas (i-Cockpit, datos sensibles, 18+). Lo genérico se podó.
 **Riesgo 3 — desactualización silenciosa**: mitigado parcialmente — fechado + regla de oro
 "la realidad gana". Residual aceptado: requiere disciplina de corrección (como toda memoria).
 **Lo que esta transferencia NO puede hacer** (honestidad del método): igualar el TECHO de

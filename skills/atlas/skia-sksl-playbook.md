@@ -1,6 +1,6 @@
 # Skia / SkSL · RN Playbook — world-class shaders sin crash ni lag
 
-> Lecciones DURAS de implementar el orb + totem plasma-tube en producción (NutricomAI, 2026-05-31).
+> Lecciones DURAS de implementar el orb + totem plasma-tube en producción (el proyecto, 2026-05-31).
 > Consumir al construir/revisar CUALQUIER visual Skia en RN (rings, orb-guía, totem, celebraciones).
 > Complementa `worldclass-craft.md` (estética) con el CÓMO técnico. Cada punto = una hora perdida que no se repite.
 
@@ -24,7 +24,7 @@
 - **NUNCA llamar una función JS no-worklet dentro del worklet** (ej. `clamp01(...)`) → Hermes `throwPendingError` → `__cxa_throw` → terminate → **Abort trap 6** (crash nativo, NO redbox).
 - El worklet SOLO puede capturar: valores planos (números, arrays), shared values (`clock.value`, `sv.value`), consts de módulo. Toda transformación (clamp, map, math con funciones) → **precalcular en el JS thread** (`useMemo`) y capturar el resultado plano.
 - Diagnóstico: si la app se va al HOME (no redbox) al montar un componente Skia+Reanimated → es esto. Leer el crash `.ips`: backtrace con `worklets::RuntimeDecorator::call` + `HermesRuntimeImpl::throwPendingError` lo confirma.
-- Patrón validado: `AlexiaOrbSkia.tsx` y `CaloriasTotemV2.tsx`.
+- Patrón validado: `el asistente.tsx` y `CaloriasTotemV2.tsx`.
 
 ## D. ⛔ Falsy-leak-render (crash en prod con data vacía)
 - `{count && <X/>}` con `count=0`/`""` → RN intenta renderizar `0`/`""` fuera de `<Text>` → crash.
@@ -39,7 +39,7 @@
 
 ## F. Craft visual (cómo un shader se ve world-class)
 - **AA / grosor del core:** `u_px` chico (~0.7/SIZE) = core brillante GRUESO (bandas crisp). `u_px` grande (1.15) come el core → se ve fino/lavado. Balance: crisp sin shimmer (validar animado en device).
-- **Bloom/glow:** `c*exp(-max(dBand,0)*k)*intensidad`. `k` menor (17→15→13) = halo más ANCHO/suave. Intensidad en la **mitad-baja** del rango (restraint · ~0.18). Modular con la respiración, no con el valor del dato (TCA-safe).
+- **Bloom/glow:** `c*exp(-max(dBand,0)*k)*intensidad`. `k` menor (17→15→13) = halo más ANCHO/suave. Intensidad en la **mitad-baja** del rango (restraint · ~0.18). Modular con la respiración, no con el valor del dato (safe-para-datos-sensibles).
 - **Sección de tubo 3D:** `tube = 1.0-0.5*across*across` (across = pos normalizada -1..1 a través del grosor) → centro vivo, bordes caen. + `spine = smoothstep(0.18,0,abs(across))*0.12` (cresta/highlight, redondea).
 - **Plasma sedoso:** `fbm` con interpolación QUÍNTICA `f*f*f*(f*(f*6-15)+10)` (no cúbica `3-2f`). Flujo: `fbm(dir*K + (t*vx, t*vy) + across*A)`.
 - **Ignición one-shot escalonada:** `1.0 - pow(1.0 - clamp((ig*S - delay - idx*stagger)/dur, 0,1), 3.0)` (ease-out cúbico, stagger por índice del elemento). Respeta reduce-motion (instantáneo).
@@ -64,9 +64,9 @@
 5. `/matu light` con reviewers visuales OPUS (UI Designer + fitness-ux motion + a11y + Mobile App Builder). Ojo: pueden razonar sobre comentarios del shader y no cazar bugs de orientación → el ojo de Ale + el visual diff son el gate real.
 
 ## J. Reusables (no reinventar)
-- `apps/mobile/components/AlexiaOrbSkia.tsx` — shader del orb (vidrio/fresnel/breathing). Base del orb-guía.
+- `apps/mobile/components/el asistente.tsx` — shader del orb (vidrio/fresnel/breathing). Base del orb-guía.
 - `apps/mobile/components/dashboard/CaloriasTotemV2.tsx` — patrón COMPLETO: SkSL + Reanimated uniforms (worklet-safe) + ignición + focus-pause + reduce-motion + a11y + cold-state.
-- Prototipos: `~/Documents/NutricomAI_OrbLab/{orb,ring,totem}.html`.
+- Prototipos: `~/Documents/el proyecto_OrbLab/{orb,ring,totem}.html`.
 
 ---
 
@@ -104,7 +104,7 @@ float smin(float a, float b, float k){ k*=4.0; float h=max(k-abs(a-b),0.0)/k; re
 ```
 Glow gaussiano barato sobre un SDF: `exp(-12.0*abs(d))` (1 sample, sin branch). Outer glow: `exp(-4.0*max(d,0.0))`.
 
-### K.6 Liquid-fill esmeralda (rings) — advección fake, NO Navier-Stokes
+### K.6 Liquid-fill el color de acento (rings) — advección fake, NO Navier-Stokes
 - fbm animado en coords POLARES (fluye a lo largo del ring) + comet head gaussiano en el frente del fill + step por ángulo para la parte llena. Núcleo:
 ```
 float ang = atan(uv.y,uv.x)/6.2831 + 0.5;            // 0..1
@@ -116,7 +116,7 @@ float comet = exp(-dHead*dHead*20.0)*inFill;
 float3 col = mix(emerald*0.3, emerald, energy)*inFill + mix(emerald,float3(0.3,1.0,0.8),0.4)*comet*2.5;
 ```
 - Flow direction = tangente al círculo (`float2(-uv.y,uv.x)`) + perturbación noise → desplazar las UVs del fbm = "empuja" como fluido.
-- **Cosine palette (IQ)** para gradientes esmeralda→teal→cyan: `a + b*cos(6.2831*(c*t+d))`.
+- **Cosine palette (IQ)** para gradientes el color de acento→teal→cyan: `a + b*cos(6.2831*(c*t+d))`.
 
 ### K.7 Performance Adreno 610 (barato → caro)
 - **BARATO (60fps seguro):** BlurMask en shapes simples · Gradients (linear/radial/sweep) · Path.trim + DashPathEffect · SharedValue→uniform · FractalNoise/Turbulence builtin (octaves 2-3) · DisplacementMap · SDF ring + `exp()` glow (1 eval) · BackdropBlur en región <200px estática · BlendMode screen/plus · Atlas API para partículas en batch.
@@ -152,10 +152,10 @@ half4 bg = image.eval(disp);                            // fondo refractado
 Repo de referencia: `github.com/alexandrius/liquid-glass-rn-skia` (de Shadertoy 3cdXDX). iOS 26 nativo: `@callstack/liquid-glass` (solo iOS≥26; Android = View opaca).
 
 **⛔ Reglas duras (de los errores de Apple):**
-- **Glass para IDENTIDAD, sólido para DATOS.** Apple llevó glass a todo → backlash de contraste (medido 1.5:1 vs WCAG 4.5:1). letsdev.de: "evitar glass en apps de salud con datos críticos". En NutricomAI el glass vive en el orb/domo/nav/celebración; las MÉTRICAS (kcal, macros, %, scanner, formularios) van sólidas sobre `#050505`. Nunca al revés. (Refuerza dataviz-tca-safe.)
+- **Glass para IDENTIDAD, sólido para DATOS.** Apple llevó glass a todo → backlash de contraste (medido 1.5:1 vs WCAG 4.5:1). letsdev.de: "evitar glass en apps de salud con datos críticos". En el proyecto el glass vive en el orb/domo/nav/celebración; las MÉTRICAS (kcal, macros, %, scanner, formularios) van sólidas sobre `#050505`. Nunca al revés. (Refuerza dataviz-safe-para-datos-sensibles.)
 - **⛔ NO glass-on-glass:** el shader de refracción samplearía otro shader, no el contenido → artefactos + GPU doble.
 - **Perf:** el backdrop/lensing lee el framebuffer = +5ms en Adreno TBDR (perf-profiling-playbook). Máx 2-3 capas glass por pantalla. En gama baja: lensing solo en el orb (1 elemento), fallback blur estático en nav. `expo-sensors` giroscopio → uniform: vale en el ORB (1 elemento) si mide bien; ⛔ NO en toda la UI (laggy gama baja).
-- **Dirección NutricomAI = "Glass Esmeralda" propio**, no copia de Apple: orb/domo con lensing+specular+grain (el showcase del material), resto sólido alta-legibilidad. Esa tensión glass-lujo / datos-austeros es intencional y TCA-safe.
+- **Dirección el proyecto = "Glass el color de acento" propio**, no copia de Apple: orb/domo con lensing+specular+grain (el showcase del material), resto sólido alta-legibilidad. Esa tensión glass-lujo / datos-austeros es intencional y safe-para-datos-sensibles.
 
 > ⛔ Gotcha de color (New Arch): para animar color que va a un Canvas/shader usar **`interpolateColors` de @shopify/react-native-skia**, NUNCA `interpolateColor` de Reanimated (salta a negro). Ver newarch-gotchas.
 
@@ -174,11 +174,11 @@ Repo de referencia: `github.com/alexandrius/liquid-glass-rn-skia` (de Shadertoy 
 - **Profundidad fake:** Z proyectado `(matrix*vec4(pos,0,1)).z` → normalizar −R..R→0..1 → modula specular/blur (frente nítido+brillante, lateral oscuro). El blur por-Z con `BlurImageFilter` NATIVO (⛔ nunca blur manual en SkSL).
 - **Material metálico (bisel/specular sin env map):** SDF del anillo `abs(length(uv-c)-R)-halfStroke` → normal por gradiente del SDF → `pow(max(dot(N,L),0),32)` con `lightDir` fijo. O(1)/píxel, 60fps Adreno 610. ⛔ NO `BoxShadow inner:true` (Candillon textual: "extremely slow on low-end").
 - **Arco progreso:** `path.addCircle` + `trim(0,progress)` con `usePathValue` + `withSpring`; `SweepGradient` mismo-hue; head dot con `path.getLastPoint()` (sin trig); sombra del head = `BoxShadow` outer + clip rotado (unidireccional).
-- **Los 5 ingredientes de lujo que SÍ corren en Skia** (de los 9 del 3D-web premium): (1) **fresnel rim glow** — gradiente radial, el aro brilla esmeralda en los bordes (máx impacto / costo cero); (2) **gradiente metálico direccional** pseudo-matcap — highlight frío arriba, midtone, warm abajo = acero sin HDRI; (3) **contact shadow** — elipse `MaskFilter blur`, sigma ∝ elevación; (4) **bloom en capas** — arco en capa `BlendMode.Plus` + blur leve = fake HDR emission; (5) **cámara que vive** — spring sutil `useSharedValue` → touch/giroscopio, el totem respira.
+- **Los 5 ingredientes de lujo que SÍ corren en Skia** (de los 9 del 3D-web premium): (1) **fresnel rim glow** — gradiente radial, el aro brilla el color de acento en los bordes (máx impacto / costo cero); (2) **gradiente metálico direccional** pseudo-matcap — highlight frío arriba, midtone, warm abajo = acero sin HDRI; (3) **contact shadow** — elipse `MaskFilter blur`, sigma ∝ elevación; (4) **bloom en capas** — arco en capa `BlendMode.Plus` + blur leve = fake HDR emission; (5) **cámara que vive** — spring sutil `useSharedValue` → touch/giroscopio, el totem respira.
 - **Olvidar (necesitan GPU 3D real):** transmission física, HDRI reflections reales, depth-of-field dinámico. Matcap + fresnel dan ~60-80% del lujo a costo cero.
 
 **Camino B — Pre-render (máximo realismo, 0ms JS):**
 Three.js headless / Blender → render del aro girando/llenándose 1 vez → MP4 H.264 (idle loop + clip fill) → RN `expo-av Video repeat` + números como `Text` nativo en overlay absoluto (nítidos, accesibles, data-driven). GPU decodifica H.264 en HW fixed-function (3-5x más eficiente que shader en gama baja · ~200-400KB · sin init WebGL ~300-500ms). Mejor para "momento hero" NO interactivo. Contra: el fill del arco deja de ser live (es video).
 
-**Recomendación NutricomAI:** **Camino A (Skia 2.5D sobre `CaloriasTotemV2`)** — ya existe, y-flip resuelto, data-driven en vivo; las 5 técnicas lo suben a 10/10 sin nueva infra ni pelear hardware. Pre-render (B) reservar para splash / celebración hero pre-determinada. Cero R3F.
+**Recomendación el proyecto:** **Camino A (Skia 2.5D sobre `CaloriasTotemV2`)** — ya existe, y-flip resuelto, data-driven en vivo; las 5 técnicas lo suben a 10/10 sin nueva infra ni pelear hardware. Pre-render (B) reservar para splash / celebración hero pre-determinada. Cero R3F.
 

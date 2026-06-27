@@ -50,8 +50,8 @@ fi
 
 if [ -z "$PROJECT_NAME" ]; then
   echo "ATLAS · proyecto no encontrado en config (CWD fuera de todo repo trackeado)"
-  echo "FAZM: ATLAS sigue siendo el filtro de calidad UNIVERSAL aunque no haya proyecto."
-  echo "FAZM: cargar SIEMPRE universal-craft-codex.md como vara 10/10. Luego rutear:"
+  echo "ATLAS: ATLAS sigue siendo el filtro de calidad UNIVERSAL aunque no haya proyecto."
+  echo "ATLAS: cargar SIEMPRE universal-craft-codex.md como vara 10/10. Luego rutear:"
   echo "  · onboarding (registrar este repo como proyecto ATLAS) → leer onboarding.md + wizard"
   echo "  · revisión/diseño suelto (mockup/HTML/asset sin repo) → MODO UNIVERSAL: aplicar el"
   echo "    codex + el playbook que aplique (cinematography/prompt-craft/motion…) directo,"
@@ -62,10 +62,10 @@ if [ -z "$PROJECT_NAME" ]; then
 fi
 
 echo "ATLAS · proyecto detectado: $PROJECT_NAME"
-echo "FAZM: cargar motor.md y ejecutar con PROJECT_NAME=$PROJECT_NAME"
+echo "ATLAS: cargar motor.md y ejecutar con PROJECT_NAME=$PROJECT_NAME"
 ```
 
-⛔ **LEY UNIVERSAL (binding · 2026-06-26):** `universal-craft-codex.md` es la vara de calidad BASE de ATLAS y se carga **siempre, en todo proyecto y aun sin proyecto**. El criterio de un proyecto = **codex (base) + su overlay** (`brand-context.md`; para NutricomAI también `worldclass-craft.md`). El overlay especializa el codex, nunca lo contradice.
+⛔ **LEY UNIVERSAL (binding · 2026-06-26):** `universal-craft-codex.md` es la vara de calidad BASE de ATLAS y se carga **siempre, en todo proyecto y aun sin proyecto**. El criterio de un proyecto = **codex (base) + su overlay** (`brand-context.md`; para el proyecto también `worldclass-craft.md`). El overlay especializa el codex, nunca lo contradice.
 
 Ruteo PASO 0:
 - **Proyecto detectado** → leer `motor.md` (que carga el codex + overlay) y ejecutar con `$PROJECT_NAME`.
@@ -106,7 +106,7 @@ fi
 export TASK_KIND COMPONENTE
 ```
 
-**Ruteo según `TASK_KIND` (FAZM decide · ⛔ NUNCA correr el flujo sobre una palabra-comando):**
+**Ruteo según `TASK_KIND` (ATLAS decide · ⛔ NUNCA correr el flujo sobre una palabra-comando):**
 - **`component`** → componente real → `PROXY_MODE=no` · cargar `motor.md` con `$COMPONENTE`.
 - **`filler`** (`arranca`/`dale`/`seguí`/`sí`...) → es CONTINUACIÓN, no componente. Resolver el target en este orden:
   1. **Turno anterior** de esta conversación: si propuse una tarea/componente concreto ("¿arranco el splash?") → ESE es el target.
@@ -115,7 +115,7 @@ export TASK_KIND COMPONENTE
   Con target: `COMPONENTE`=el propuesto · `PROXY_MODE=no` · cargar `motor.md`. NO ir a proxy.
 - **`empty`** → ni componente ni propuesta → `PROXY_MODE=yes` (PASO 10) y **pedir componente explícito**.
 
-**LEY `propose` (cierra el loop de continuación):** cada vez que FAZM propone un siguiente task concreto al cierre de un run/reporte ("¿arranco X?") → registrarlo ANTES de cerrar: `python3 "$ATLAS_DIR/../../atlas-log.py" "$PROJECT_NAME" propose --componente "X"`. Sin registro, un "dale" futuro no tiene a qué volver.
+**LEY `propose` (cierra el loop de continuación):** cada vez que ATLAS propone un siguiente task concreto al cierre de un run/reporte ("¿arranco X?") → registrarlo ANTES de cerrar: `python3 "$ATLAS_DIR/../../atlas-log.py" "$PROJECT_NAME" propose --componente "X"`. Sin registro, un "dale" futuro no tiene a qué volver.
 
 **Si `PROXY_MODE=yes`:** saltar motor.md. Ir directo a PASO 10:
 1. Estado del proyecto: `python3 "$ATLAS_DIR/../../atlas-monitor.py" "$PROJECT_NAME"` (config · progreso · componentes · checkpoint en un solo comando — el monitor lee los JSONs). **IGUAL reconciliar contra git real** (`git -C $PROJECT_REPO log --oneline -5` + `branch --show-current`): si el estado es más viejo que el último commit → marcarlo `[STALE]` y reportar lo que dice git, no el JSON.

@@ -16,7 +16,7 @@
 | `creative_spin≠[]` (diseño nuevo) | tendencias del sector (TREND INTEL · ya cableado en PASO 2) | 14 días |
 | Dependencia NUEVA o major-version bump en el plan | docs oficiales · breaking changes · gotchas reales (issues) | 30 días |
 | `safety_touch=yes` | advisories del stack tocado (CVE · OWASP · cambios de la lib de auth/pagos) | 7 días |
-| API externa tocada (MercadoPago · WhatsApp · Cloudinary · stores) | changelog/docs oficiales de ESA API | 14 días |
+| API externa tocada (un proveedor de pagos · un canal de mensajería · Cloudinary · stores) | changelog/docs oficiales de ESA API | 14 días |
 | Técnica que NINGÚN playbook cubre (señal: grep sin match en la skill) | estudio dirigido: artículos + video study (YouTube/TikTok) | permanente → grow |
 | REFACTOR/EXTRACT/POLISH/replicación sin nada de lo anterior | **NO investigar** — el criterio interno basta | — |
 
@@ -35,7 +35,7 @@ no 5 minutos). Si aplican varios → UN solo dispatch con todos los focos.
 
 ### YouTube (capacidad YA validada — youtube-study-playbook.md)
 - `yt-dlp --write-auto-subs` → transcript (esquiva timedtext IP-bloqueado) +
-  `ffmpeg` frames → contact-sheet leído como imagen (FAZM "ve" el video).
+  `ffmpeg` frames → contact-sheet leído como imagen (ATLAS "ve" el video).
 - Crudos SIEMPRE locales en `~/yt` — JAMÁS commiteados (copyright · ley vigente).
   Al repo/cerebro solo va la SÍNTESIS.
 - Cuándo video > texto: técnica visual/motion (un Candillon mostrando el gesto),

@@ -1,6 +1,6 @@
 # New Architecture Gotchas — Skia + Reanimated 4 + Rive (Expo SDK 54 / RN 0.81 / Fabric)
 
-> Destilado de research 2026-06-01. NutricomAI YA corre en New Arch (fabric:true). Consumir ANTES de
+> Destilado de research 2026-06-01. el proyecto YA corre en New Arch (fabric:true). Consumir ANTES de
 > construir cualquier elemento Skia/Reanimated/Rive. Las trampas que crashean o lagean, con la causa.
 
 ## Versiones que DEBEN coincidir (SDK 54 + New Arch)

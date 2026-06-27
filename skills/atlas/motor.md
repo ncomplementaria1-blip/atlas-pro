@@ -185,7 +185,7 @@ Al arrancar (PASO 0), cargar y aplicar el log de patrones aprendidos:
 LEARNED_FILE="$ATLAS_DIR/learned-patterns.md"
 if [ -f "$LEARNED_FILE" ]; then
   echo "ATLAS · cargando $(grep -c '^---' "$LEARNED_FILE" 2>/dev/null || echo 0) patrones aprendidos de sesiones anteriores"
-  # FAZM: leer el contenido del archivo y aplicar como contexto adicional de prohibited patterns
+  # ATLAS: leer el contenido del archivo y aplicar como contexto adicional de prohibited patterns
   # Cada entrada refuerza lo que NO generar — ejemplos concretos con más peso que reglas abstractas
 fi
 ```
@@ -201,7 +201,7 @@ Al terminar un task → ejecutar el siguiente inmediatamente. Cero reporte inter
 
 **Regla 2 — Recalificación silenciosa.**
 Si al verificar, un task resulta más complejo de lo estimado o requiere decisión de dirección:
-1. Anotarlo en `BACKLOG.md` con `[ALE]` si es decisión de dirección, o `[FAZM-L]` si es tarea grande
+1. Anotarlo en `BACKLOG.md` con `[ALE]` si es decisión de dirección, o `[ATLAS-L]` si es tarea grande
 2. Pasar al siguiente task en la lista — sin reportar, sin preguntar
 3. El ítem recalificado aparece en el reporte FINAL, no como interrupción
 
@@ -214,13 +214,13 @@ PENDIENTE [ALE]: [items que requieren decisión o acción manual de Ale]
 ```
 
 **Regla 4 — Items [ALE] no bloquean la lista.**
-Un item legítimamente [ALE] (credencial clínica, acción manual en store, decisión legal) se anota en BACKLOG y se salta. La lista continúa con los siguientes items. Los items [ALE] se listan al cierre — nunca interrumpen el flujo.
+Un item legítimamente [ALE] (credencial sensible, acción manual en store, decisión legal) se anota en BACKLOG y se salta. La lista continúa con los siguientes items. Los items [ALE] se listan al cierre — nunca interrumpen el flujo.
 
 **Regla 5 — Items [ALE] en el REPORTE FINAL = log de estado, NO menú de opciones.**
 
 ```
 CORRECTO:
-PENDIENTE [ALE]: APK Play Store submit · Welcome copy clínico · Checkin backend deploy
+PENDIENTE [ALE]: APK Play Store submit · Welcome copy sensible · Checkin backend deploy
 
 PROHIBIDO — convierten status en pregunta o presión:
 × "salvo que prefieras desbloquear X primero"
@@ -501,7 +501,7 @@ Ante cualquier obstáculo, ATLAS recorre las 3 alternativas antes de escalar. Es
 |---|---|---|---|
 | Master file no encontrado | Usar fallback de masters.json | MAQUETA-MASTER global del proyecto | Generar master básico con PASO 1B-2 |
 | Typecheck falla | Fix automático (errores TS frecuentes) | Anotar deuda en BACKLOG + continuar | TODO en el archivo + commit con nota |
-| Agente falla o timeout | Retry con prompt simplificado | Agente alternativo del mismo dominio | FAZM sintetiza el output directamente |
+| Agente falla o timeout | Retry con prompt simplificado | Agente alternativo del mismo dominio | ATLAS sintetiza el output directamente |
 | /matu sin PASS en R3 | Fix adicional de issues abiertos | Si avg≥9.2 y cero T1 → continuar con nota en PR | R4→R5 con redispatch selectivo |
 | git push falla (sin remote) | Commit local + documentar en PR | `git remote add origin` + push | Exportar como `.patch` |
 | Dependencia faltante | Instalar automáticamente | Alternativa equivalente sin esa dep | Mock temporal con TODO |
@@ -542,7 +542,7 @@ AUTONOMÍA: Sos parte de un flujo autónomo de ATLAS. Reglas absolutas:
 5. Tu reporte al finalizar debe incluir qué decidiste y por qué — no pedir confirmación de lo que ya hiciste.
 ```
 
-FAZM: copiar este bloque textual al inicio de cada prompt de Agent() dentro del flujo.
+ATLAS: copiar este bloque textual al inicio de cada prompt de Agent() dentro del flujo.
 
 ---
 
@@ -622,7 +622,7 @@ else:
 
 ```bash
 GLOSARIO_FILE="$ATLAS_DIR/glosario-usuario.md"
-# FAZM: si USER_NIVEL=basico y se usa un término técnico por primera vez → agregarlo al glosario
+# ATLAS: si USER_NIVEL=basico y se usa un término técnico por primera vez → agregarlo al glosario
 # Formato: ## [término] → [explicación en 1 línea en español simple]
 # No repetir explicaciones de términos que ya están en el glosario
 ```
@@ -632,10 +632,10 @@ GLOSARIO_FILE="$ATLAS_DIR/glosario-usuario.md"
 ## DESIGN_AGENCY_BLOCK · inyectar SOLO cuando creative_spin≠[] (PASO 3 + PASO 4)
 
 ```bash
-# FAZM: leer el brand-context.md del proyecto e incluir verbatim como DESIGN_AGENCY_BLOCK
+# ATLAS: leer el brand-context.md del proyecto e incluir verbatim como DESIGN_AGENCY_BLOCK
 # NOTA: brand-context.md y matu-context.md son derivados de project-brief.md
 # Si el brief fue editado → regenerar ambos antes de este paso:
-#   FAZM lee el brief actualizado y reescribe brand-context.md + matu-context.md
+#   ATLAS lee el brief actualizado y reescribe brand-context.md + matu-context.md
 # BASE UNIVERSAL (binding 2026-06-26): el codex project-neutral es la vara 10/10 SIEMPRE.
 # Va PRIMERO; el brand-context del proyecto es el OVERLAY que lo especializa (nunca lo contradice).
 UNIVERSAL_CODEX_FILE="$HOME/.claude/skills/atlas/universal-craft-codex.md"
@@ -675,7 +675,7 @@ NO incluir en REFACTOR_SIMPLE · EXTRACT · POLISH · --eco.
 
 ## CONFIGURACIÓN INICIAL · LOAD_PROJECT_CONFIG
 
-FAZM: ejecutar este bloque al inicio de cada paso del motor para asegurar que las variables están seteadas.
+ATLAS: ejecutar este bloque al inicio de cada paso del motor para asegurar que las variables están seteadas.
 
 ```bash
 # Guard: PROJECT_NAME debe estar seteado (via SKILL.md auto-detección)
@@ -822,7 +822,7 @@ if [ -z "$COMPONENTE" ]; then
   # → saltar al PASO 10 directamente
 fi
 
-# FAZM: setear COMPONENTE desde el argumento o contexto antes de este bloque
+# ATLAS: setear COMPONENTE desde el argumento o contexto antes de este bloque
 COMPONENTE="${COMPONENTE:-[nombre del componente]}"
 
 MASTER_FILE=$(python3 << PYEOF
@@ -855,7 +855,7 @@ Si `MASTER_FILE` vacío → STOP · reportar a Ale · no continuar.
 ## PASO 0 · PRE-FLIGHT VALIDATOR (~0 tokens · bloqueante)
 
 ```bash
-# FAZM: cargar config antes de este paso (CONFIGURACIÓN INICIAL arriba)
+# ATLAS: cargar config antes de este paso (CONFIGURACIÓN INICIAL arriba)
 # COMPONENTE y MASTER_FILE ya seteados desde Lookup
 
 # SESSION LOCK
@@ -938,7 +938,7 @@ LEARNED_FILE="$ATLAS_DIR/learned-patterns.md"
 if [ -f "$LEARNED_FILE" ]; then
   LEARNED_COUNT=$(grep -c '^---' "$LEARNED_FILE" 2>/dev/null | tr -d ' ' || echo "0")
   echo "Cargando $LEARNED_COUNT patrones aprendidos → aplicando como contexto adicional de autonomía"
-  # FAZM: leer el contenido completo de $LEARNED_FILE y aplicarlo como ejemplos concretos adicionales
+  # ATLAS: leer el contenido completo de $LEARNED_FILE y aplicarlo como ejemplos concretos adicionales
   # a la lista de mensajes prohibidos. Cada entrada refuerza lo que NO generar con ejemplos reales.
   cat "$LEARNED_FILE" 2>/dev/null | head -80 || true
 fi
@@ -1035,7 +1035,7 @@ Devolvé SOLO este JSON:
 }
 Reglas tipo: CREATE_NEW=inexistente; REWRITE_COMPLEX=>3 useSharedValue/Skia/stagger; REFACTOR_SIMPLE=≤100 líneas; EXTRACT=sub-componente; POLISH=ajustes menores
 Reglas master_covers: yes si un master/spec APROBADO (docs/mockups/… o un componente gemelo ya hecho) define el QUÉ (layout+copy) Y el CÓMO (tokens+patrón) Y cubre TODOS los estados (idle/error/loading/empty/vacío/pressed). no si hay que DESCUBRIR layout/copy/dirección visual O si falta CUALQUIER estado. (Una pantalla puede ser código nuevo PERO diseño ya spec'd → master_covers=yes. PERO ojo: el gate pixelmatch solo verifica el happy-path renderizado → un estado NO spec'd se IMPROVISA y se cuela sin red. Por eso: falta un estado → master_covers=no, ese pedazo va canonical.)
-Reglas safety_touch: yes si toca safety-clínica · auth · pagos · schema/migración · consentimiento · prompt-injection · PII · manejo de datos. Si yes → fuerza canonical SIEMPRE (override duro · la seguridad/calidad nunca se negocia por costo).
+Reglas safety_touch: yes si toca safety-sensible · auth · pagos · schema/migración · consentimiento · prompt-injection · PII · manejo de datos. Si yes → fuerza canonical SIEMPRE (override duro · la seguridad/calidad nunca se negocia por costo).
 Reglas matu_mode (aplicar EN ORDEN, primera que matchea gana):
   1. safety_touch=yes → canonical (override · sin excepción).
   2. master_covers=yes → light (AUNQUE tipo=CREATE_NEW · es replicación spec-driven; el diseño ya es 10/10, solo se verifica fidelidad — gate objetivo pixelmatch + /matu light bastan).
@@ -1058,7 +1058,7 @@ Backstop master_covers (anti-alucinación · determinista): si devolvés master_
 
 1. **Gate objetivo SIEMPRE** (determinista, no opinión): pixelmatch 6G-2.5 `diff_pct ≤ 5%` vs master · `npm run typecheck` EXIT=0 · tests verde. Diff visual que no matchea master = bug, no "variante" (#0i).
 2. **Mismo umbral PASS** en light que en canonical: avg ≥9.5 · cero agente <9.5 · cero T1. El bar NO se mueve.
-3. **/matu light = agentes ADAPTATIVOS, no menos-fijos.** Se eligen los agentes cuya LENTE el diff realmente toca → cobertura == superficie del cambio. Canonical dispara 13 (redundante); light dispara los relevantes. Toca animación → +fitness-ux; a11y-denso → a11y deep; copy clínico/visible → +Code Reviewer; depth/motion → +XR Architect.
+3. **/matu light = agentes ADAPTATIVOS, no menos-fijos.** Se eligen los agentes cuya LENTE el diff realmente toca → cobertura == superficie del cambio. Canonical dispara 13 (redundante); light dispara los relevantes. Toca animación → +fitness-ux; a11y-denso → a11y deep; copy sensible/visible → +Code Reviewer; depth/motion → +XR Architect.
 4. **safety_touch=yes → canonical, sin excepción.** El costo nunca baja safety.
 5. **Escalá ante duda** (iter#2 mismo bug → STOP · #0j/#0k) · nunca shippear roto · master con gap → PARAR y reportar (#0h).
 
@@ -1126,7 +1126,7 @@ if [ "$COSTO_TIER" = "ROJO" ]; then
   if [ -n "$MOCKUP_DIR" ]; then
     MOCKUP_COUNT=$(find "$MOCKUP_DIR" -maxdepth 1 -name "*.html" | wc -l | tr -d ' ')
     echo "OPTIMIZACION · tier ROJO pero existen $MOCKUP_COUNT mockups previos en $MOCKUP_DIR"
-    echo "FAZM decide: si algún HTML de $MOCKUP_DIR cubre el cambio → setar creative_spin=[] y continuar desde PASO 5"
+    echo "ATLAS decide: si algún HTML de $MOCKUP_DIR cubre el cambio → setar creative_spin=[] y continuar desde PASO 5"
   else
     echo "WARN · tier ROJO · $AGENTES_N agentes estimados · driver: $COSTO_DRIVER"
   fi
@@ -1235,7 +1235,7 @@ Máx 400 palabras. Decisiones concretas — cero "podría ser".
 
 ```bash
 ARCH_FILE="$ATLAS_DIR/product-architecture.md"
-# FAZM: escribir output del agente en $ARCH_FILE
+# ATLAS: escribir output del agente en $ARCH_FILE
 ```
 
 Continuar directo a 1B-2 sin mostrar ni pausar. ATLAS elige la arquitectura generada y avanza.
@@ -1269,7 +1269,7 @@ OUTPUT: archivo HTML completo. No fragmentos.
 
 ```bash
 FULL_MASTER_PATH="$PROJECT_REPO/$MOCKUP_BASE_PATH/MASTER-PRODUCTO-COMPLETO.html"
-# FAZM: escribir output del agente en $FULL_MASTER_PATH
+# ATLAS: escribir output del agente en $FULL_MASTER_PATH
 
 # Registrar como fallback en masters.json
 python3 -c "
@@ -1285,7 +1285,7 @@ print('Master registrado como fallback')
 MASTER_FILE="$FULL_MASTER_PATH"
 ```
 
-# FAZM (interno): master en $FULL_MASTER_PATH · MASTER_FILE=$FULL_MASTER_PATH · continuar a PASO 2
+# ATLAS (interno): master en $FULL_MASTER_PATH · MASTER_FILE=$FULL_MASTER_PATH · continuar a PASO 2
 
 ---
 
@@ -1297,7 +1297,7 @@ Evaluar la tabla de triggers en segundos (insumos: Router + plan de la tarea):
 - `creative_spin≠[]` → tendencias — YA lo cubre TREND INTEL en PASO 2, no duplicar acá.
 - Dependencia NUEVA o major-version bump → docs oficiales + breaking changes (TTL 30d).
 - `safety_touch=yes` → advisories del stack tocado: CVE/OWASP/lib de auth-pagos (TTL 7d).
-- API externa tocada (MercadoPago · WhatsApp · Cloudinary · stores) → changelog oficial (TTL 14d).
+- API externa tocada (un proveedor de pagos · un canal de mensajería · Cloudinary · stores) → changelog oficial (TTL 14d).
 - Técnica que NINGÚN playbook cubre → estudio dirigido web + video study (permanente → grow).
 - Nada de lo anterior (REFACTOR/EXTRACT/POLISH/replicación) → **SIN dispatch**, continuar.
 
@@ -1353,7 +1353,7 @@ Sé específico. Nombres reales. Tendencias verificables. Cero generalidades.
 ```
 
 ```bash
-# FAZM (interno): escribir output en $TREND_INTEL_FILE
+# ATLAS (interno): escribir output en $TREND_INTEL_FILE
 TREND_INTEL=$(cat "$TREND_INTEL_FILE" 2>/dev/null || echo "")
 ```
 
@@ -1382,7 +1382,7 @@ json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 
 ## PASO 3 · CREATIVE SPIN (paralelo · solo si creative_spin≠[])
 
-FAZM: incluir verbatim como DESIGN_AGENCY_BLOCK en cada prompt = universal-craft-codex.md (BASE) + brand-context.md (OVERLAY).
+ATLAS: incluir verbatim como DESIGN_AGENCY_BLOCK en cada prompt = universal-craft-codex.md (BASE) + brand-context.md (OVERLAY).
 
 ```bash
 UNIVERSAL_CODEX=$(cat "$HOME/.claude/skills/atlas/universal-craft-codex.md" 2>/dev/null || echo "# Codex universal no disponible")
@@ -1433,20 +1433,20 @@ Cerrá con el FORMATO DE PITCH del playbook §8: CONCEPTO (nombre 2-4 palabras) 
 
 Generar mockups en `$MOCKUP_BASE_PATH/$COMPONENTE/A.html`, `B.html`, `C.html`.
 
-**Asignación de ejes:** 3+ agentes: 1 por eje · 2 agentes: A+B · FAZM genera C con `/design-html` · 1 agente: los 3 secuenciales
+**Asignación de ejes:** 3+ agentes: 1 por eje · 2 agentes: A+B · ATLAS genera C con `/design-html` · 1 agente: los 3 secuenciales
 
 Checkpoint post-PASO 3:
 ```bash
-# FAZM: asignar el output real de cada agente antes de exportar
+# ATLAS: asignar el output real de cada agente antes de exportar
 # El agente eje A devuelve una dirección en ≤12 líneas → capturar en DIRECTION_A
 # Ejemplo: DIRECTION_A="Tipografía condensada Bold 700 como protagonista · tracking -1px · grid editorial"
-DIRECTION_A="[FAZM: output real del agente eje A — NO dejar este placeholder]"
-DIRECTION_B="[FAZM: output real del agente eje B — NO dejar este placeholder]"
-DIRECTION_C="[FAZM: output real del agente eje C — NO dejar este placeholder]"
-# FAZM: reemplazar los 3 con el output real de los agentes antes de continuar
+DIRECTION_A="[ATLAS: output real del agente eje A — NO dejar este placeholder]"
+DIRECTION_B="[ATLAS: output real del agente eje B — NO dejar este placeholder]"
+DIRECTION_C="[ATLAS: output real del agente eje C — NO dejar este placeholder]"
+# ATLAS: reemplazar los 3 con el output real de los agentes antes de continuar
 for _var in DIRECTION_A DIRECTION_B DIRECTION_C; do
   _val="${!_var}"
-  if echo "$_val" | grep -q "FAZM: output real"; then
+  if echo "$_val" | grep -q "ATLAS: output real"; then
     echo "ERROR · $_var no fue reemplazado con el output del agente de diseño"
     exit 1
   fi
@@ -1474,7 +1474,7 @@ PYEOF
 
 ## PASO 4 · BRAND COUNCIL · SELECCIÓN MOCKUP (autónomo)
 
-FAZM: leer `$ATLAS_DIR/brand-context.md` e incluir verbatim como DESIGN_AGENCY_BLOCK.
+ATLAS: leer `$ATLAS_DIR/brand-context.md` e incluir verbatim como DESIGN_AGENCY_BLOCK.
 
 Pre-dispatch · verificar tamaño:
 ```bash
@@ -1527,7 +1527,7 @@ Tie → Brand Guardian desempata
 
 Persistir estado:
 ```bash
-MOCKUP_GANADOR="A"   # FAZM: sustituir con el ganador real del Brand Council ("A", "B", o "C")
+MOCKUP_GANADOR="A"   # ATLAS: sustituir con el ganador real del Brand Council ("A", "B", o "C")
 # Validar que es A/B/C y no el placeholder sin cambiar
 if ! echo "$MOCKUP_GANADOR" | grep -qE "^[ABC]$"; then
   echo "ERROR · MOCKUP_GANADOR='$MOCKUP_GANADOR' inválido · debe ser A, B o C"
@@ -1761,7 +1761,7 @@ REGLAS ABSOLUTAS:
 ```
 
 ```bash
-# FAZM: escribir output del agente en $SPEC_FILE
+# ATLAS: escribir output del agente en $SPEC_FILE
 SPEC_ITEMS=$(grep -c '^\- \[ \]' "$SPEC_FILE" 2>/dev/null || echo "0")
 echo "SPEC EXTRACTION COMPLETO · $SPEC_ITEMS items · $SPEC_FILE"
 
@@ -1776,7 +1776,7 @@ json.dump(d, open('$CHECKPOINT_FILE', 'w'), indent=2)
 "
 ```
 
-FAZM (interno): spec en `$SPEC_FILE` · `$SPEC_ITEMS` items · continuar a PASO 5 con esta lista como input obligatorio al implementador.
+ATLAS (interno): spec en `$SPEC_FILE` · `$SPEC_ITEMS` items · continuar a PASO 5 con esta lista como input obligatorio al implementador.
 El `$SPEC_FILE` debe incluir las tablas 1A (propiedades presentes), 1B (prohibiciones explícitas) y 1C (ownership gate).
 Si `$SPEC_FILE` no incluye tabla 1B → extraerla manualmente antes de invocar `$IMPLEMENT_SKILL`.
 
@@ -2224,7 +2224,7 @@ Completar la matriz ENTERA antes de proponer fixes.
 | Diff | Archivo (best guess) | Línea/prop | Valor actual | Valor a aplicar |
 |------|----------------------|------------|--------------|-----------------|
 
-OUTPUT FINAL OBLIGATORIO (formato exacto · FAZM parsea esto):
+OUTPUT FINAL OBLIGATORIO (formato exacto · ATLAS parsea esto):
 ```
 VISUAL_SCORE: N.N/10
 VISUAL_TIER1_COUNT: N
@@ -2247,7 +2247,7 @@ REGLAS:
 **Parseo del output + decisión:**
 
 ```bash
-# FAZM (interno): extraer VISUAL_SCORE del output del agente
+# ATLAS (interno): extraer VISUAL_SCORE del output del agente
 # VISUAL_SCORE=$(grep '^VISUAL_SCORE:' <output> | awk '{print $2}' | cut -d/ -f1)
 # VISUAL_TIER1=$(grep '^VISUAL_TIER1_COUNT:' <output> | awk '{print $2}')
 
@@ -2404,8 +2404,8 @@ Sos el SEGUNDO VERIFICADOR — no el implementador. Leé [$MOCKUP_SOURCE] secci�
 5. Si sigue FAIL tras 3 iteraciones → STOP · escalar con tabla completa de items irresolubles + causa raíz + diff exacto.
 
 ```bash
-# FAZM (interno): FIDELITY_SCORE=N/total · si PASS → continuar a PASO 7 · si FAIL → aplicar fixes en silencio
-# Persistir FIDELITY_SCORE en checkpoint (FAZM: setar desde output del agente antes de este bloque)
+# ATLAS (interno): FIDELITY_SCORE=N/total · si PASS → continuar a PASO 7 · si FAIL → aplicar fixes en silencio
+# Persistir FIDELITY_SCORE en checkpoint (ATLAS: setar desde output del agente antes de este bloque)
 FIDELITY_SCORE="${FIDELITY_SCORE:-N/A}"
 python3 -c "
 import json, datetime
@@ -2439,7 +2439,7 @@ json.dump(d, open('$CHECKPOINT_FILE','w'), indent=2)
 ```bash
 VIDEO_APPLIES="no"; VIDEO_TRIGGER=""
 # Aplica si la tarea toca/produce un asset de video o una superficie de video conocida.
-if echo "$COMPONENTE" | grep -qiE "video|splash|orbe|orb|totem|estanque|landing|hero|ad|reel|clip|celebraci|rive"; then
+if echo "$COMPONENTE" | grep -qiE "video|splash|orbe|orb|totem|la dirección visual del proyecto|landing|hero|ad|reel|clip|celebraci|rive"; then
   VIDEO_APPLIES="yes"; VIDEO_TRIGGER="keyword"
 fi
 # O si el diff/working-tree introduce/cambia un asset de video (señal fuerte · pisa keyword).
@@ -2535,7 +2535,7 @@ FAIL → reescribir SOLO la cláusula fallida (prompt-craft B4: jamás regenerar
 
 ## PASO 7 · /matu
 
-FAZM: leer `$ATLAS_DIR/matu-context.md` e incluir verbatim como bloque CONTEXTO en cada agente de /matu.
+ATLAS: leer `$ATLAS_DIR/matu-context.md` e incluir verbatim como bloque CONTEXTO en cada agente de /matu.
 
 ```bash
 MATU_CONTEXT=$(cat "$ATLAS_DIR/matu-context.md")
@@ -2566,7 +2566,7 @@ if [ -n "$MASTER_FILE" ] && [ -f "$MASTER_FILE" ]; then
     | head -80)
   # Fallback: si el componente no matchea por nombre, incluir los primeros 60 líneas de CSS del master
   if [ -z "$SPEC_SNIPPET" ]; then
-    SPEC_SNIPPET=$(grep -A 2 "^<style\|\.voice-tag\|\.alexia-header\|\.orb\|\.progress\|:root" "$MASTER_FILE" 2>/dev/null | head -80)
+    SPEC_SNIPPET=$(grep -A 2 "^<style\|\.voice-tag\|\.el asistente-header\|\.orb\|\.progress\|:root" "$MASTER_FILE" 2>/dev/null | head -80)
   fi
 fi
 
@@ -2594,7 +2594,7 @@ export DIFF_CONTENT SPEC_SNIPPET DIFF_LINES MATU_MODE_EFFECTIVE
 
 **canonical** (safety_touch=yes · diseño NUEVO master_covers=no): Bloque A (6) + Bloque B GAN (8) + Bloque C según clasificación · avg ≥9.5 · cero T1
 
-**light** (master_covers=yes · REFACTOR_SIMPLE/EXTRACT/POLISH): ADAPTATIVO — núcleo Brand Guardian + UI Designer + a11y-architect + relevantes por superficie (fitness-ux si motion · Mobile App Builder si mobile · Code Reviewer si copy/clínico · performance-optimizer si web · security-reviewer si forms/data) · típico 3-6 · avg ≥9.5 · cero T1 · gate pixelmatch obligatorio
+**light** (master_covers=yes · REFACTOR_SIMPLE/EXTRACT/POLISH): ADAPTATIVO — núcleo Brand Guardian + UI Designer + a11y-architect + relevantes por superficie (fitness-ux si motion · Mobile App Builder si mobile · Code Reviewer si copy/sensible · performance-optimizer si web · security-reviewer si forms/data) · típico 3-6 · avg ≥9.5 · cero T1 · gate pixelmatch obligatorio
 
 **Reviewer adversarial (safety/arquitectura · 2º par de ojos · roadmap #4 · Anthropic, sin credencial ni costo):** cuando `safety_touch=yes` o diseño/arquitectura NUEVA (canonical), SUMAR al panel 1 agente **opus** con rol REFUTADOR — prompt: "Asumí que esta decisión/código tiene un defecto grave de seguridad o arquitectura. Encontralo: ¿qué edge-case, hueco de auth/pagos/PII, o falla de diseño se les pasó? Sé adversarial, no complaciente. Si tras buscar a fondo no hallás nada real, decilo explícito." Un issue T1 del refutador bloquea PASS igual que un T1 del panel. Complementa el panel que CERTIFICA con el ángulo opuesto que REFUTA. Reemplaza a Codex sin costo; lo único que Codex agregaría es el ángulo cross-vendor (marginal para solista).
 
@@ -2782,7 +2782,7 @@ if [ -n "$CRITICAL_FILES" ]; then
   # No destructivo → Security Council (autónomo · merge automático si PASS)
   CRITICAL_DIFF=$(git diff "$DIFF_BASE_P9" -- $CRITICAL_FILES 2>/dev/null | head -200)
   echo "SECURITY_COUNCIL_NEEDED · dispatching 3 agentes..."
-  # FAZM: dispatchar Security Council (ver sección "Security Council" abajo)
+  # ATLAS: dispatchar Security Council (ver sección "Security Council" abajo)
   # Si los 3 agentes dan VEREDICTO=PASS + DESTRUCTIVO=NO → continuar flujo normal (merge automático)
   # Si alguno da FAIL → escalar con causa raíz · no mergear
 fi
@@ -2865,11 +2865,11 @@ PASS · [componente] · commit [hash] · [progreso]% · próximo: [proximo_paso]
 
 ## PASO 10 · PROXY · siguiente task
 
-FAZM: leer `$ATLAS_DIR/flow-rules.md` sección "PASO 10 · Proxy behavior" y ejecutar el prompt definido ahí.
+ATLAS: leer `$ATLAS_DIR/flow-rules.md` sección "PASO 10 · Proxy behavior" y ejecutar el prompt definido ahí.
 
 ```bash
 PROXY_RULES=$(cat "$ATLAS_DIR/flow-rules.md")
-# FAZM: dispatchar Agent(subagent_type="Product Manager", model: sonnet — lectura+priorización, no necesita opus, prompt="[contenido de la sección PASO 10 de flow-rules.md]")
+# ATLAS: dispatchar Agent(subagent_type="Product Manager", model: sonnet — lectura+priorización, no necesita opus, prompt="[contenido de la sección PASO 10 de flow-rules.md]")
 ```
 
 Si flow-rules.md no tiene sección PASO 10 → Proxy genérico:
@@ -2885,7 +2885,7 @@ Cargado ON-DEMAND. Si `ATLAS_MODE=innovate` → leer `innovate.md` (en esta carp
 
 ## Security Council · Prompt por agente
 
-FAZM: leer `$ATLAS_DIR/matu-context.md` y `$ATLAS_DIR/flow-rules.md` para construir el contexto.
+ATLAS: leer `$ATLAS_DIR/matu-context.md` y `$ATLAS_DIR/flow-rules.md` para construir el contexto.
 
 ```
 [AUTONOMIA_BLOCK]
@@ -2911,7 +2911,7 @@ Sin T1: escribí "ninguno".
 Agentes: `security-reviewer` · `Legal Compliance Checker` · `Backend Architect` — los 3 con **model: opus** (safety SIEMPRE top-tier) e incluyendo `~/.claude/skills/atlas/fable5/seguridad.md` como contexto (threat model STRIDE-lite + reglas de oro — leer con Read tool).
 Los 3 deben dar VEREDICTO=PASS y DESTRUCTIVO=NO.
 
-**Si los 3 dan PASS + DESTRUCTIVO=NO → FAZM procede automáticamente a merge + push a main. Sin esperar OK de Ale.**
+**Si los 3 dan PASS + DESTRUCTIVO=NO → ATLAS procede automáticamente a merge + push a main. Sin esperar OK de Ale.**
 Si alguno da FAIL o DESTRUCTIVO=SÍ → aplicar los fixes T1 · re-correr Security Council · si sigue FAIL → escalar con causa raíz.
 
 ---

@@ -8,7 +8,7 @@ El emulador usa la GPU del Mac (Metal) — NO replica Adreno (TBDR, GMEM, UBWC).
 emulador puede caer a 20fps en Snapdragon 680 real. Emulador OK para JS/layout; para GPU/shaders =
 SIEMPRE device físico. Medir DESPUÉS de 2-3 min de calentamiento (no en cold start → oculta throttling).
 
-## Criterios de aceptación (NutricomAI / Snapdragon 680)
+## Criterios de aceptación (el proyecto / Snapdragon 680)
 - **Janky frames < 5%** (en prueba de 30s con la animación activa)
 - **P95 frame time < 20ms** (P99 < 50ms)
 - **JS FPS > 55** sostenido · **UI FPS > 57**
@@ -20,9 +20,9 @@ SIEMPRE device físico. Medir DESPUÉS de 2-3 min de calentamiento (no en cold s
 1. **[30s] Visual sanity:** device → Dev Options → "Profile HWUI Rendering > On screen as bars". Línea verde = 16.6ms. Barras que la cruzan = jank. Barra "Swap Buffers" alta = GPU-bound.
 2. **[5min] `dumpsys gfxinfo`:**
    ```
-   adb shell dumpsys gfxinfo cl.nutricomai.app reset
+   adb shell dumpsys gfxinfo cl.el proyecto.app reset
    # interactuar 30s con el shader activo
-   adb shell dumpsys gfxinfo cl.nutricomai.app framestats
+   adb shell dumpsys gfxinfo cl.el proyecto.app framestats
    ```
    Leer: Janky frames %, P50/P90/P95/P99. Janky <3% + P95 <20ms = verde.
 3. **[10min] Flashlight** (`flashlight.dev` · `curl https://get.flashlight.dev | bash`): FPS + CPU por thread. Si `mqt_js` CPU alto → JS-bound; si UI FPS cae con mqt_js limpio → GPU/Skia-bound.

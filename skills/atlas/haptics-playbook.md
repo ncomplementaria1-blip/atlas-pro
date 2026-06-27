@@ -24,7 +24,7 @@
     (near, was) => { if (near && !was) runOnRN(nutri.orbLand); });
   ```
 
-## Hook reutilizable (NutricomAI · directo a `src/hooks/useHaptics.ts`)
+## Hook reutilizable (el proyecto · directo a `src/hooks/useHaptics.ts`)
 ```ts
 import * as Haptics from 'expo-haptics'; import { Platform } from 'react-native';
 const isAndroid = Platform.OS === 'android', isWeb = Platform.OS === 'web';
@@ -42,7 +42,7 @@ export const nutri = {
 };
 ```
 
-## Vocabulario NutricomAI (momento → haptic)
+## Vocabulario el proyecto (momento → haptic)
 | Momento | iOS | Android | Cuándo |
 |---|---|---|---|
 | Press card | Light | Keyboard_Press | onPressIn (solo si hay acción) |
@@ -53,7 +53,7 @@ export const nutri = {
 | Scan falla / validación | **warning** (NO error) | Reject | en el frame del error |
 | Primer logro / celebración | Light→100ms→Medium (≤2 pulsos, ≤200ms) | Confirm | en el peak visual |
 
-## ⛔ TCA-safe
+## ⛔ safe-para-datos-sensibles
 - Celebración háptica = doble-tap **cálido y discreto** (Light→Medium), NUNCA secuencia dramática/fanfarria.
 - NUNCA `.error` para "excediste calorías" → usar `warning` o nada. El haptic no debe "castigar".
 - Cuándo NO: scroll libre · animaciones decorativas sin input · loops/timers · cada letra de texto · acciones sin cambio de estado.

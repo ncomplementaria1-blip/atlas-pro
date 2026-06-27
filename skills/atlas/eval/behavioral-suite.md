@@ -65,7 +65,7 @@ el examen barato (atlas-eval) corre siempre; este corre cuando importa.
   sintético — no existe en el producto a propósito, para que siempre sea NEW).
 - **Esperado:** Router → `master_covers=no` · canonical · creative_spin≠[] · 3
   mockups A/B/C + Brand Council + gate anti-slop · carga P2+P4+P5+TEST · /matu
-  canonical ≥9.5 · TCA-safe (cero rachas punitivas en el diseño) · tier
+  canonical ≥9.5 · safe-para-datos-sensibles (cero rachas punitivas en el diseño) · tier
   NARANJA/ROJO declarado ANTES de ejecutar (COSTO_GATE visible).
 
 ### REF-G · Generativo (prompt-craft + 6I · el camino de assets)

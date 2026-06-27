@@ -5,7 +5,7 @@
 >
 > **SCOPE: el MÉTODO es UNIVERSAL** (trasplante estructural, desbloqueo, prompting,
 > convergencia con criterio previo). El banco de isomorfismos B2 y los desafíos están
-> calibrados a NutricomAI (su vara, su TCA, sus vetos) — en otro proyecto: mismo método,
+> calibrados a el proyecto (su vara, su datos sensibles, sus vetos) — en otro proyecto: mismo método,
 > construir/usar el banco y la vara DEL proyecto activo (`projects/<name>/` + su
 > CLAUDE.md). La línea ética de variable-reward es universal en salud; en otros dominios
 > evaluarla explícitamente, no asumirla.
@@ -21,12 +21,12 @@ hereda décadas de iteración gratis.
 
 **Caso fundacional del producto:** cluster automotriz premium → Mi día (i-Cockpit).
 Se robó la jerarquía de instrumentos y la psicología de lectura periférica (un vistazo
-= estado completo); se INVIRTIÓ la psicología de presión (un auto te apura; NutricomAI
-jamás — TCA-safe). Estructura sí, alma propia. Ese doble movimiento — robar e invertir —
+= estado completo); se INVIRTIÓ la psicología de presión (un auto te apura; el proyecto
+jamás — safe-para-datos-sensibles). Estructura sí, alma propia. Ese doble movimiento — robar e invertir —
 es la firma.
 
 **Las restricciones primero: la caja define el fuera-de-la-caja.** Sin presupuesto de
-frames, sin TCA-safe, sin gama baja, sin tokens, cualquier idea es buena — y por eso
+frames, sin safe-para-datos-sensibles, sin gama baja, sin tokens, cualquier idea es buena — y por eso
 ninguna lo es. La lista de restricciones se escribe ANTES de divergir: es el brief
 contra el que las ideas compiten. La creatividad sin restricciones es decoración.
 
@@ -47,7 +47,7 @@ chileno diría 'obvio que es así'?" es el gate.
    ahí mata gente — esa presión destila estructura).
 3. **Extraer la ESTRUCTURA:** jerarquía, ritmo, secuencia, física, reglas de prioridad.
    Escribirla en abstracto antes de mirar una sola pantalla del dominio origen.
-4. **Re-vestir con el ADN propio:** tokens, copy neutro-tuteo, TCA-safe, restraint,
+4. **Re-vestir con el ADN propio:** tokens, copy neutro-tuteo, safe-para-datos-sensibles, restraint,
    Plus Jakarta. La estética viene 100% de NUESTRO sistema, jamás del origen.
 5. **Invertir lo que no calza con los valores:** el paso que casi todos se saltan.
    ¿Qué hace el origen que NOSOTROS no haríamos jamás? (presión, urgencia, culpa,
@@ -55,14 +55,14 @@ chileno diría 'obvio que es así'?" es el gate.
 6. **Test de inevitabilidad** (A) + filtro de la vara: ¿ayuda a registrar / confiar /
    volver sin culpa? Si no pasa ambos, va al backlog, no al producto.
 
-### B2. Banco de isomorfismos para NutricomAI (oro específico — usar y extender)
+### B2. Banco de isomorfismos para el proyecto (oro específico — usar y extender)
 
-| Industria | Estructura robable | Aplicación NutricomAI | Inversión TCA |
+| Industria | Estructura robable | Aplicación el proyecto | Inversión datos sensibles |
 |---|---|---|---|
 | Automotriz premium | lectura periférica, jerarquía de instrumentos | Mi día cockpit (CANON, ya aplicado) | sin presión de velocidad |
 | Triage hospitalario | color + SIGUIENTE PASO, prioridad sin juicio | semáforo scanner | rojo = acción, jamás prohibición |
-| Aviación | checklist de fases, callouts de confirmación | onboarding clínico, pre-publicación | sin alarmas — confirmaciones calmas |
-| Handoff de turno médico | resumen estructurado de continuidad | Alexia resume "dónde quedamos" cross-canal | memoria como cuidado, no vigilancia |
+| Aviación | checklist de fases, callouts de confirmación | onboarding sensible, pre-publicación | sin alarmas — confirmaciones calmas |
+| Handoff de turno médico | resumen estructurado de continuidad | el asistente resume "dónde quedamos" cross-canal | memoria como cuidado, no vigilancia |
 | Gaming (progresión) | curva de dominio, retroalimentación inmediata | progreso de hábitos | SIN rachas punitivas ni pérdida — solo acumulación |
 | Omotenashi (hospitalidad jp) | anticipar la necesidad antes del pedido | microcopy anticipatorio, defaults inteligentes | servir sin invadir |
 | Broadcast deportivo | data overlays legibles en movimiento | datos sobre foto de comida | informar sin tapar el plato |
@@ -84,7 +84,7 @@ recompensa aleatoria para generar compulsión, jamás.
 - **Extremos:** ¿la versión de $0 y 1 hora? ¿la de $1M y 1 año? La solución real suele
   estar en lo que AMBAS comparten (eso es lo esencial; el resto es presupuesto).
 - **Combinación forzada:** tomar 2 features existentes que nadie relaciona (foto-control
-  + WhatsApp → "manda la foto por WhatsApp y Alexia la registra") — el catálogo propio
+  + un canal de mensajería → "manda la foto por un canal de mensajería y el asistente la registra") — el catálogo propio
   ya pagado es la primera cantera.
 - **Restricción extra deliberada:** si "cualquier cosa sirve", agregar una restricción
   dura ("sin texto", "una sola mano", "3 segundos") — la restricción artificial revela
@@ -134,7 +134,7 @@ JUZGA (rojo = prohibido, castigo); el triage PRIORIZA con siguiente paso (rojo =
 YA — el paciente nunca es "malo"). **Estructura robada:** color + UNA acción siguiente,
 jamás el juicio solo. "Alto en azúcar" no termina ahí (dedo acusador): "Alto en azúcar
 → combínalo con proteína" o "mejor para después de entrenar". El usuario sale con un
-plan, no con una nota. **Inversión TCA:** el rojo saturado se reemplaza por token
+plan, no con una nota. **Inversión datos sensibles:** el rojo saturado se reemplaza por token
 semántico calmo; el lenguaje jamás moraliza la comida ("permitido/prohibido" → "hoy/
 en otra ocasión"). **Re-vestido:** tokens, tuteo accionable, háptica de confirmación
 sutil al escanear (no alarma). **Test:** ¿un nutricionista chileno diría "obvio"? Sí.
@@ -161,10 +161,10 @@ navegación entre secciones se sentía como teletransporte, sin continuidad espa
 (2) forma abstracta — "mantener el hilo de presencia entre dos contextos";
 (3) isomorfismos — el acomodador de teatro con linterna (te lleva, no te empuja), el
 wayfinding de aeropuerto (línea en el piso); (4) estructura — un elemento PERSISTENTE
-de identidad (el orb de Alexia, que ya existe) viaja del origen al destino: nace del
+de identidad (el orb de el asistente, que ya existe) viaja del origen al destino: nace del
 orb origen, trail de luz, aterriza con bloom en el destino; (5) restricciones que lo
 forman — gama baja: trail en Skia con presupuesto, prototipo ANTES de integrar (spec
-en docs/plans con fórmulas Freya+Candillon); (6) vara — ¿ayuda a confiar? sí: Alexia
+en docs/plans con fórmulas Freya+Candillon); (6) vara — ¿ayuda a confiar? sí: el asistente
 "te acompaña" físicamente — la marca ES la guía. Nota el patrón: la idea no salió de
 "ser creativo", salió de un problema + una forma + un banco de estructuras.
 

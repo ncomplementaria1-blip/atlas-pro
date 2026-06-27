@@ -4,9 +4,9 @@
 >
 > **SCOPE: el MÉTODO es UNIVERSAL** (frameworks, algoritmos, árboles de decisión sirven
 > para cualquier proyecto y stack). Los desafíos y varios ejemplos usan casos reales de
-> NutricomAI como material didáctico. En OTRO proyecto (atlas-pro, cokrea, keto...):
-> replicar el MÉTODO; las reglas de dominio/marca ([NUTRICOMAI]: Ley 19.628, deudas
-> específicas, excepción 18+, patrones MP/WhatsApp) NO viajan — las del proyecto activo
+> el proyecto como material didáctico. En OTRO proyecto (atlas-pro, cokrea, keto...):
+> replicar el MÉTODO; las reglas de dominio/marca ([el proyecto]: la normativa de protección de datos, deudas
+> específicas, excepción 18+, patrones MP/un canal de mensajería) NO viajan — las del proyecto activo
 > se cargan de `projects/<name>/` + el CLAUDE.md de su repo. Scope Discipline: NUNCA
 > mezclar proyectos.
 
@@ -20,8 +20,8 @@ cada lente descarta diseños enteros antes de que el siguiente gaste tiempo en e
    fecha. Prueba operativa: "¿cuántas calorías registró hoy?" debe tener UNA query
    canónica. Los demás consumidores derivan de ella, jamás recalculan por su cuenta.
 2. **Bordes.** Todo lo externo FALLA: la red se corta, el webhook llega dos veces, el
-   cron corre tarde o dos veces, el usuario manda el form dos veces, MercadoPago
-   reintenta hasta 4 veces, WhatsApp duplica mensajes. El diseño empieza en el borde,
+   cron corre tarde o dos veces, el usuario manda el form dos veces, un proveedor de pagos
+   reintenta hasta 4 veces, un canal de mensajería duplica mensajes. El diseño empieza en el borde,
    no en el happy path. El interior del sistema confía; el borde, jamás.
 3. **Idempotencia antes que retry.** Un retry sin idempotencia es un generador de
    duplicados con timer. Primero hago la operación segura de repetir (constraint UNIQUE,
@@ -33,7 +33,7 @@ cada lente descarta diseños enteros antes de que el siguiente gaste tiempo en e
 5. **Lo aburrido gana.** Postgres hasta que duela. Monolito modular hasta que duela.
    Un equipo de 1 (Ale) no paga el impuesto operativo de microservicios JAMÁS — cada
    servicio nuevo es un deploy, un log, un modo de fallo y una página de status más.
-   "Escalable" para NutricomAI = índices correctos + queries planas + cache medido.
+   "Escalable" para el proyecto = índices correctos + queries planas + cache medido.
 
 Escalamiento horizontal mental: ¿qué estado impide clonar el proceso? (sesiones en
 memoria, archivos locales, locks en RAM, contadores in-process). Compute stateless,
@@ -51,7 +51,7 @@ si nunca tuvimos que pensarlo.
 2. Asignar dueño: una tabla, una columna, un módulo. Escribirlo en el plan.
 3. Contrato en el borde: schema SQL con constraints + validación zod en CADA entrada
    externa (API route, webhook, payload de cron). Tipos compartidos en `shared/` —
-   single source (el patrón de los slugs TCA es el canon: replicarlo).
+   single source (el patrón de los slugs datos sensibles es el canon: replicarlo).
 4. **La pregunta triple** antes de codear: ¿qué pasa si esto llega DOS VECES? ¿TARDE?
    ¿NUNCA? Cada respuesta es código o constraint, no esperanza.
 5. Idempotencia mecánica: la DB es el árbitro, no un if en JS. `INSERT ... ON CONFLICT
@@ -86,11 +86,11 @@ qué depende de qué. Cada mutación lista QUÉ caches toca.
 |---|---|
 | Respuesta que el usuario espera (<2s) | inline en el route, transaccional |
 | Trabajo diferible disparado por evento, volumen bajo (<100/h) | inline post-respuesta o cron corto — NO cola |
-| Trabajo periódico (recordatorios, proactivo WhatsApp) | cron (ya es el patrón: `alexia-proactive`, `meal-reminders`) |
+| Trabajo periódico (recordatorios, proactivo un canal de mensajería) | cron (ya es el patrón: `el asistente-proactive`, `meal-reminders`) |
 | Volumen alto + picos + reintentos con backoff | recién AHÍ una cola — y es un cambio de arquitectura → /plan-eng-review |
 
 Una cola agrega un modo de fallo nuevo (mensaje perdido/duplicado/atascado) — solo se
-justifica cuando QUITA más modos de fallo de los que agrega. A escala NutricomAI, casi
+justifica cuando QUITA más modos de fallo de los que agrega. A escala el proyecto, casi
 nunca.
 
 ### B4. Optimización de queries (método, no recetas)
@@ -114,16 +114,16 @@ nunca.
 ### B5. Seguridad aplicada (el threat model de 10 minutos)
 
 > Versión profunda en `seguridad.md` (mismo dir) — OBLIGATORIA cuando safety_touch=yes:
-> auth/OAuth2 completo, web/mobile/LLM security, secrets, 19.628, respuesta a incidentes.
+> auth/OAuth2 completo, web/mobile/LLM security, secrets, la normativa de protección de datos, respuesta a incidentes.
 
 Por cada feature nueva, recorrer STRIDE-lite — 5 preguntas, 10 minutos:
 1. **Suplantación**: ¿cada endpoint verifica QUIÉN llama? (sesión server-side; el
    user_id viene de la sesión, JAMÁS del body — un body con user_id ajeno es IDOR).
-2. **Manipulación**: ¿el webhook verifica firma? (MercadoPago: validar firma/secret;
-   WhatsApp: app_secret + verify token — infra ya en prod, no recrear).
+2. **Manipulación**: ¿el webhook verifica firma? (un proveedor de pagos: validar firma/secret;
+   un canal de mensajería: app_secret + verify token — infra ya en prod, no recrear).
 3. **Repudio**: ¿queda huella de quién hizo qué? (created_by, logs de borde).
-4. **Filtración**: ¿este dato es PII/clínico? → minimizar (hash de email en vez de
-   email cuando solo se compara), cifrar en reposo, Ley 19.628 Chile. ¿El error
+4. **Filtración**: ¿este dato es PII/sensible? → minimizar (hash de email en vez de
+   email cuando solo se compara), cifrar en reposo, la normativa de protección de datos Chile. ¿El error
    response filtra internals? (stack traces a producción = no).
 5. **Elevación**: ¿qué pasa si un usuario free llama el endpoint premium directo?
    (el gate se verifica server-side por request, no en el cliente).
@@ -145,10 +145,10 @@ El pipeline actual: typecheck → push a main → deploy Amplify. Principios:
 
 ## C) Reglas de Oro (inquebrantables)
 
-- Todo webhook idempotente — MercadoPago y WhatsApp REINTENTAN por diseño.
+- Todo webhook idempotente — un proveedor de pagos y un canal de mensajería REINTENTAN por diseño.
 - El user_id sale de la sesión, jamás del body. (IDOR es el bug #1 de apps de 1 dev.)
 - Validación zod en el borde, tipos en `shared/`, single source.
-- Secrets jamás en el repo; dato clínico cifrado en reposo (Ley 19.628).
+- Secrets jamás en el repo; dato sensible cifrado en reposo (la normativa de protección de datos).
 - DDD-lite: módulos por dominio dentro del monolito. Microservicios = prohibido a este
   tamaño de equipo.
 - Índice para cada FK joineada. Paginación por cursor para todo lo que crece.
@@ -161,7 +161,7 @@ El pipeline actual: typecheck → push a main → deploy Amplify. Principios:
 
 ## D) Desafíos de Sincronización (resueltos a fondo)
 
-### D1. Webhook MercadoPago idempotente (dinero = cero tolerancia)
+### D1. Webhook un proveedor de pagos idempotente (dinero = cero tolerancia)
 
 **Datos:** tabla `payment_events`: `id`, `mp_event_id` UNIQUE (la clave de la
 idempotencia), `type`, `payment_id`, `status`, `raw` jsonb, `processed_at` nullable,
@@ -183,11 +183,11 @@ diario: pagos `pending` >24h se consultan activamente.
 `processed_at` → el cron de reconciliación lo retoma. Nada depende de que el webhook
 llegue: el webhook ACELERA, la reconciliación GARANTIZA.
 
-### D2. Cron proactivo WhatsApp (ventana 24h + dedupe)
+### D2. Cron proactivo un canal de mensajería (ventana 24h + dedupe)
 
 **Restricción dura de Meta:** fuera de la ventana de 24h desde el último mensaje del
 usuario, solo se pueden enviar PLANTILLAS aprobadas. El cron debe: (1) seleccionar
-usuarios elegibles (allowlist `ALEXIA_PROACTIVE_ALLOWLIST` — infra ya en prod), (2) por
+usuarios elegibles (allowlist `el asistente` — infra ya en prod), (2) por
 usuario, decidir ventana: ¿último mensaje entrante <24h? → mensaje libre; si no →
 plantilla aprobada o saltar, (3) dedupe: tabla `proactive_sends` con UNIQUE
 `(user_id, campaign, fecha)` — el cron puede correr dos veces sin duplicar envíos,

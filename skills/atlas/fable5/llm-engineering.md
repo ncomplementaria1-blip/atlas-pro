@@ -1,11 +1,11 @@
 # MÓDULO TRANSVERSAL · LLM ENGINEERING DE PRODUCTO — versión profunda
 > Transferencia Fable 5 · 2026-06-11 · se carga cuando la tarea toca superficie IA del
-> producto (Alexia chat · food-vision · WhatsApp coach · biblioteca · cualquier feature
+> producto (el asistente chat · food-vision · un canal de mensajería coach · biblioteca · cualquier feature
 > que llame a un modelo), además del pilar. La cara DEFENSIVA (injection, allowlist,
 > PII) vive en `seguridad.md` B4 — este módulo es la INGENIERÍA: cómo se construye.
 >
-> **SCOPE: el MÉTODO es UNIVERSAL.** Los ejemplos (Alexia, platos chilenos, WhatsApp)
-> son material didáctico de NutricomAI — en otro proyecto: mismo método, dominio del
+> **SCOPE: el MÉTODO es UNIVERSAL.** Los ejemplos (el asistente, platos chilenos, un canal de mensajería)
+> son material didáctico de el proyecto — en otro proyecto: mismo método, dominio del
 > proyecto activo. Scope Discipline manda.
 
 ## A) Framework Mental
@@ -27,7 +27,7 @@ enviar.
 
 **Modelo por tarea, medido:** el modelo correcto para una tarea de producto es el MÁS
 BARATO que pasa el eval-set — no el más nuevo ni el más grande. Clasificar intent no
-necesita el modelo de la conversación clínica. Se decide con datos (D3), no con fe.
+necesita el modelo de la conversación sensible. Se decide con datos (D3), no con fe.
 
 **La calidad del contexto ES la calidad de la respuesta:** contexto con ruido degrada
 aunque "quepa". Al modelo entra lo que CAMBIA la respuesta; lo demás es costo y
@@ -54,11 +54,11 @@ distracción.
 6. **Telemetría desde el día 1:** loggear input/output (sin PII — ids opacos) +
    latencia + costo por llamada. Sin esto no hay mejora posible, solo anécdotas.
 
-### B2. System prompt de producto (el de Alexia como arquetipo)
+### B2. System prompt de producto (el de el asistente como arquetipo)
 
 Orden interno (lo ESTABLE primero — habilita prompt caching):
-1. **Identidad y límites clínicos:** quién es, qué NO hace (no diagnostica, no
-   prescribe, deriva a profesional ante señales de riesgo — TCA incluido), tono
+1. **Identidad y límites sensibles:** quién es, qué NO hace (no diagnostica, no
+   prescribe, deriva a profesional ante señales de riesgo — datos sensibles incluido), tono
    (copy del producto: neutro con tuteo).
 2. **Reglas duras enumeradas** (pocas y absolutas — 20 reglas se diluyen, 7 se cumplen).
 3. **Few-shots de los momentos difíciles:** el rechazo elegante (pedido fuera de
@@ -67,7 +67,7 @@ Orden interno (lo ESTABLE primero — habilita prompt caching):
 4. **Herramientas/acciones disponibles** con su allowlist (seguridad.md).
 5. **Al final, lo dinámico:** contexto del usuario (lo MÍNIMO que cambia la respuesta:
    objetivos, restricciones, último contexto relevante — no el perfil entero).
-Versionado: `prompts/alexia-system.v3.ts` en el repo — el prompt activo es código
+Versionado: `prompts/el asistente-system.v3.ts` en el repo — el prompt activo es código
 desplegado, no un string que alguien edita en producción.
 
 ### B3. Few-shot engineering
@@ -80,7 +80,7 @@ desplegado, no un string que alguien edita en producción.
 - Incluir SIEMPRE un ejemplo de caso negativo: qué responder cuando no sabe / el input
   es inválido — sin él, el modelo inventa antes que admitir.
 
-### B4. Contexto y memoria (cross-canal app↔WhatsApp ya existente)
+### B4. Contexto y memoria (cross-canal app↔un canal de mensajería ya existente)
 
 - Criterio de admisión al contexto: ¿este dato CAMBIA la respuesta a ESTE mensaje?
   No → fuera.
@@ -107,8 +107,8 @@ desplegado, no un string que alguien edita en producción.
   typecheck de la capa IA.
 - **Crece con producción:** cada fallo real de prod entra al set (misma regla que
   testing-estrategia B4 — el eval-set es el mapa de las heridas reales de la capa IA).
-- **Rúbrica de conversación (Alexia):** pass/fail por dimensiones binarias — ¿respetó
-  límites clínicos? ¿tono correcto? ¿accionable? ¿largo apropiado? — evaluables por un
+- **Rúbrica de conversación (el asistente):** pass/fail por dimensiones binarias — ¿respetó
+  límites sensibles? ¿tono correcto? ¿accionable? ¿largo apropiado? — evaluables por un
   modelo barato como juez + spot-check humano de Ale en los borde.
 
 ### B7. Latencia y UX de la espera
@@ -151,7 +151,7 @@ fallaron en desarrollo + 10 representativas); pass = items correctos ±20% gramo
 **Telemetría:** confianza promedio, tasa de corrección manual del usuario (LA métrica
 de calidad real — si el usuario corrige mucho, el eval-set miente).
 
-### D2. Clasificador de intent para WhatsApp (lo barato bien hecho)
+### D2. Clasificador de intent para un canal de mensajería (lo barato bien hecho)
 
 **Problema:** cada mensaje entrante necesita ruta (registrar comida / pregunta /
 saludo / fuera de alcance) ANTES de decidir qué modelo responde. **Diseño:** modelo
@@ -159,7 +159,7 @@ chico y rápido, salida enum estricta `{ intent: "registro"|"consulta"|"social"|
 "fuera_alcance", confianza: 0-1 }`, confianza < umbral → tratar como "consulta"
 (el default seguro: responder conversacionalmente nunca rompe nada; registrar mal sí).
 **Por qué un clasificador aparte:** enrutar con el modelo grande es pagar conversación
-clínica por decidir si "hola" es un saludo — la separación baja latencia y permite que
+sensible por decidir si "hola" es un saludo — la separación baja latencia y permite que
 cada ruta tenga SU prompt afinado. **Eval:** 30 mensajes reales anonimizados,
 clasificación exacta esperada; el clasificador se acepta cuando acierta los 30 (es
 una tarea cerrada — acá sí se exige perfección, no plausibilidad).
@@ -179,7 +179,7 @@ reales. Ninguna de las dos es ingeniería: medir es ingeniería.
 ## Cierre del módulo
 
 La capa IA de un producto se gana o se pierde en lo invisible: contratos, evals,
-fallbacks, telemetría. El usuario ve "Alexia me entiende"; abajo hay un borde no
+fallbacks, telemetría. El usuario ve "el asistente me entiende"; abajo hay un borde no
 determinista tratado con la misma disciplina que un webhook de pagos. Esa disciplina
 es exactamente lo transferido acá — y con el eval-set creciendo donde duele (B6),
 esta capa mejora sola con cada semana de producción.

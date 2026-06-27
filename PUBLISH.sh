@@ -22,6 +22,20 @@ rsync -a --delete \
 mkdir -p "$PKG/projects"
 [ -d "$PKG/projects/_TEMPLATE" ] || echo "  (recordá mantener projects/_TEMPLATE en el repo)"
 
+# NEUTRALIZACIÓN (repo público): borra todo término de marca/proyecto antes de publicar.
+echo "· Neutralizando contenido (scrub público)…"
+bash "$HERE/scrub-public.sh" "$PKG" >/dev/null
+
+# GATE DURO: 0 hits de términos sensibles o se ABORTA el publish (jamás filtrar a público).
+HITS="$(grep -rioE 'nutricom|esmeralda|estanque|mercadopago|whatsapp|19\.?628|\bTCA\b|alexia|fazm|cl[ií]nic' "$PKG" --include='*.md' 2>/dev/null || true)"
+if [ -n "$HITS" ]; then
+  echo "✗ ABORTADO: quedan términos sensibles tras el scrub. NO se publica."
+  echo "$HITS" | head -20
+  echo "→ Ampliá el mapa en scrub-public.sh y reintentá."
+  exit 1
+fi
+echo "  ✓ scrub limpio (0 términos sensibles)."
+
 VER="$(cat "$PKG/VERSION" 2>/dev/null || echo '?')"
 echo "· Versión a publicar: $VER"
 

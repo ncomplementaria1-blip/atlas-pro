@@ -167,22 +167,22 @@ FRAMEWORK: [principio que lo sustenta]
 ### PASO I2 · SÍNTESIS
 
 ```bash
-# FAZM: capturar output real de los 4 agentes
-IDEAS_TREND="[FAZM: output real del Trend Researcher]"
-IDEAS_PM="[FAZM: output real del Product Manager]"
-IDEAS_UX="[FAZM: output real del UX Researcher]"
-IDEAS_BEHAV="[FAZM: output real del Behavioral Nudge Engine]"
+# ATLAS: capturar output real de los 4 agentes
+IDEAS_TREND="[ATLAS: output real del Trend Researcher]"
+IDEAS_PM="[ATLAS: output real del Product Manager]"
+IDEAS_UX="[ATLAS: output real del UX Researcher]"
+IDEAS_BEHAV="[ATLAS: output real del Behavioral Nudge Engine]"
 
 for _var in IDEAS_TREND IDEAS_PM IDEAS_UX IDEAS_BEHAV; do
   _val="${!_var}"
-  if echo "$_val" | grep -q "FAZM: output real"; then
+  if echo "$_val" | grep -q "ATLAS: output real"; then
     echo "ERROR · $_var no fue reemplazado con el output del agente"
     exit 1
   fi
 done
 ```
 
-FAZM consolida: desduplicar por título · rankear por score = impacto×esfuerzo (alto×S=9 · alto×M=6 · alto×L=3 · medio×S=6 · medio×M=4 · etc) · mantener top 15 ideas únicas ordenadas de mayor a menor score.
+ATLAS consolida: desduplicar por título · rankear por score = impacto×esfuerzo (alto×S=9 · alto×M=6 · alto×L=3 · medio×S=6 · medio×M=4 · etc) · mantener top 15 ideas únicas ordenadas de mayor a menor score.
 
 ### PASO I3 · BRAND FILTER
 
@@ -237,11 +237,11 @@ except Exception:
     ideas_existentes = []
     max_id = 0
 
-# FAZM: reemplazar con lista real de ideas PASS/PASS_ADAPTED del PASO I3
+# ATLAS: reemplazar con lista real de ideas PASS/PASS_ADAPTED del PASO I3
 # Formato de cada idea: {"titulo":..., "tipo":..., "esfuerzo":"S|M|L", "impacto":"alto|medio|bajo",
 #   "descripcion":..., "fuente":"Trend Researcher|Product Manager|UX Researcher|Behavioral Nudge Engine",
 #   "brand_filter":"PASS|PASS_ADAPTED", "estado":"propuesta", "area":"$INNOVATE_AREA"}
-nuevas_ideas = []  # FAZM: poblar con ideas reales
+nuevas_ideas = []  # ATLAS: poblar con ideas reales
 
 ts = datetime.datetime.utcnow().isoformat() + "Z"
 for i, idea in enumerate(nuevas_ideas, start=max_id + 1):

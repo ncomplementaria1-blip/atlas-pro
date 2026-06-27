@@ -1,7 +1,7 @@
 # ATLAS · Onboarding de Proyecto Nuevo
 
 Se ejecuta cuando ATLAS no encuentra config para el proyecto activo en cwd.
-FAZM ejecuta este protocolo completo antes de iniciar motor.md.
+ATLAS ejecuta este protocolo completo antes de iniciar motor.md.
 
 ---
 
@@ -25,7 +25,7 @@ if [ -f "$PACKAGE_JSON" ]; then
   HAS_NEXTJS=$(python3 -c "import json; d=json.load(open('$PACKAGE_JSON')); print('yes' if 'next' in str(d.get('dependencies',{})) else 'no')" 2>/dev/null || echo "no")
   TYPECHECK_GUESS=$(python3 -c "import json; d=json.load(open('$PACKAGE_JSON')); s=d.get('scripts',{}); print('npm run typecheck' if 'typecheck' in s else ('npx tsc --noEmit' if 'typescript' in str(d.get('devDependencies',{})) else 'echo OK'))" 2>/dev/null || echo "npm run typecheck")
   HAS_SUPABASE=$(python3 -c "import json; d=json.load(open('$PACKAGE_JSON')); print('yes' if 'supabase' in str(d) or '@supabase' in str(d) else 'no')" 2>/dev/null || echo "no")
-  HAS_MERCADOPAGO=$(python3 -c "import json; d=json.load(open('$PACKAGE_JSON')); print('yes' if 'mercadopago' in str(d).lower() else 'no')" 2>/dev/null || echo "no")
+  HAS_un proveedor de pagos=$(python3 -c "import json; d=json.load(open('$PACKAGE_JSON')); print('yes' if 'un proveedor de pagos' in str(d).lower() else 'no')" 2>/dev/null || echo "no")
   AUTH_GUESS=$(python3 -c "import json; d=json.load(open('$PACKAGE_JSON')); s=str(d); print('clerk' if 'clerk' in s else ('next-auth' if 'next-auth' in s else ('supabase-auth' if 'supabase' in s else 'por definir')))" 2>/dev/null || echo "por definir")
   DB_GUESS=$(python3 -c "import json; d=json.load(open('$PACKAGE_JSON')); s=str(d); print('supabase' if '@supabase' in s else ('prisma' if 'prisma' in s else ('drizzle' if 'drizzle' in s else 'por definir')))" 2>/dev/null || echo "por definir")
 fi
@@ -43,7 +43,7 @@ fi
 
 ## Fase 2 · Project Brief
 
-FAZM genera y muestra el siguiente brief pre-llenado con los valores auto-detectados.
+ATLAS genera y muestra el siguiente brief pre-llenado con los valores auto-detectados.
 Presentarlo completo al cliente en UN mensaje y pedir que lo complete o corrija en UNA respuesta.
 
 ```
@@ -106,7 +106,7 @@ Completá lo que falta y corregí lo que esté mal. El resto lo genero yo.
 
 ## Fase 3 · Extracción y generación de archivos
 
-Cuando el cliente devuelve el brief completado, FAZM:
+Cuando el cliente devuelve el brief completado, ATLAS:
 
 1. Lee el brief completo como texto
 2. Extrae los valores de cada campo (como AI — no regex; interpretar lenguaje natural)
@@ -157,13 +157,13 @@ Extraer del brief y generar:
 
 Ajustes automáticos post-extracción:
 - Si `platform = "ambos"` → `"platform": "both"` en JSON
-- Si `HAS_MERCADOPAGO = "yes"` → agregar `"mercadopago"` al `critical_paths_regex`
+- Si `HAS_un proveedor de pagos = "yes"` → agregar `"un proveedor de pagos"` al `critical_paths_regex`
 - Si compliance menciona "pagos" → agregar `"payment"` si no está ya
 - Si compliance menciona "salud" o "médico" → agregar `"health|medical"` al regex
 
 ### brand-context.md
 
-FAZM genera el DESIGN_AGENCY_BLOCK adaptado usando los campos del brief:
+ATLAS genera el DESIGN_AGENCY_BLOCK adaptado usando los campos del brief:
 - Color primario + highlight → gradiente de marca
 - Tipografía → instrucción de uso en display/body
 - Entidad central → descripción de comportamiento visual
@@ -175,7 +175,7 @@ Formato: seguir la estructura del bloque DESIGN_AGENCY_BLOCK — estándar de ag
 
 ### matu-context.md
 
-FAZM genera el contexto para agentes /matu usando:
+ATLAS genera el contexto para agentes /matu usando:
 - Producto + tagline + audiencia + momento de uso
 - Stack detectado
 - País + compliance + moneda
@@ -190,13 +190,13 @@ Formato: producto + stack + audiencia + país + compliance + DNA visual + estado
 {
   "components": {},
   "fallback": "",
-  "note": "Vacío al inicio. Ale agrega entries cuando genera y aprueba masters. FAZM puede sugerir paths si detecta HTML en docs/mockups/."
+  "note": "Vacío al inicio. Ale agrega entries cuando genera y aprueba masters. ATLAS puede sugerir paths si detecta HTML en docs/mockups/."
 }
 ```
 
 ### flow-rules.md
 
-FAZM genera las reglas específicas del proyecto:
+ATLAS genera las reglas específicas del proyecto:
 - Compliance activo y restricciones de tono (de la sección Compliance + Tono del brief)
 - Proxy behavior: referencia al BACKLOG del repo (`<BACKLOG_PATH>`)
 - Contexto de Security Council: producto + stack + país + compliance en 4 líneas
@@ -274,5 +274,5 @@ El brief es un documento vivo. Si el producto evoluciona:
 $EDITOR "$HOME/.claude/skills/atlas/projects/$PROJECT_NAME/project-brief.md"
 
 # Si cambió el DNA visual o tono → regenerar brand-context.md y matu-context.md
-# FAZM: leer el brief actualizado y reescribir los archivos afectados
+# ATLAS: leer el brief actualizado y reescribir los archivos afectados
 ```
