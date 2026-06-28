@@ -2,6 +2,11 @@
 
 Formato: [SemVer](https://semver.org). Fechas absolutas.
 
+## [1.3.0] — 2026-06-27
+### Added
+- **Arquitectura FÍSICA/espacial** (`architecture-physical-playbook.md`): disciplina del arquitecto — sitio/contexto, programa/circulación (servant-served Kahn), luz natural, escala/proporción (Modulor), materialidad/tectónica, estructura, umbral/secuencia, atmósfera (Zumthor), sostenibilidad pasiva + tells + salto Mithos + GATE ponderado. Canon: Le Corbusier/Mies/Kahn/Zumthor/Ando/Wright/Alexander/Murcutt.
+- **Arquitectura de SOFTWARE a nivel sistema** (`fable5/P1-arquitectura-sistemas.md`): decisión/tradeoffs (ADR, one/two-way doors), límites/acoplamiento (DDD), datos (Kleppmann/CAP), comunicación (sagas), escalabilidad, resiliencia, evolvabilidad (fitness functions/strangler), simplicidad/monolito-first, seguridad/multitenancy, observabilidad + tells over-engineered + GATE. Router fable5 actualizado.
+
 ## [1.2.0] — 2026-06-27
 ### Added
 - **Disciplina GRÁFICA** (`graphic-design-playbook.md`): extiende ATLAS más allá de la pantalla → identidad de marca/logo (tests reductivo/ownable/atemporal), sistema tipográfico y de color de marca, grid & composición editorial (suizo), iconografía como sistema, ilustración/dirección de arte, piezas estáticas (poster/ad/social/OG), e información/data-viz (Tufte). Tells gráfica AI→world-class + salto a Mithos + GATE de revisión gráfica. Destilado del canon (Vignelli/Rand/Müller-Brockmann/Bringhurst/Tufte/Sagmeister) + corpus de design systems. Cableado al codex + CLAUDE.md.

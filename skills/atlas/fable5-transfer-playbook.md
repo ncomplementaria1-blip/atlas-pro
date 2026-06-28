@@ -22,6 +22,7 @@ deep están dimensionados para eso; jamás cargar los 5 juntos):
 | Clasificación del Router | Pilar | Archivo profundo |
 |---|---|---|
 | backend · API route · schema/migración · webhook · cron · auth | P1 | `fable5/P1-arquitectura.md` |
+| arquitectura de SISTEMA · ADR · monolito vs microservicios · bounded context · CAP · sagas · evolvabilidad · fitness functions · C4 · diseño sistémico | P1-SIS | `fable5/P1-arquitectura-sistemas.md` |
 | UI · UX · render · animación · web vitals · a11y | P2 | `fable5/P2-frontend.md` |
 | bug · investigate · análisis de riesgo · decisión técnica | P3 | `fable5/P3-logica-critica.md` |
 | creative_spin ≠ [] · ideación · innovate · prompt generativo | P4 | `fable5/P4-creatividad.md` |
